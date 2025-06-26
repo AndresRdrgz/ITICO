@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar {{ object.nombre }} - ITICO{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+            </div>
+            
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">Confirmar Eliminación</h1>
+            
+            <p class="text-gray-600 mb-6">
+                ¿Estás seguro de que deseas eliminar la contraparte 
+                <strong>"{{ object.nombre }}"</strong>?
+                Esta acción no se puede deshacer.
+            </p>
+            
+            <form method="post" class="inline">
+                {% csrf_token %}
+                <div class="flex justify-center space-x-4">
+                    <a href="{% url 'contrapartes:detalle' object.pk %}" class="px-6 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Eliminar Definitivamente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

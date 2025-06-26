@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ object.nombre }} - Miembro - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:lista' %}" class="flex items-center text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-green-500 text-white mr-2">
+                    <i class="fas fa-building text-xs"></i>
+                </div>
+                Contrapartes
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:detalle' object.contraparte.pk %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                {{ object.contraparte.nombre|truncatechars:20 }}
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <span class="font-semibold text-gray-800">{{ object.nombre }}</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
+        
+        <div class="relative z-10">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                <div class="mb-6 lg:mb-0">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white font-bold text-xl mr-4">
+                            {{ object.nombre|first|upper }}
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold mb-2">{{ object.nombre }}</h1>
+                            <p class="text-blue-100">{{ object.get_rol_display }}</p>
+                        </div>
+                    </div>
+                    <p class="text-blue-100">
+                        Miembro de <strong>{{ object.contraparte.nombre }}</strong>
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <a href="{% url 'contrapartes:miembro_editar' object.pk %}" class="px-6 py-3 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl font-semibold transition-all duration-300 text-center backdrop-blur-sm border border-white border-opacity-30">
+                        <i class="fas fa-edit mr-2"></i>
+                        Editar
+                    </a>
+                    <a href="{% url 'contrapartes:detalle' object.contraparte.pk %}" class="px-6 py-3 bg-white text-purple-600 hover:bg-gray-100 rounded-xl font-semibold transition-all duration-300 text-center">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver a Contraparte
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Info -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Información Personal -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-user mr-3 text-blue-600"></i>
+                    Información Personal
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Nombre Completo</label>
+                        <p class="text-gray-900 font-medium">{{ object.nombre }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Rol</label>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                            {{ object.get_rol_display }}
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Documento de Identidad</label>
+                        <p class="text-gray-900">{{ object.documento_identidad }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Nacionalidad</label>
+                        <p class="text-gray-900">{{ object.nacionalidad }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de Contacto -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-address-book mr-3 text-green-600"></i>
+                    Información de Contacto
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% if object.email %}
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Email</label>
+                        <p class="text-gray-900">
+                            <a href="mailto:{{ object.email }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                {{ object.email }}
+                            </a>
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if object.telefono %}
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Teléfono</label>
+                        <p class="text-gray-900">
+                            <a href="tel:{{ object.telefono }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                {{ object.telefono }}
+                            </a>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if object.direccion %}
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Dirección</label>
+                    <p class="text-gray-700 leading-relaxed">{{ object.direccion }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- Contraparte Info -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-building mr-3 text-purple-600"></i>
+                    Contraparte
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="text-center">
+                    <h4 class="font-semibold text-gray-900 mb-2">{{ object.contraparte.nombre }}</h4>
+                    <p class="text-sm text-gray-600 mb-4">{{ object.contraparte.get_tipo_display }}</p>
+                    <a href="{% url 'contrapartes:detalle' object.contraparte.pk %}" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors duration-200">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Ver Contraparte
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-bolt mr-3 text-blue-600"></i>
+                    Acciones
+                </h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <a href="{% url 'contrapartes:miembro_editar' object.pk %}" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-edit text-green-600 mr-3"></i>
+                    Editar Miembro
+                </a>
+                <a href="{% url 'contrapartes:detalle' object.contraparte.pk %}" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-building text-purple-600 mr-3"></i>
+                    Ver Contraparte
+                </a>
+                <a href="{% url 'contrapartes:miembro_eliminar' object.pk %}" class="w-full flex items-center px-4 py-3 text-left text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200" data-confirm="¿Estás seguro de que deseas eliminar este miembro?">
+                    <i class="fas fa-trash mr-3"></i>
+                    Eliminar Miembro
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

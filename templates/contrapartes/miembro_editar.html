@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar {{ object.nombre }} - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:lista' %}" class="flex items-center text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-green-500 text-white mr-2">
+                    <i class="fas fa-building text-xs"></i>
+                </div>
+                Contrapartes
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:detalle' object.contraparte.pk %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                {{ object.contraparte.nombre|truncatechars:20 }}
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <span class="font-semibold text-gray-800">Editar {{ object.nombre|truncatechars:20 }}</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="bg-gradient-to-r from-green-600 via-blue-600 to-purple-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+            <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white font-bold text-xl mr-4">
+                        <i class="fas fa-user-edit"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">Editar Miembro</h1>
+                        <p class="text-blue-100">{{ object.nombre }}</p>
+                    </div>
+                </div>
+                <p class="text-blue-100">
+                    Miembro de <strong>{{ object.contraparte.nombre }}</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-edit mr-3 text-green-600"></i>
+                Información del Miembro
+            </h2>
+        </div>
+        
+        <form method="post" class="p-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Nombre -->
+                <div class="md:col-span-2">
+                    <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Nombre Completo <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.nombre }}
+                    {% if form.nombre.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.nombre.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Documento de Identidad -->
+                <div>
+                    <label for="{{ form.documento_identidad.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Documento de Identidad <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.documento_identidad }}
+                    {% if form.documento_identidad.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.documento_identidad.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Nacionalidad -->
+                <div>
+                    <label for="{{ form.nacionalidad.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Nacionalidad <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.nacionalidad }}
+                    {% if form.nacionalidad.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.nacionalidad.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Rol -->
+                <div>
+                    <label for="{{ form.rol.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Rol <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.rol }}
+                    {% if form.rol.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.rol.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Email -->
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Email
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.email.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Teléfono -->
+                <div>
+                    <label for="{{ form.telefono.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Teléfono
+                    </label>
+                    {{ form.telefono }}
+                    {% if form.telefono.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.telefono.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Dirección -->
+                <div class="md:col-span-2">
+                    <label for="{{ form.direccion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Dirección
+                    </label>
+                    {{ form.direccion }}
+                    {% if form.direccion.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.direccion.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-4 sm:justify-end">
+                <a href="{% url 'contrapartes:miembro_detalle' object.pk %}" class="px-6 py-3 text-gray-600 bg-gray-200 rounded-xl hover:bg-gray-300 transition-all duration-300 text-center font-medium">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl hover:from-green-700 hover:to-blue-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fas fa-save mr-2"></i>
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Form styling */
+input[type="text"], input[type="email"], input[type="tel"], select, textarea {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-gray-50 focus:bg-white;
+}
+
+textarea {
+    @apply resize-none h-24;
+}
+
+select {
+    @apply bg-gray-50 focus:bg-white;
+}
+</style>
+{% endblock %}

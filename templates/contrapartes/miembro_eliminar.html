@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar {{ object.nombre }} - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:lista' %}" class="flex items-center text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-green-500 text-white mr-2">
+                    <i class="fas fa-building text-xs"></i>
+                </div>
+                Contrapartes
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:detalle' object.contraparte.pk %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                {{ object.contraparte.nombre|truncatechars:20 }}
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <span class="font-semibold text-gray-800">Eliminar {{ object.nombre|truncatechars:20 }}</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="bg-gradient-to-r from-red-600 via-red-700 to-red-800 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+            <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-white font-bold text-xl mr-4">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">Eliminar Miembro</h1>
+                        <p class="text-red-100">Esta acción no se puede deshacer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-red-50">
+            <h2 class="text-xl font-bold text-red-800 flex items-center">
+                <i class="fas fa-exclamation-triangle mr-3 text-red-600"></i>
+                Confirmar Eliminación
+            </h2>
+        </div>
+        
+        <div class="p-6">
+            <!-- Member Info -->
+            <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold mr-4">
+                        {{ object.nombre|first|upper }}
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900">{{ object.nombre }}</h3>
+                        <p class="text-gray-600">{{ object.get_rol_display }}</p>
+                        <p class="text-sm text-gray-500">{{ object.documento_identidad }}</p>
+                    </div>
+                </div>
+                
+                <div class="text-sm text-gray-600">
+                    <p><strong>Contraparte:</strong> {{ object.contraparte.nombre }}</p>
+                    <p><strong>Nacionalidad:</strong> {{ object.nacionalidad }}</p>
+                    {% if object.email %}
+                        <p><strong>Email:</strong> {{ object.email }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Warning Message -->
+            <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            ¿Estás seguro de que deseas eliminar este miembro?
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Esta acción no se puede deshacer</li>
+                                <li>Se perderá toda la información asociada al miembro</li>
+                                <li>Los registros relacionados podrían verse afectados</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Confirmation Checkbox -->
+                <div class="flex items-center">
+                    <input type="checkbox" id="confirm-delete" name="confirm" required 
+                           class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                    <label for="confirm-delete" class="ml-2 block text-sm text-gray-900">
+                        Confirmo que entiendo las consecuencias y deseo eliminar este miembro
+                    </label>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 sm:justify-end pt-6 border-t border-gray-200">
+                    <a href="{% url 'contrapartes:miembro_detalle' object.pk %}" class="px-6 py-3 text-gray-600 bg-gray-200 rounded-xl hover:bg-gray-300 transition-all duration-300 text-center font-medium">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            id="delete-button" disabled>
+                        <i class="fas fa-trash mr-2"></i>
+                        Eliminar Miembro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enable delete button only when checkbox is checked
+document.getElementById('confirm-delete').addEventListener('change', function() {
+    const deleteButton = document.getElementById('delete-button');
+    deleteButton.disabled = !this.checked;
+});
+</script>
+{% endblock %}

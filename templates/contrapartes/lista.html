@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+
+{% block title %}Contrapartes - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-green-500 to-blue-600 text-white mr-2">
+                <i class="fas fa-building text-sm"></i>
+            </div>
+            <span class="font-semibold text-gray-800">Contrapartes</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-green-600 via-blue-600 to-purple-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
+        
+        <div class="relative z-10">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                <div class="mb-6 lg:mb-0">
+                    <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center">
+                        <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm">
+                            <i class="fas fa-building text-xl"></i>
+                        </div>
+                        Contrapartes
+                    </h1>
+                    <p class="text-lg text-blue-100 leading-relaxed">
+                        Gestión integral de empresas y organizaciones
+                        <br>
+                        <span class="text-sm opacity-90">Total: {{ object_list.count|default:0 }} contrapartes registradas</span>
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <a href="{% url 'contrapartes:crear' %}" class="bg-white text-green-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nueva Contraparte
+                    </a>
+                    <a href="{% url 'contrapartes:exportar' %}" class="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-download mr-2"></i>
+                        Exportar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex-1">
+            <div class="relative">
+                <input type="text" placeholder="Buscar contrapartes..." class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <select class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">Todos los tipos</option>
+                <option value="empresa">Empresa</option>
+                <option value="persona_natural">Persona Natural</option>
+                <option value="entidad_publica">Entidad Pública</option>
+                <option value="ong">ONG</option>
+                <option value="otro">Otro</option>
+            </select>
+            <select class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">Todos los estados</option>
+                <option value="activa">Activa</option>
+                <option value="inactiva">Inactiva</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="rechazada">Rechazada</option>
+                <option value="en_revision">En Revisión</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Contrapartes -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Total</p>
+                <p class="text-3xl font-bold text-gray-900">{{ object_list.count|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                <i class="fas fa-building text-white text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activas -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Activas</p>
+                <p class="text-3xl font-bold text-emerald-600">{{ stats.activas|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-center">
+                <i class="fas fa-check-circle text-white text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pendientes -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Pendientes</p>
+                <p class="text-3xl font-bold text-amber-600">{{ stats.pendientes|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center">
+                <i class="fas fa-clock text-white text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- DD Próximas -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">DD Próximas</p>
+                <p class="text-3xl font-bold text-red-600">{{ stats.dd_proximas|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contrapartes List -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-list mr-3 text-blue-600"></i>
+            Lista de Contrapartes
+        </h2>
+    </div>
+
+    {% if object_list %}
+        <!-- Desktop Table -->
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="text-left py-4 px-6 font-semibold text-gray-700">Contraparte</th>
+                        <th class="text-left py-4 px-6 font-semibold text-gray-700">Tipo</th>
+                        <th class="text-left py-4 px-6 font-semibold text-gray-700">Estado</th>
+                        <th class="text-left py-4 px-6 font-semibold text-gray-700">Nacionalidad</th>
+                        <th class="text-left py-4 px-6 font-semibold text-gray-700">Próxima DD</th>
+                        <th class="text-left py-4 px-6 font-semibold text-gray-700">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for contraparte in object_list %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="py-4 px-6">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold mr-3">
+                                        {{ contraparte.nombre|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">{{ contraparte.nombre }}</h3>
+                                        <p class="text-sm text-gray-600">{{ contraparte.miembros.count }} miembro{{ contraparte.miembros.count|pluralize:"s" }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    {{ contraparte.get_tipo_display }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-6">
+                                {% if contraparte.estado == 'activa' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-circle text-xs mr-1"></i>
+                                        {{ contraparte.get_estado_display }}
+                                    </span>
+                                {% elif contraparte.estado == 'pendiente' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock text-xs mr-1"></i>
+                                        {{ contraparte.get_estado_display }}
+                                    </span>
+                                {% elif contraparte.estado == 'inactiva' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                        <i class="fas fa-pause text-xs mr-1"></i>
+                                        {{ contraparte.get_estado_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-times text-xs mr-1"></i>
+                                        {{ contraparte.get_estado_display }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6 text-gray-900">{{ contraparte.nacionalidad }}</td>
+                            <td class="py-4 px-6">
+                                {% if contraparte.fecha_proxima_dd %}
+                                    <div class="flex items-center">
+                                        {% if contraparte.requiere_dd_pronto %}
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 mr-2">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                Urgente
+                                            </span>
+                                        {% endif %}
+                                        <span class="text-sm text-gray-900">{{ contraparte.fecha_proxima_dd|date:"d/m/Y" }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-sm text-gray-500">No definida</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center space-x-2">
+                                    <a href="{% url 'contrapartes:detalle' contraparte.pk %}" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" title="Ver detalles">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </a>
+                                    <a href="{% url 'contrapartes:editar' contraparte.pk %}" class="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors duration-200" title="Editar">
+                                        <i class="fas fa-edit text-sm"></i>
+                                    </a>
+                                    <a href="{% url 'contrapartes:eliminar' contraparte.pk %}" class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200" title="Eliminar" data-confirm="¿Estás seguro de que deseas eliminar esta contraparte?">
+                                        <i class="fas fa-trash text-sm"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="lg:hidden divide-y divide-gray-200">
+            {% for contraparte in object_list %}
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold mr-3">
+                                {{ contraparte.nombre|first|upper }}
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ contraparte.nombre }}</h3>
+                                <p class="text-sm text-gray-600">{{ contraparte.get_tipo_display }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="{% url 'contrapartes:detalle' contraparte.pk %}" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg">
+                                <i class="fas fa-eye text-sm"></i>
+                            </a>
+                            <a href="{% url 'contrapartes:editar' contraparte.pk %}" class="p-2 text-green-600 hover:bg-green-100 rounded-lg">
+                                <i class="fas fa-edit text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Estado:</span>
+                            {% if contraparte.estado == 'activa' %}
+                                <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {{ contraparte.get_estado_display }}
+                                </span>
+                            {% elif contraparte.estado == 'pendiente' %}
+                                <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    {{ contraparte.get_estado_display }}
+                                </span>
+                            {% else %}
+                                <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ contraparte.get_estado_display }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Nacionalidad:</span>
+                            <span class="ml-1 text-gray-900">{{ contraparte.nacionalidad }}</span>
+                        </div>
+                        <div class="col-span-2">
+                            <span class="text-gray-600">Próxima DD:</span>
+                            {% if contraparte.fecha_proxima_dd %}
+                                <span class="ml-1 text-gray-900">{{ contraparte.fecha_proxima_dd|date:"d/m/Y" }}</span>
+                                {% if contraparte.requiere_dd_pronto %}
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Urgente
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="ml-1 text-gray-500">No definida</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+                <i class="fas fa-building text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No hay contrapartes registradas</h3>
+            <p class="text-gray-600 mb-6">Comienza agregando tu primera contraparte al sistema</p>
+            <a href="{% url 'contrapartes:crear' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200">
+                <i class="fas fa-plus mr-2"></i>
+                Crear Primera Contraparte
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+    <div class="mt-8 flex justify-center">
+        <nav class="flex items-center space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-chevron-left mr-1"></i>
+                    Anterior
+                </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 text-sm text-gray-700">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    Siguiente
+                    <i class="fas fa-chevron-right ml-1"></i>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+{% endif %}
+{% endblock %}

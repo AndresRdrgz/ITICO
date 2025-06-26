@@ -1,0 +1,492 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ object.nombre }} - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:lista' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                Contrapartes
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-green-500 to-blue-600 text-white mr-2">
+                <i class="fas fa-eye text-sm"></i>
+            </div>
+            <span class="font-semibold text-gray-800">{{ object.nombre|truncatechars:30 }}</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-blue-800 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
+        
+        <div class="relative z-10">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div class="mb-6 lg:mb-0">
+                <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center text-white">
+                <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm text-white">
+                    {{ object.nombre|first|upper }}
+                </div>
+                {{ object.nombre }}
+                </h1>
+                <p class="text-lg text-white leading-relaxed">
+                {{ object.get_tipo_display }} • {{ object.nacionalidad }}
+                <br>
+                <span class="text-sm opacity-90 text-white">{{ object.miembros.count }} miembro{{ object.miembros.count|pluralize:"s" }} registrado{{ object.miembros.count|pluralize:"s" }}</span>
+                </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="{% url 'contrapartes:editar' object.pk %}" class="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-sm">
+                <i class="fas fa-edit mr-2"></i>
+                Editar
+                </a>
+                <button id="add-member-btn" class="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center backdrop-blur-sm">
+                <i class="fas fa-user-plus mr-2"></i>
+                Agregar Miembro
+                </button>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Info -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Información General -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-info-circle mr-3 text-blue-600"></i>
+                    Información General
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Tipo</label>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            {{ object.get_tipo_display }}
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Estado</label>
+                        {% if object.estado == 'activa' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-circle text-xs mr-1"></i>
+                                {{ object.get_estado_display }}
+                            </span>
+                        {% elif object.estado == 'pendiente' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock text-xs mr-1"></i>
+                                {{ object.get_estado_display }}
+                            </span>
+                        {% elif object.estado == 'inactiva' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-pause text-xs mr-1"></i>
+                                {{ object.get_estado_display }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times text-xs mr-1"></i>
+                                {{ object.get_estado_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Nacionalidad</label>
+                        <p class="text-gray-900">{{ object.nacionalidad }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Fecha de Registro</label>
+                        <p class="text-gray-900">{{ object.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Creado por</label>
+                        <p class="text-gray-900">{{ object.creado_por.get_full_name|default:object.creado_por.username }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Última Actualización</label>
+                        <p class="text-gray-900">{{ object.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+                
+                {% if object.descripcion %}
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">Descripción</label>
+                        <p class="text-gray-700 leading-relaxed">{{ object.descripcion }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Miembros -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-users mr-3 text-blue-600"></i>
+                Miembros ({{ object.miembros.count }})
+            </h2>
+            <button id="add-member-header-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">
+                <i class="fas fa-plus mr-2"></i>
+                Agregar Miembro
+            </button>
+            </div>
+            
+            <div id="miembros-list">
+            {% include 'contrapartes/miembros_list_partial.html' %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- DD Status -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-calendar-check mr-3 text-orange-600"></i>
+                    Debida Diligencia
+                </h3>
+            </div>
+            <div class="p-6">
+                {% if object.fecha_proxima_dd %}
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900 mb-1">
+                            {{ object.fecha_proxima_dd|date:"d/m/Y" }}
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Próxima renovación</p>
+                        
+                        {% if object.requiere_dd_pronto %}
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center mb-2">
+                                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                    <span class="font-semibold text-red-800">Atención Requerida</span>
+                                </div>
+                                <p class="text-sm text-red-700">
+                                    Faltan {{ object.dias_hasta_proxima_dd }} días para la renovación
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center mb-2">
+                                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                    <span class="font-semibold text-green-800">Al día</span>
+                                </div>
+                                <p class="text-sm text-green-700">
+                                    Faltan {{ object.dias_hasta_proxima_dd }} días
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-center">
+                        <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                            <i class="fas fa-question text-gray-400"></i>
+                        </div>
+                        <p class="text-gray-600">No hay fecha definida</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-bolt mr-3 text-blue-600"></i>
+                    Acciones
+                </h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <a href="{% url 'contrapartes:editar' object.pk %}" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-edit text-green-600 mr-3"></i>
+                    Editar Contraparte
+                </a>
+                <button id="add-member-sidebar-btn" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-user-plus text-purple-600 mr-3"></i>
+                    Agregar Miembro
+                </button>
+                <a href="#" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-file-alt text-blue-600 mr-3"></i>
+                    Generar Reporte
+                </a>
+                <a href="{% url 'contrapartes:eliminar' object.pk %}" class="w-full flex items-center px-4 py-3 text-left text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200" data-confirm="¿Estás seguro de que deseas eliminar esta contraparte?">
+                    <i class="fas fa-trash mr-3"></i>
+                    Eliminar Contraparte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Agregar Miembro -->
+<div id="miembro-modal" class="fixed inset-0 z-50 hidden">
+    <!-- Overlay -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+    
+    <!-- Modal Content -->
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all w-full max-w-2xl">
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-blue-700 to-blue-500 px-6 py-4">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-user-plus mr-3"></i>
+                        Agregar Nuevo Miembro
+                    </h3>
+                    <p class="text-blue-100 text-sm mt-1">{{ object.nombre }}</p>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="px-6 py-6">
+                    <div id="modal-form-container">
+                        <!-- Form will be loaded here via AJAX -->
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                            <p class="text-gray-600 mt-2">Cargando formulario...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="bg-gray-50 px-6 py-4 flex items-center justify-end space-x-3">
+                    <button type="button" id="cancel-btn" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                        Cancelar
+                    </button>
+                    <button type="button" id="save-btn" class="px-6 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors duration-200 flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        Guardar Miembro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// CSRF token for AJAX requests
+const CSRF_TOKEN = '{{ csrf_token }}';
+
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('miembro-modal');
+    const modalFormContainer = document.getElementById('modal-form-container');
+    const saveBtn = document.getElementById('save-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    
+    // Get CSRF token
+    function getCSRFToken() {
+        return CSRF_TOKEN || 
+               document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+               document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    }
+    
+    // Show modal
+    function showModal() {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Hide modal
+    function hideModal() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Load form via AJAX
+    function loadForm() {
+        modalFormContainer.innerHTML = `
+            <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                <p class="text-gray-600 mt-2">Cargando formulario...</p>
+            </div>
+        `;
+        
+        fetch("{% url 'contrapartes:miembro_crear_ajax' object.pk %}", {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                modalFormContainer.innerHTML = data.form_html;
+            } else {
+                modalFormContainer.innerHTML = '<div class="text-red-600 text-center py-4">Error al cargar el formulario</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            modalFormContainer.innerHTML = '<div class="text-red-600 text-center py-4">Error al cargar el formulario</div>';
+        });
+    }
+    
+    // Save form via AJAX
+    function saveForm() {
+        const form = document.getElementById('miembro-form');
+        if (!form) return;
+        
+        const formData = new FormData(form);
+        
+        // Add CSRF token
+        const csrfToken = getCSRFToken();
+        if (csrfToken) {
+            formData.append('csrfmiddlewaretoken', csrfToken);
+        }
+        
+        // Disable save button
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+        
+        fetch("{% url 'contrapartes:miembro_crear_ajax' object.pk %}", {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update members list
+                document.getElementById('miembros-list').innerHTML = data.miembros_html;
+                
+                // Update member count in header
+                const memberCountElements = document.querySelectorAll('.miembros-count');
+                memberCountElements.forEach(el => {
+                    el.textContent = data.miembros_count;
+                });
+                
+                // Update header text
+                const headerText = document.querySelector('h2 .fas.fa-users').parentElement;
+                if (headerText) {
+                    headerText.innerHTML = `<i class="fas fa-users mr-3 text-purple-600"></i>Miembros (${data.miembros_count})`;
+                }
+                
+                // Show success message
+                showNotification('Miembro creado exitosamente', 'success');
+                
+                // Hide modal
+                hideModal();
+                
+                // Reattach event listeners for new buttons
+                attachEventListeners();
+            } else {
+                // Show form with errors
+                modalFormContainer.innerHTML = data.form_html;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al guardar el miembro', 'error');
+        })
+        .finally(() => {
+            // Re-enable save button
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Guardar Miembro';
+        });
+    }
+    
+    // Show notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full`;
+        
+        if (type === 'success') {
+            notification.classList.add('bg-green-500');
+        } else if (type === 'error') {
+            notification.classList.add('bg-red-500');
+        } else {
+            notification.classList.add('bg-blue-500');
+        }
+        
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'} mr-2"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Show notification
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Hide notification after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Attach event listeners
+    function attachEventListeners() {
+        // Add member buttons
+        const addMemberBtns = [
+            document.getElementById('add-member-btn'),
+            document.getElementById('add-member-header-btn'),
+            document.getElementById('add-member-sidebar-btn'),
+            document.getElementById('add-first-member-btn')
+        ];
+        
+        addMemberBtns.forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    showModal();
+                    loadForm();
+                });
+            }
+        });
+    }
+    
+    // Initial event listeners
+    attachEventListeners();
+    
+    // Modal close events
+    cancelBtn.addEventListener('click', hideModal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            hideModal();
+        }
+    });
+    
+    // Save button event
+    saveBtn.addEventListener('click', saveForm);
+    
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            hideModal();
+        }
+    });
+});
+</script>
+{% endblock %}

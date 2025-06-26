@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ITICO - Portal de Contrapartes{% endblock %}</title>
+    
+    {% load static %}
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --color-primario: #154F86;
+            --color-blanco: #FFFFFF;
+        }
+        
+        .bg-primario {
+            background-color: var(--color-primario);
+        }
+        
+        .text-primario {
+            color: var(--color-primario);
+        }
+        
+        .border-primario {
+            border-color: var(--color-primario);
+        }
+        
+        .btn-primario {
+            background-color: var(--color-primario);
+            color: var(--color-blanco);
+            border: 2px solid var(--color-primario);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primario:hover {
+            background-color: transparent;
+            color: var(--color-primario);
+        }
+        
+        .logo-img {
+            filter: brightness(0) invert(1);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        {% block content %}{% endblock %}
+    </div>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

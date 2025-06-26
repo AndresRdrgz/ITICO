@@ -1,0 +1,73 @@
+<form id="miembro-form" class="space-y-6">
+    {% csrf_token %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Tipo de Persona -->
+        <div>
+            <label for="{{ form.tipo_persona.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de Persona <span class="text-red-500">*</span>
+            </label>
+            {{ form.tipo_persona }}
+            {% if form.tipo_persona.errors %}
+                <div class="text-red-500 text-sm mt-1">{{ form.tipo_persona.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Categoría -->
+        <div>
+            <label for="{{ form.categoria.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                Categoría <span class="text-red-500">*</span>
+            </label>
+            {{ form.categoria }}
+            {% if form.categoria.errors %}
+                <div class="text-red-500 text-sm mt-1">{{ form.categoria.errors.0 }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Nombre -->
+    <div>
+        <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+            Nombre Completo <span class="text-red-500">*</span>
+        </label>
+        {{ form.nombre }}
+        {% if form.nombre.errors %}
+            <div class="text-red-500 text-sm mt-1">{{ form.nombre.errors.0 }}</div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Número de Identificación -->
+        <div>
+            <label for="{{ form.numero_identificacion.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                Número de Identificación <span class="text-red-500">*</span>
+            </label>
+            {{ form.numero_identificacion }}
+            {% if form.numero_identificacion.errors %}
+                <div class="text-red-500 text-sm mt-1">{{ form.numero_identificacion.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Nacionalidad -->
+        <div>
+            <label for="{{ form.nacionalidad.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                Nacionalidad <span class="text-red-500">*</span>
+            </label>
+            {{ form.nacionalidad }}
+            {% if form.nacionalidad.errors %}
+                <div class="text-red-500 text-sm mt-1">{{ form.nacionalidad.errors.0 }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Fecha de Nacimiento -->
+    <div>
+        <label for="{{ form.fecha_nacimiento.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+            Fecha de Nacimiento <span class="text-red-500">*</span>
+        </label>
+        {{ form.fecha_nacimiento }}
+        {% if form.fecha_nacimiento.errors %}
+            <div class="text-red-500 text-sm mt-1">{{ form.fecha_nacimiento.errors.0 }}</div>
+        {% endif %}
+    </div>
+</form>

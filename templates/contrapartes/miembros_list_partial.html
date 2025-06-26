@@ -1,0 +1,40 @@
+{% if object.miembros.exists %}
+    <div class="divide-y divide-gray-200">
+        {% for miembro in object.miembros.all %}
+            <div class="p-6 hover:bg-gray-50 transition-colors duration-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center text-white font-semibold mr-4">
+                            {{ miembro.nombre|first|upper }}
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ miembro.nombre }}</h3>
+                            <p class="text-sm text-gray-600">{{ miembro.get_categoria_display }}</p>
+                            <p class="text-xs text-gray-500">{{ miembro.numero_identificacion }} • {{ miembro.nacionalidad }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <a href="{% url 'contrapartes:miembro_detalle' miembro.pk %}" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" title="Ver detalles">
+                            <i class="fas fa-eye text-sm"></i>
+                        </a>
+                        <a href="{% url 'contrapartes:miembro_editar' miembro.pk %}" class="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors duration-200" title="Editar">
+                            <i class="fas fa-edit text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-12">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+            <i class="fas fa-users text-2xl text-blue-400"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No hay miembros registrados</h3>
+        <p class="text-gray-600 mb-4">Agrega el primer miembro de esta contraparte</p>
+        <button id="add-first-member-btn" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200">
+            <i class="fas fa-plus mr-2"></i>
+            Agregar Primer Miembro
+        </button>
+    </div>
+{% endif %}
