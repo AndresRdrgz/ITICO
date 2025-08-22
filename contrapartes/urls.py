@@ -21,6 +21,10 @@ urlpatterns = [
     path('miembros/<int:pk>/editar/', views.MiembroUpdateView.as_view(), name='miembro_editar'),
     path('miembros/<int:pk>/eliminar/', views.MiembroDeleteView.as_view(), name='miembro_eliminar'),
     
+    # Gestión de documentos
+    path('<int:contraparte_pk>/documentos/ajax/crear/', views.DocumentoCreateAjaxView.as_view(), name='documento_crear_ajax'),
+    path('documentos/<int:pk>/eliminar/', views.DocumentoDeleteView.as_view(), name='documento_eliminar'),
+    
     # Búsqueda y filtros
     path('buscar/', views.ContraparteBuscarView.as_view(), name='buscar'),
     

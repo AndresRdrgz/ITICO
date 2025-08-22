@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from .models import Contraparte, Miembro
+from .models import Contraparte, Miembro, Documento, Documento
 
 
 class ContraparteListView(LoginRequiredMixin, ListView):
@@ -234,6 +234,135 @@ class MiembroCreateAjaxView(LoginRequiredMixin, View):
                 'form_html': form_html,
                 'errors': form.errors
             })
+
+
+class DocumentoCreateAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para subir documentos desde modal"""
+    
+    def get(self, request, contraparte_pk):
+        """Devuelve el formulario en HTML para el modal"""
+        contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
+        
+        from django import forms
+        
+        class DocumentoForm(forms.ModelForm):
+            class Meta:
+                model = Documento
+                fields = ['nombre', 'descripcion', 'tipo', 'archivo']
+                widgets = {
+                    'nombre': forms.TextInput(attrs={
+                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                        'placeholder': 'Nombre del documento'
+                    }),
+                    'descripcion': forms.Textarea(attrs={
+                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                        'placeholder': 'Descripción del documento (opcional)',
+                        'rows': 3
+                    }),
+                    'tipo': forms.Select(attrs={
+                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200'
+                    }),
+                    'archivo': forms.FileInput(attrs={
+                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                        'accept': '.pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png'
+                    }),
+                }
+        
+        form = DocumentoForm()
+        form_html = render_to_string('contrapartes/documento_form_modal.html', {
+            'form': form,
+            'contraparte': contraparte,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'form_html': form_html
+        })
+    
+    def post(self, request, contraparte_pk):
+        """Procesa el formulario enviado por AJAX"""
+        contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
+        
+        from django import forms
+        
+        class DocumentoForm(forms.ModelForm):
+            class Meta:
+                model = Documento
+                fields = ['nombre', 'descripcion', 'tipo', 'archivo']
+                widgets = {
+                    'nombre': forms.TextInput(attrs={
+                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                        'placeholder': 'Nombre del documento'
+                    }),
+                    'descripcion': forms.Textarea(attrs={
+                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                        'placeholder': 'Descripción del documento (opcional)',
+                        'rows': 3
+                    }),
+                    'tipo': forms.Select(attrs={
+                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200'
+                    }),
+                    'archivo': forms.FileInput(attrs={
+                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                        'accept': '.pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png'
+                    }),
+                }
+        
+        form = DocumentoForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            documento = form.save(commit=False)
+            documento.contraparte = contraparte
+            documento.subido_por = request.user
+            documento.save()
+            
+            # Render updated documents list
+            documentos_html = render_to_string('contrapartes/documentos_list_partial.html', {
+                'object': contraparte,
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Documento subido exitosamente',
+                'documentos_html': documentos_html,
+                'documentos_count': contraparte.documentos.filter(activo=True).count()
+            })
+        else:
+            # Return form with errors
+            form_html = render_to_string('contrapartes/documento_form_modal.html', {
+                'form': form,
+                'contraparte': contraparte,
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'form_html': form_html,
+                'errors': form.errors
+            })
+
+
+class DocumentoDeleteView(LoginRequiredMixin, View):
+    """Vista AJAX para eliminar documentos"""
+    
+    def post(self, request, pk):
+        documento = get_object_or_404(Documento, pk=pk)
+        contraparte = documento.contraparte
+        
+        # Soft delete - mark as inactive
+        documento.activo = False
+        documento.save()
+        
+        # Render updated documents list
+        documentos_html = render_to_string('contrapartes/documentos_list_partial.html', {
+            'object': contraparte,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Documento eliminado exitosamente',
+            'documentos_html': documentos_html,
+            'documentos_count': contraparte.documentos.filter(activo=True).count()
+        })
 
 
 class ContraparteBuscarView(LoginRequiredMixin, TemplateView):

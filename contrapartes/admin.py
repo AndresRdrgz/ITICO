@@ -3,7 +3,7 @@ Configuración del Django Admin para Contrapartes
 """
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Contraparte, Miembro
+from .models import Contraparte, Miembro, Documento, Documento
 
 
 @admin.register(Contraparte)
@@ -119,3 +119,47 @@ class MiembroAdmin(admin.ModelAdmin):
         """Muestra la edad calculada"""
         return f"{obj.edad} años"
     edad_calculada.short_description = 'Edad'
+
+
+@admin.register(Documento)
+class DocumentoAdmin(admin.ModelAdmin):
+    list_display = [
+        'nombre',
+        'contraparte', 
+        'tipo',
+        'archivo',
+        'tamaño_legible',
+        'subido_por',
+        'fecha_subida',
+        'activo'
+    ]
+    list_filter = [
+        'tipo',
+        'activo',
+        'fecha_subida',
+        'subido_por'
+    ]
+    search_fields = ['nombre', 'descripcion', 'contraparte__nombre']
+    ordering = ['-fecha_subida']
+    readonly_fields = ['fecha_subida', 'fecha_actualizacion', 'tamaño_legible']
+    
+    fieldsets = (
+        ('Información del Documento', {
+            'fields': ('contraparte', 'nombre', 'tipo', 'descripcion')
+        }),
+        ('Archivo', {
+            'fields': ('archivo', 'tamaño_legible')
+        }),
+        ('Estado', {
+            'fields': ('activo',)
+        }),
+        ('Auditoría', {
+            'fields': ('subido_por', 'fecha_subida', 'fecha_actualizacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # If creating new document
+            obj.subido_por = request.user
+        super().save_model(request, obj, form, change)

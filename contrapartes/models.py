@@ -7,6 +7,16 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import datetime, timedelta
+import os
+from django.core.validators import FileExtensionValidator
+
+
+def documento_upload_path(instance, filename):
+    """Define the upload path for documents"""
+    # Clean filename
+    name, ext = os.path.splitext(filename)
+    # Create path: media/contrapartes/{contraparte_id}/documentos/{filename}
+    return f'contrapartes/{instance.contraparte.id}/documentos/{name}{ext}'
 
 
 class Contraparte(models.Model):
@@ -157,3 +167,110 @@ class Miembro(models.Model):
         return today.year - self.fecha_nacimiento.year - (
             (today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day)
         )
+
+
+class Documento(models.Model):
+    """
+    Modelo para documentos asociados a contrapartes
+    """
+    TIPOS_DOCUMENTO = [
+        ('dd', 'Debida Diligencia'),
+        ('contrato', 'Contrato'),
+        ('financiero', 'Documento Financiero'),
+        ('legal', 'Documento Legal'),
+        ('identificacion', 'Identificación'),
+        ('certificado', 'Certificado'),
+        ('otro', 'Otro'),
+    ]
+    
+    contraparte = models.ForeignKey(
+        Contraparte,
+        on_delete=models.CASCADE,
+        related_name='documentos',
+        verbose_name="Contraparte"
+    )
+    nombre = models.CharField(
+        max_length=255,
+        verbose_name="Nombre del documento"
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción"
+    )
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPOS_DOCUMENTO,
+        default='otro',
+        verbose_name="Tipo de documento"
+    )
+    archivo = models.FileField(
+        upload_to=documento_upload_path,
+        validators=[FileExtensionValidator(
+            allowed_extensions=['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'jpg', 'jpeg', 'png']
+        )],
+        verbose_name="Archivo"
+    )
+    
+    # Campos de auditoría
+    subido_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='documentos_subidos',
+        verbose_name="Subido por"
+    )
+    fecha_subida = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de subida"
+    )
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Última actualización"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        verbose_name = "Documento"
+        verbose_name_plural = "Documentos"
+        ordering = ['-fecha_subida']
+    
+    def __str__(self):
+        return f"{self.nombre} - {self.contraparte.nombre}"
+    
+    @property
+    def extension(self):
+        """Returns the file extension"""
+        return os.path.splitext(self.archivo.name)[1].lower()
+    
+    @property
+    def tamaño_legible(self):
+        """Returns file size in human readable format"""
+        if not self.archivo:
+            return "0 B"
+        
+        size = self.archivo.size
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024.0:
+                return f"{size:.1f} {unit}"
+            size /= 1024.0
+        return f"{size:.1f} TB"
+    
+    @property
+    def icono_tipo(self):
+        """Returns appropriate icon for file type"""
+        ext = self.extension
+        if ext == '.pdf':
+            return 'fas fa-file-pdf text-red-500'
+        elif ext in ['.doc', '.docx']:
+            return 'fas fa-file-word text-blue-500'
+        elif ext in ['.xls', '.xlsx']:
+            return 'fas fa-file-excel text-green-500'
+        elif ext in ['.jpg', '.jpeg', '.png']:
+            return 'fas fa-file-image text-purple-500'
+        elif ext == '.txt':
+            return 'fas fa-file-alt text-gray-500'
+        else:
+            return 'fas fa-file text-gray-500'
