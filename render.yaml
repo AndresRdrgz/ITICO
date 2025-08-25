@@ -1,10 +1,10 @@
 databases:
-  - name: itico
+  - name: iticodv
     plan: free
-    databaseName: backup_ykk0
-    user: backup_ykk0_user
-    password: oJc6znaX6FVm7dvc7qC4XAKNtEvAPrBt
-    host: dpg-cuh945btq21c73f8tkg0-a
+    databaseName: iticodv
+    user: iticodv_user
+    password: xw22RiT1kTdB1f3N9og0PLGAufVuCeeu
+    host: dpg-d2m8je95pdvs73bgqtjg-a
     port: 5432
 
 services:
