@@ -1,136 +1,25 @@
-services:
-  # Web Service - Django Application
-  - type: web
-    name: itico-web
-    env: python
-    region: oregon
-    plan: starter
-    buildCommand: |
-      pip install -r requirements.txt
-      python manage.py collectstatic --noinput
-      python manage.py migrate
-    startCommand: gunicorn itico.wsgi:application --bind 0.0.0.0:$PORT
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: DJANGO_SETTINGS_MODULE
-        value: itico.settings
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DEBUG
-        value: false
-      - key: ALLOWED_HOSTS
-        value: .onrender.com
-      - key: DATABASE_URL
-        fromDatabase:
-          name: itico-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: itico-redis
-          property: connectionString
-      - key: TIME_ZONE
-        value: America/Bogota
-      - key: LANGUAGE_CODE
-        value: es-co
-      # Database configuration
-      - key: DB_ENGINE
-        value: django.db.backends.postgresql
-      # Email Configuration (update with your values)
-      - key: EMAIL_HOST
-        value: smtp.gmail.com
-      - key: EMAIL_PORT
-        value: 587
-      - key: EMAIL_USE_TLS
-        value: true
-      - key: EMAIL_HOST_USER
-        value: ""  # Add your email
-      - key: EMAIL_HOST_PASSWORD
-        value: ""  # Add your email password or app password
-      # External Services (update with actual URLs when available)
-      - key: MAKITO_API_URL
-        value: http://localhost:8080/api
-      - key: MAKITO_API_KEY
-        value: ""  # Add your Makito API key
-      - key: AI_SERVICE_URL
-        value: http://localhost:8081/api
-      - key: AI_SERVICE_KEY
-        value: ""  # Add your AI service key
-
-  # Background Worker - Celery
-  - type: worker
-    name: itico-worker
-    env: python
-    region: oregon
-    plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: celery -A itico worker --loglevel=info --concurrency=2
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: DJANGO_SETTINGS_MODULE
-        value: itico.settings
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DEBUG
-        value: false
-      - key: DATABASE_URL
-        fromDatabase:
-          name: itico-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: itico-redis
-          property: connectionString
-      - key: TIME_ZONE
-        value: America/Bogota
-      - key: DB_ENGINE
-        value: django.db.backends.postgresql
-
-  # Background Worker - Celery Beat (Scheduler)
-  - type: worker
-    name: itico-beat
-    env: python
-    region: oregon
-    plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: celery -A itico beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: DJANGO_SETTINGS_MODULE
-        value: itico.settings
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DEBUG
-        value: false
-      - key: DATABASE_URL
-        fromDatabase:
-          name: itico-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: itico-redis
-          property: connectionString
-      - key: TIME_ZONE
-        value: America/Bogota
-      - key: DB_ENGINE
-        value: django.db.backends.postgresql
-
-  # Redis Service for Celery
-  - type: redis
-    name: itico-redis
-    region: oregon
-    plan: starter
-    maxmemoryPolicy: allkeys-lru
-
 databases:
-  # PostgreSQL Database
-  - name: itico-db
-    region: oregon
-    plan: starter
-    databaseName: itico
-    user: itico_user
+  - name: itico
+    plan: free
+    databaseName: backup_ykk0
+    user: backup_ykk0_user
+    password: oJc6znaX6FVm7dvc7qC4XAKNtEvAPrBt
+    host: dpg-cuh945btq21c73f8tkg0-a
+    port: 5432
+
+services:
+  - type: web
+    plan: free
+    name: itico
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "python -m gunicorn financiera.asgi:application -k uvicorn.workers.UvicornWorker"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: itico
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
