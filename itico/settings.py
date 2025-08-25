@@ -120,6 +120,12 @@ DATABASES = {
     )
 }
 
+# Debug database configuration in production
+if not DEBUG:
+    import logging
+    db_url = config('DATABASE_URL', default='Not set')
+    logging.getLogger('itico').info(f'Database URL configured: {db_url[:50]}...' if len(db_url) > 50 else db_url)
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -248,7 +254,7 @@ LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
 
 # Debug Toolbar (solo para desarrollo)
-if DEBUG:
+if DEBUG and not config('DISABLE_DEBUG_TOOLBAR', default=False, cast=bool):
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
     INTERNAL_IPS = ['127.0.0.1', 'localhost']
