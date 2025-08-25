@@ -170,7 +170,60 @@ Notificacion
 
 ---
 
-## 📩 Flujo del Proceso
+## � Instalación y Despliegue
+
+### Desarrollo Local
+
+1. **Clona el repositorio:**
+   ```bash
+   git clone https://github.com/AndresRdrgz/ITICO.git
+   cd ITICO
+   ```
+
+2. **Configura el entorno de desarrollo:**
+   ```bash
+   chmod +x setup_dev.sh
+   ./setup_dev.sh
+   ```
+
+3. **Configura las variables de entorno:**
+   ```bash
+   cp .env.example .env
+   # Edita el archivo .env con tus configuraciones
+   ```
+
+4. **Crea un superusuario:**
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+5. **Ejecuta el servidor:**
+   ```bash
+   python manage.py runserver
+   ```
+
+### Despliegue en Producción (Render)
+
+Este proyecto está configurado para desplegarse fácilmente en [Render](https://render.com) usando el archivo `render.yaml`.
+
+1. **Conecta tu repositorio a Render**
+2. **Crea un nuevo Blueprint** y selecciona este repositorio
+3. **Configura las variables de entorno necesarias** (ver `DEPLOY.md` para detalles)
+4. **Despliega automáticamente**
+
+Para instrucciones detalladas de despliegue, consulta [`DEPLOY.md`](DEPLOY.md).
+
+### Servicios Incluidos
+
+- **Web App**: Aplicación Django principal
+- **Worker**: Procesador de tareas Celery
+- **Beat**: Programador de tareas periódicas
+- **Redis**: Cola de mensajes
+- **PostgreSQL**: Base de datos
+
+---
+
+## �📩 Flujo del Proceso
 
 1. Gabriela crea la contraparte y sus miembros.
 2. Solicita la debida diligencia.
