@@ -123,32 +123,13 @@ if DEBUG:
     }
     print("[ITICO] Development mode: Using SQLite3 database")
 else:
-    # Production: Use PostgreSQL from Render
-    DATABASE_URL = config('DATABASE_URL', default='')
-    
-    if DATABASE_URL:
-        # Use DATABASE_URL if available (Render provides this)
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-            )
-        }
-        print(f"[ITICO] Production mode: Using PostgreSQL from DATABASE_URL")
-    else:
-        # Fallback to individual environment variables
-        DATABASES = {
-            'default': {
-                'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
-                'NAME': config('DB_NAME', default='iticodv'),
-                'USER': config('DB_USER', default='iticodv_user'),
-                'PASSWORD': config('DB_PASSWORD', default=''),
-                'HOST': config('DB_HOST', default='dpg-d2m8je95pdvs73bgqtjg-a'),
-                'PORT': config('DB_PORT', default='5432'),
-            }
-        }
-        print(f"[ITICO] Production mode: Using PostgreSQL from individual env vars")
+    DATABASES = {
+    'default': dj_database_url.config(
+        # Replace this value with your local database's connection string.
+        default='postgresql://postgres:postgres@localhost:5432/mysite',
+        conn_max_age=600
+    )
+}
 
 # Debug database configuration
 db_config = DATABASES['default']
