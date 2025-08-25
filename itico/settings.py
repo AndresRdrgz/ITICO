@@ -112,19 +112,57 @@ WSGI_APPLICATION = 'itico.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Use different databases for development and production
+if DEBUG:
+    # Development: Use SQLite3
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+    print("[ITICO] Development mode: Using SQLite3 database")
+else:
+    # Production: Use PostgreSQL from Render
+    DATABASE_URL = config('DATABASE_URL', default='')
+    
+    if DATABASE_URL:
+        # Use DATABASE_URL if available (Render provides this)
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
+        }
+        print(f"[ITICO] Production mode: Using PostgreSQL from DATABASE_URL")
+    else:
+        # Fallback to individual environment variables
+        DATABASES = {
+            'default': {
+                'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
+                'NAME': config('DB_NAME', default='iticodv'),
+                'USER': config('DB_USER', default='iticodv_user'),
+                'PASSWORD': config('DB_PASSWORD', default=''),
+                'HOST': config('DB_HOST', default='dpg-d2m8je95pdvs73bgqtjg-a'),
+                'PORT': config('DB_PORT', default='5432'),
+            }
+        }
+        print(f"[ITICO] Production mode: Using PostgreSQL from individual env vars")
 
-# Debug database configuration in production
-if not DEBUG:
-    import logging
-    db_url = config('DATABASE_URL', default='Not set')
-    logging.getLogger('itico').info(f'Database URL configured: {db_url[:50]}...' if len(db_url) > 50 else db_url)
+# Debug database configuration
+db_config = DATABASES['default']
+db_engine = db_config.get('ENGINE', 'Unknown')
+db_name = db_config.get('NAME', 'Unknown')
+
+print(f"[ITICO] Database Engine: {db_engine}")
+print(f"[ITICO] Database Name: {db_name}")
+
+# Validate production database
+if not DEBUG and 'postgresql' not in db_engine:
+    print(f"[ITICO] WARNING: Not using PostgreSQL in production! Engine: {db_engine}")
+elif not DEBUG:
+    print(f"[ITICO] PostgreSQL configured correctly for production")
 
 
 # Password validation

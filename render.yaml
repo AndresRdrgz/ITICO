@@ -8,12 +8,16 @@ services:
     buildCommand: |
       echo "Installing Python dependencies..."
       pip install -r requirements.txt
+      echo "Checking database configuration..."
+      python manage.py check_database
       echo "Collecting static files..."
       python manage.py collectstatic --noinput
       echo "Running database migrations..."
       python manage.py migrate --verbosity=2
       echo "Creating superuser if needed..."
       python manage.py create_superuser
+      echo "Final database verification..."
+      python manage.py check_database
       echo "Build completed successfully!"
     startCommand: gunicorn itico.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
@@ -33,6 +37,16 @@ services:
         fromDatabase:
           name: iticodv
           property: connectionString
+      - key: DB_ENGINE
+        value: django.db.backends.postgresql
+      - key: DB_NAME
+        value: iticodv
+      - key: DB_USER
+        value: iticodv_user
+      - key: DB_HOST
+        value: dpg-d2m8je95pdvs73bgqtjg-a
+      - key: DB_PORT
+        value: 5432
       - key: TIME_ZONE
         value: America/Bogota
       - key: LANGUAGE_CODE
