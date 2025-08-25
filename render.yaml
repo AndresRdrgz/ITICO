@@ -1,22 +1,88 @@
-databases:
-  - name: iticodv
-    plan: free
-    databaseName: iticodv
-    user: iticodv_user
-
 services:
+  # Web Service - Django Application
   - type: web
+    name: itico-web
+    env: python
+    region: oregon
     plan: free
-    name: itico
-    runtime: python
-    buildCommand: './build.sh'
-    startCommand: 'python -m gunicorn itico.asgi:application -k uvicorn.workers.UvicornWorker'
+    buildCommand: |
+      echo "Installing Python dependencies..."
+      pip install -r requirements.txt
+      echo "Checking database configuration..."
+      python manage.py check_database
+      echo "Collecting static files..."
+      python manage.py collectstatic --noinput
+      echo "Running database migrations..."
+      python manage.py migrate --verbosity=2
+      echo "Creating superuser if needed..."
+      python manage.py create_superuser
+      echo "Final database verification..."
+      python manage.py check_database
+      echo "Build completed successfully!"
+    startCommand: gunicorn itico.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: itico.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: DISABLE_DEBUG_TOOLBAR
+        value: true
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: iticodv
           property: connectionString
-      - key: SECRET_KEY
-        generateValue: true
-      - key: WEB_CONCURRENCY
-        value: 4
+      - key: DB_ENGINE
+        value: django.db.backends.postgresql
+      - key: DB_NAME
+        value: iticodv
+      - key: DB_USER
+        value: iticodv_user
+      - key: DB_HOST
+        value: dpg-d2m8je95pdvs73bgqtjg-a
+      - key: DB_PORT
+        value: 5432
+      - key: TIME_ZONE
+        value: America/Bogota
+      - key: LANGUAGE_CODE
+        value: es-co
+      # Email Configuration (update with your values)
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USE_TLS
+        value: true
+      - key: EMAIL_HOST_USER
+        value: ""  # Add your email
+      - key: EMAIL_HOST_PASSWORD
+        value: ""  # Add your email password or app password
+      # External Services (update with actual URLs when available)
+      - key: MAKITO_API_URL
+        value: http://localhost:8080/api
+      - key: MAKITO_API_KEY
+        value: ""  # Add your Makito API key
+      - key: AI_SERVICE_URL
+        value: http://localhost:8081/api
+      - key: AI_SERVICE_KEY
+        value: ""  # Add your AI service key
+      # Superuser Configuration
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@itico.com
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: admin123
+
+databases:
+  # PostgreSQL Database
+  - name: iticodv
+    region: oregon
+    plan: free
+    databaseName: iticodv
+    user: iticodv_user

@@ -23,10 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 # ALLOWED_HOSTS configuration for production
-ALLOWED_HOSTS = ["*"]
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.onrender.com').split(',')
 # Application definition
 
 INSTALLED_APPS = [
@@ -119,13 +122,32 @@ if DEBUG:
     }
     print("[ITICO] Development mode: Using SQLite3 database")
 else:
-    DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgresql://postgres:postgres@localhost:5432/mysite',
-        conn_max_age=600
-    )
-}
+    # Production: Use PostgreSQL from Render
+    DATABASE_URL = config('DATABASE_URL', default='')
+    
+    if DATABASE_URL:
+        # Use DATABASE_URL if available (Render provides this)
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
+        }
+        print(f"[ITICO] Production mode: Using PostgreSQL from DATABASE_URL")
+    else:
+        # Fallback to individual environment variables
+        DATABASES = {
+            'default': {
+                'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
+                'NAME': config('DB_NAME', default='iticodv'),
+                'USER': config('DB_USER', default='iticodv_user'),
+                'PASSWORD': config('DB_PASSWORD', default=''),
+                'HOST': config('DB_HOST', default='dpg-d2m8je95pdvs73bgqtjg-a'),
+                'PORT': config('DB_PORT', default='5432'),
+            }
+        }
+        print(f"[ITICO] Production mode: Using PostgreSQL from individual env vars")
 
 # Debug database configuration
 db_config = DATABASES['default']

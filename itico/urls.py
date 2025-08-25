@@ -11,6 +11,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 
 def redirect_to_dashboard(request):
     """Redirecciona la raíz al dashboard"""
