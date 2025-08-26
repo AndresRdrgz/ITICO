@@ -53,6 +53,89 @@ class AnalisisIAView(LoginRequiredMixin, TemplateView):
 
 class CalendarioDDView(LoginRequiredMixin, TemplateView):
     template_name = 'debida_diligencia/calendario.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Import here to avoid circular imports
+        from contrapartes.models import Contraparte, Documento
+        from datetime import datetime, timedelta
+        
+        # Get all contrapartes with upcoming DD dates
+        today = datetime.now().date()
+        next_90_days = today + timedelta(days=90)
+        
+        upcoming_dd = Contraparte.objects.filter(
+            fecha_proxima_dd__gte=today,
+            fecha_proxima_dd__lte=next_90_days
+        ).select_related('tipo', 'creado_por').order_by('fecha_proxima_dd')
+        
+        # Get documents with upcoming expiration dates
+        upcoming_docs = Documento.objects.filter(
+            fecha_expiracion__gte=today,
+            fecha_expiracion__lte=next_90_days,
+            activo=True
+        ).select_related('contraparte', 'tipo', 'subido_por').order_by('fecha_expiracion')
+        
+        # Prepare events data for the calendar
+        events = []
+        
+        # Add DD events
+        for contraparte in upcoming_dd:
+            days_until = (contraparte.fecha_proxima_dd - today).days
+            priority = 'critical' if days_until <= 7 else 'high' if days_until <= 30 else 'medium'
+            
+            events.append({
+                'id': f'dd_{contraparte.id}',
+                'title': f'DD {contraparte.nombre}',
+                'date': contraparte.fecha_proxima_dd.isoformat(),
+                'type': 'dd',
+                'priority': priority,
+                'contraparte': contraparte.nombre,
+                'contraparte_id': contraparte.id,
+                'description': f'Renovación de debida diligencia para {contraparte.nombre}',
+                'url': f'/contrapartes/{contraparte.id}/',
+                'days_until': days_until
+            })
+        
+        # Add document expiration events
+        for documento in upcoming_docs:
+            days_until = (documento.fecha_expiracion - today).days
+            priority = 'critical' if days_until <= 7 else 'high' if days_until <= 30 else 'medium'
+            
+            events.append({
+                'id': f'doc_{documento.id}',
+                'title': f'{documento.nombre}',
+                'date': documento.fecha_expiracion.isoformat(),
+                'type': 'document',
+                'priority': priority,
+                'contraparte': documento.contraparte.nombre,
+                'contraparte_id': documento.contraparte.id,
+                'description': f'Expiración de documento: {documento.nombre}',
+                'url': f'/contrapartes/{documento.contraparte.id}/',
+                'days_until': days_until,
+                'document_type': documento.tipo.nombre if documento.tipo else 'Sin tipo'
+            })
+        
+        # Statistics
+        stats = {
+            'total_events': len(events),
+            'critical_events': len([e for e in events if e['priority'] == 'critical']),
+            'dd_events': len([e for e in events if e['type'] == 'dd']),
+            'document_events': len([e for e in events if e['type'] == 'document']),
+            'this_month': len([e for e in events if datetime.fromisoformat(e['date']).month == today.month]),
+            'next_30_days': len([e for e in events if e['days_until'] <= 30]),
+            'overdue': 0  # You can implement overdue logic here
+        }
+        
+        context.update({
+            'events': events,
+            'stats': stats,
+            'upcoming_dd': upcoming_dd,
+            'upcoming_docs': upcoming_docs,
+        })
+        
+        return context
 
 
 class ReportesDDView(LoginRequiredMixin, TemplateView):

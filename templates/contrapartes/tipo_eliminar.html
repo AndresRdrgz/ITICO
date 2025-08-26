@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Tipo de Contraparte - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:lista' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                Contrapartes
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:tipo_lista' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                Tipos de Contraparte
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-red-500 to-pink-600 text-white mr-2">
+                <i class="fas fa-trash text-sm"></i>
+            </div>
+            <span class="font-semibold text-gray-800">Eliminar {{ object.nombre }}</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-red-600 via-pink-600 to-red-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
+        
+        <div class="relative z-10">
+            <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center">
+                <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm">
+                    <i class="fas fa-trash text-xl"></i>
+                </div>
+                Eliminar Tipo de Contraparte
+            </h1>
+            <p class="text-lg text-red-100 leading-relaxed">
+                ¿Estás seguro de que deseas eliminar el tipo "{{ object.nombre }}"?
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Section -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    {% if contrapartes_count > 0 %}
+    <!-- Error: Cannot delete -->
+    <div class="px-6 py-4 border-b border-red-200 bg-red-50">
+        <h2 class="text-xl font-bold text-red-800 flex items-center">
+            <i class="fas fa-exclamation-triangle mr-3 text-red-600"></i>
+            No se puede eliminar
+        </h2>
+    </div>
+    
+    <div class="p-6">
+        <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-red-900 mb-2">Tipo en uso</h3>
+                    <p class="text-red-800 text-sm mb-3">
+                        Este tipo de contraparte no se puede eliminar porque tiene 
+                        <strong>{{ contrapartes_count }} contraparte{{ contrapartes_count|pluralize }}</strong> asociada{{ contrapartes_count|pluralize }}.
+                    </p>
+                    <p class="text-red-800 text-sm">
+                        Para eliminar este tipo, primero debes:
+                    </p>
+                    <ul class="text-red-800 text-sm mt-2 ml-4 list-disc">
+                        <li>Cambiar el tipo de todas las contrapartes asociadas, o</li>
+                        <li>Eliminar las contrapartes que usan este tipo</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-between items-center">
+            <a href="{% url 'contrapartes:lista' %}?tipo={{ object.pk }}" class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors duration-200">
+                <i class="fas fa-external-link-alt mr-2"></i>
+                Ver Contrapartes Asociadas
+            </a>
+            
+            <div class="flex gap-4">
+                <a href="{% url 'contrapartes:tipo_lista' %}" class="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Volver a la Lista
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- Confirmation Form -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-exclamation-triangle mr-3 text-red-600"></i>
+            Confirmar Eliminación
+        </h2>
+    </div>
+    
+    <div class="p-6">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-amber-600"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-amber-900 mb-2">¿Estás seguro?</h3>
+                    <p class="text-amber-800 text-sm mb-3">
+                        Vas a eliminar permanentemente el tipo de contraparte:
+                    </p>
+                    <div class="bg-white border border-amber-200 rounded-lg p-4 mb-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="font-semibold text-gray-700">Código:</span>
+                                <span class="font-mono bg-gray-100 px-2 py-1 rounded ml-2">{{ object.codigo }}</span>
+                            </div>
+                            <div>
+                                <span class="font-semibold text-gray-700">Nombre:</span>
+                                <span class="ml-2">{{ object.nombre }}</span>
+                            </div>
+                            {% if object.descripcion %}
+                            <div class="md:col-span-2">
+                                <span class="font-semibold text-gray-700">Descripción:</span>
+                                <span class="ml-2">{{ object.descripcion }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-amber-800 text-sm font-semibold">
+                        Esta acción no se puede deshacer.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <form method="post" class="flex justify-end gap-4">
+            {% csrf_token %}
+            <a href="{% url 'contrapartes:tipo_lista' %}" class="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200">
+                <i class="fas fa-times mr-2"></i>
+                Cancelar
+            </a>
+            <button type="submit" class="px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl font-semibold hover:from-red-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                <i class="fas fa-trash mr-2"></i>
+                Sí, Eliminar Tipo
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Additional Info -->
+<div class="mt-8 bg-gray-50 border border-gray-200 rounded-2xl p-6">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <i class="fas fa-info-circle text-gray-600"></i>
+            </div>
+        </div>
+        <div class="ml-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Información Adicional</h3>
+            <ul class="text-gray-700 space-y-1 text-sm">
+                <li class="flex items-center">
+                    <i class="fas fa-check-circle text-gray-500 mr-2"></i>
+                    Solo se pueden eliminar tipos que no tengan contrapartes asociadas
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check-circle text-gray-500 mr-2"></i>
+                    Como alternativa, puedes desactivar el tipo para que no aparezca en nuevas contrapartes
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check-circle text-gray-500 mr-2"></i>
+                    La eliminación es permanente y no se puede deshacer
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

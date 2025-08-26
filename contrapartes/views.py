@@ -13,7 +13,107 @@ from django.http import JsonResponse
 from django.views import View
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from .models import Contraparte, Miembro, Documento, Documento
+from .models import TipoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
+from .forms import TipoContraparteForm, ContraparteForm, MiembroForm, DocumentoForm, ComentarioForm
+
+
+# ====== VISTAS PARA TIPO CONTRAPARTE ======
+class TipoContraparteListView(LoginRequiredMixin, ListView):
+    model = TipoContraparte
+    template_name = 'contrapartes/tipo_lista.html'
+    context_object_name = 'tipos'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = TipoContraparte.objects.all()
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(codigo__icontains=search) | 
+                Q(nombre__icontains=search) |
+                Q(descripcion__icontains=search)
+            )
+        return queryset
+
+
+class TipoContraparteCreateView(LoginRequiredMixin, CreateView):
+    model = TipoContraparte
+    form_class = TipoContraparteForm
+    template_name = 'contrapartes/tipo_crear.html'
+    success_url = reverse_lazy('contrapartes:tipo_lista')
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        return super().form_valid(form)
+
+
+class TipoContraparteUpdateView(LoginRequiredMixin, UpdateView):
+    model = TipoContraparte
+    form_class = TipoContraparteForm
+    template_name = 'contrapartes/tipo_editar.html'
+    success_url = reverse_lazy('contrapartes:tipo_lista')
+
+
+class TipoContraparteDeleteView(LoginRequiredMixin, DeleteView):
+    model = TipoContraparte
+    template_name = 'contrapartes/tipo_eliminar.html'
+    success_url = reverse_lazy('contrapartes:tipo_lista')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contrapartes_count'] = self.object.contrapartes.count()
+        return context
+
+
+# ====== VISTAS PARA TIPO DOCUMENTO ======
+class TipoDocumentoListView(LoginRequiredMixin, ListView):
+    model = TipoDocumento
+    template_name = 'contrapartes/tipo_documento_lista.html'
+    context_object_name = 'tipos'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = TipoDocumento.objects.all()
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(codigo__icontains=search) | 
+                Q(nombre__icontains=search) |
+                Q(descripcion__icontains=search)
+            )
+        return queryset
+
+
+class TipoDocumentoCreateView(LoginRequiredMixin, CreateView):
+    model = TipoDocumento
+    template_name = 'contrapartes/tipo_documento_crear.html'
+    fields = ['codigo', 'nombre', 'descripcion', 'requiere_expiracion', 'activo']
+    success_url = reverse_lazy('contrapartes:tipo_documento_lista')
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        return super().form_valid(form)
+
+
+class TipoDocumentoUpdateView(LoginRequiredMixin, UpdateView):
+    model = TipoDocumento
+    template_name = 'contrapartes/tipo_documento_editar.html'
+    fields = ['codigo', 'nombre', 'descripcion', 'requiere_expiracion', 'activo']
+    success_url = reverse_lazy('contrapartes:tipo_documento_lista')
+
+
+class TipoDocumentoDeleteView(LoginRequiredMixin, DeleteView):
+    model = TipoDocumento
+    template_name = 'contrapartes/tipo_documento_eliminar.html'
+    success_url = reverse_lazy('contrapartes:tipo_documento_lista')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['documentos_count'] = self.object.documentos.count()
+        return context
+
+
+# ====== VISTAS PARA CONTRAPARTES ======
 
 
 class ContraparteListView(LoginRequiredMixin, ListView):
@@ -44,6 +144,9 @@ class ContraparteListView(LoginRequiredMixin, ListView):
             'dd_proximas': dd_proximas,
         }
         
+        # Tipos de contraparte para filtros
+        context['tipos_contraparte'] = TipoContraparte.objects.filter(activo=True).order_by('nombre')
+        
         return context
 
 
@@ -54,8 +157,8 @@ class ContraparteDetailView(LoginRequiredMixin, DetailView):
 
 class ContraparteCreateView(LoginRequiredMixin, CreateView):
     model = Contraparte
+    form_class = ContraparteForm
     template_name = 'contrapartes/crear.html'
-    fields = ['nombre', 'nacionalidad', 'tipo', 'estado', 'descripcion']
     success_url = reverse_lazy('contrapartes:lista')
     
     def form_valid(self, form):
@@ -65,9 +168,16 @@ class ContraparteCreateView(LoginRequiredMixin, CreateView):
 
 class ContraparteUpdateView(LoginRequiredMixin, UpdateView):
     model = Contraparte
+    form_class = ContraparteForm
     template_name = 'contrapartes/editar.html'
-    fields = ['nombre', 'nacionalidad', 'tipo', 'estado', 'descripcion']
     success_url = reverse_lazy('contrapartes:lista')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add form to context so we can access form.tipo.field.queryset in template
+        if 'form' not in context:
+            context['form'] = self.get_form()
+        return context
 
 
 class ContraparteDeleteView(LoginRequiredMixin, DeleteView):
@@ -78,8 +188,8 @@ class ContraparteDeleteView(LoginRequiredMixin, DeleteView):
 
 class MiembroCreateView(LoginRequiredMixin, CreateView):
     model = Miembro
+    form_class = MiembroForm
     template_name = 'contrapartes/miembro_crear.html'
-    fields = ['tipo_persona', 'nombre', 'numero_identificacion', 'nacionalidad', 'fecha_nacimiento', 'categoria']
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -104,8 +214,8 @@ class MiembroDetailView(LoginRequiredMixin, DetailView):
 
 class MiembroUpdateView(LoginRequiredMixin, UpdateView):
     model = Miembro
+    form_class = MiembroForm
     template_name = 'contrapartes/miembro_editar.html'
-    fields = ['tipo_persona', 'nombre', 'numero_identificacion', 'nacionalidad', 'fecha_nacimiento', 'categoria']
     
     def get_success_url(self):
         return reverse_lazy('contrapartes:detalle', kwargs={'pk': self.object.contraparte.pk})
@@ -126,38 +236,6 @@ class MiembroCreateAjaxView(LoginRequiredMixin, View):
         """Devuelve el formulario en HTML para el modal"""
         contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
         
-        # Crear formulario vacío
-        from django import forms
-        
-        class MiembroForm(forms.ModelForm):
-            class Meta:
-                model = Miembro
-                fields = ['tipo_persona', 'nombre', 'numero_identificacion', 'nacionalidad', 'fecha_nacimiento', 'categoria']
-                widgets = {
-                    'fecha_nacimiento': forms.DateInput(attrs={
-                        'type': 'date',
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
-                    }),
-                    'tipo_persona': forms.Select(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
-                    }),
-                    'categoria': forms.Select(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
-                    }),
-                    'nombre': forms.TextInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
-                        'placeholder': 'Ingrese el nombre completo'
-                    }),
-                    'numero_identificacion': forms.TextInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
-                        'placeholder': 'Ej: 12345678'
-                    }),
-                    'nacionalidad': forms.TextInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
-                        'placeholder': 'Ej: Peruana, Colombiana'
-                    }),
-                }
-        
         form = MiembroForm()
         form_html = render_to_string('contrapartes/miembro_form_modal.html', {
             'form': form,
@@ -172,37 +250,6 @@ class MiembroCreateAjaxView(LoginRequiredMixin, View):
     def post(self, request, contraparte_pk):
         """Procesa el formulario enviado por AJAX"""
         contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
-        
-        from django import forms
-        
-        class MiembroForm(forms.ModelForm):
-            class Meta:
-                model = Miembro
-                fields = ['tipo_persona', 'nombre', 'numero_identificacion', 'nacionalidad', 'fecha_nacimiento', 'categoria']
-                widgets = {
-                    'fecha_nacimiento': forms.DateInput(attrs={
-                        'type': 'date',
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
-                    }),
-                    'tipo_persona': forms.Select(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
-                    }),
-                    'categoria': forms.Select(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
-                    }),
-                    'nombre': forms.TextInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
-                        'placeholder': 'Ingrese el nombre completo'
-                    }),
-                    'numero_identificacion': forms.TextInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
-                        'placeholder': 'Ej: 12345678'
-                    }),
-                    'nacionalidad': forms.TextInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
-                        'placeholder': 'Ej: Peruana, Colombiana'
-                    }),
-                }
         
         form = MiembroForm(request.POST)
         
@@ -243,31 +290,6 @@ class DocumentoCreateAjaxView(LoginRequiredMixin, View):
         """Devuelve el formulario en HTML para el modal"""
         contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
         
-        from django import forms
-        
-        class DocumentoForm(forms.ModelForm):
-            class Meta:
-                model = Documento
-                fields = ['nombre', 'descripcion', 'tipo', 'archivo']
-                widgets = {
-                    'nombre': forms.TextInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
-                        'placeholder': 'Nombre del documento'
-                    }),
-                    'descripcion': forms.Textarea(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
-                        'placeholder': 'Descripción del documento (opcional)',
-                        'rows': 3
-                    }),
-                    'tipo': forms.Select(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200'
-                    }),
-                    'archivo': forms.FileInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
-                        'accept': '.pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png'
-                    }),
-                }
-        
         form = DocumentoForm()
         form_html = render_to_string('contrapartes/documento_form_modal.html', {
             'form': form,
@@ -282,31 +304,6 @@ class DocumentoCreateAjaxView(LoginRequiredMixin, View):
     def post(self, request, contraparte_pk):
         """Procesa el formulario enviado por AJAX"""
         contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
-        
-        from django import forms
-        
-        class DocumentoForm(forms.ModelForm):
-            class Meta:
-                model = Documento
-                fields = ['nombre', 'descripcion', 'tipo', 'archivo']
-                widgets = {
-                    'nombre': forms.TextInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
-                        'placeholder': 'Nombre del documento'
-                    }),
-                    'descripcion': forms.Textarea(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
-                        'placeholder': 'Descripción del documento (opcional)',
-                        'rows': 3
-                    }),
-                    'tipo': forms.Select(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200'
-                    }),
-                    'archivo': forms.FileInput(attrs={
-                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
-                        'accept': '.pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png'
-                    }),
-                }
         
         form = DocumentoForm(request.POST, request.FILES)
         
@@ -371,3 +368,117 @@ class ContraparteBuscarView(LoginRequiredMixin, TemplateView):
 
 class ExportarContrapartesView(LoginRequiredMixin, TemplateView):
     template_name = 'contrapartes/exportar.html'
+
+
+class ComentarioCreateAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para crear comentarios"""
+    
+    def post(self, request, contraparte_pk):
+        contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
+        
+        form = ComentarioForm(request.POST)
+        
+        if form.is_valid():
+            comentario = form.save(commit=False)
+            comentario.contraparte = contraparte
+            comentario.usuario = request.user
+            comentario.save()
+            
+            # Render updated comments list
+            comentarios_html = render_to_string('contrapartes/comentarios_list_partial.html', {
+                'object': contraparte,
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Comentario agregado exitosamente',
+                'comentarios_html': comentarios_html,
+                'comentarios_count': contraparte.comentarios.filter(activo=True).count()
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+
+
+class ComentarioUpdateAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para editar comentarios"""
+    
+    def get(self, request, pk):
+        comentario = get_object_or_404(Comentario, pk=pk)
+        
+        # Check if user can edit this comment
+        if comentario.usuario != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'success': False,
+                'error': 'No tiene permisos para editar este comentario'
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'contenido': comentario.contenido
+        })
+    
+    def post(self, request, pk):
+        comentario = get_object_or_404(Comentario, pk=pk)
+        
+        # Check if user can edit this comment
+        if comentario.usuario != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'success': False,
+                'error': 'No tiene permisos para editar este comentario'
+            })
+        
+        form = ComentarioForm(request.POST, instance=comentario)
+        
+        if form.is_valid():
+            form.save()
+            
+            # Render updated comments list
+            comentarios_html = render_to_string('contrapartes/comentarios_list_partial.html', {
+                'object': comentario.contraparte,
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Comentario actualizado exitosamente',
+                'comentarios_html': comentarios_html
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+
+
+class ComentarioDeleteAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para eliminar comentarios"""
+    
+    def post(self, request, pk):
+        comentario = get_object_or_404(Comentario, pk=pk)
+        
+        # Check if user can delete this comment
+        if comentario.usuario != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'success': False,
+                'error': 'No tiene permisos para eliminar este comentario'
+            })
+        
+        contraparte = comentario.contraparte
+        
+        # Soft delete - mark as inactive
+        comentario.activo = False
+        comentario.save()
+        
+        # Render updated comments list
+        comentarios_html = render_to_string('contrapartes/comentarios_list_partial.html', {
+            'object': contraparte,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Comentario eliminado exitosamente',
+            'comentarios_html': comentarios_html,
+            'comentarios_count': contraparte.comentarios.filter(activo=True).count()
+        })

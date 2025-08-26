@@ -19,18 +19,56 @@ def documento_upload_path(instance, filename):
     return f'contrapartes/{instance.contraparte.id}/documentos/{name}{ext}'
 
 
+class TipoContraparte(models.Model):
+    """
+    Modelo para los tipos de contraparte
+    """
+    codigo = models.CharField(
+        max_length=20, 
+        unique=True,
+        verbose_name="Código",
+        help_text="Código único para identificar el tipo (ej: empresa, ong, etc.)"
+    )
+    nombre = models.CharField(
+        max_length=100, 
+        verbose_name="Nombre",
+        help_text="Nombre descriptivo del tipo de contraparte"
+    )
+    descripcion = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name="Descripción",
+        help_text="Descripción detallada del tipo de contraparte"
+    )
+    activo = models.BooleanField(
+        default=True, 
+        verbose_name="Activo",
+        help_text="Indica si este tipo está disponible para nuevas contrapartes"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User, 
+        on_delete=models.PROTECT,
+        related_name='tipos_contraparte_creados',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
+    
+    class Meta:
+        verbose_name = "Tipo de Contraparte"
+        verbose_name_plural = "Tipos de Contraparte"
+        ordering = ['nombre']
+    
+    def __str__(self):
+        return self.nombre
+
+
 class Contraparte(models.Model):
     """
     Modelo principal para las contrapartes
     """
-    TIPOS_CONTRAPARTE = [
-        ('empresa', 'Empresa'),
-        ('persona_natural', 'Persona Natural'),
-        ('entidad_publica', 'Entidad Pública'),
-        ('ong', 'ONG'),
-        ('otro', 'Otro'),
-    ]
-    
     ESTADOS_CONTRAPARTE = [
         ('activa', 'Activa'),
         ('inactiva', 'Inactiva'),
@@ -41,11 +79,13 @@ class Contraparte(models.Model):
     
     nombre = models.CharField(max_length=255, verbose_name="Nombre")
     nacionalidad = models.CharField(max_length=100, verbose_name="Nacionalidad")
-    tipo = models.CharField(
-        max_length=20, 
-        choices=TIPOS_CONTRAPARTE, 
-        default='empresa',
-        verbose_name="Tipo"
+    tipo = models.ForeignKey(
+        TipoContraparte,
+        on_delete=models.PROTECT,
+        related_name='contrapartes',
+        verbose_name="Tipo",
+        limit_choices_to={'activo': True},
+        help_text="Tipo de contraparte"
     )
     estado = models.CharField(
         max_length=20, 
@@ -80,7 +120,7 @@ class Contraparte(models.Model):
         ordering = ['-fecha_creacion']
     
     def __str__(self):
-        return f"{self.nombre} ({self.get_tipo_display()})"
+        return f"{self.nombre} ({self.tipo.nombre})"
     
     def save(self, *args, **kwargs):
         # Si no hay fecha de próxima DD, establecer en 12 meses
@@ -101,6 +141,11 @@ class Contraparte(models.Model):
         """Retorna True si la DD vence en menos de 30 días"""
         dias = self.dias_hasta_proxima_dd
         return dias is not None and dias <= 30
+    
+    @property
+    def comentarios_activos_count(self):
+        """Retorna el número de comentarios activos"""
+        return self.comentarios.filter(activo=True).count()
 
 
 class Miembro(models.Model):
@@ -169,20 +214,116 @@ class Miembro(models.Model):
         )
 
 
+class TipoDocumento(models.Model):
+    """
+    Modelo para los tipos de documento
+    """
+    codigo = models.CharField(
+        max_length=20, 
+        unique=True,
+        verbose_name="Código",
+        help_text="Código único para identificar el tipo (ej: dd, contrato, etc.)"
+    )
+    nombre = models.CharField(
+        max_length=100, 
+        verbose_name="Nombre",
+        help_text="Nombre descriptivo del tipo de documento"
+    )
+    descripcion = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name="Descripción",
+        help_text="Descripción detallada del tipo de documento"
+    )
+    requiere_expiracion = models.BooleanField(
+        default=False,
+        verbose_name="Requiere fecha de expiración",
+        help_text="Indica si este tipo de documento requiere fecha de expiración"
+    )
+    activo = models.BooleanField(
+        default=True, 
+        verbose_name="Activo",
+        help_text="Indica si este tipo está disponible para nuevos documentos"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User, 
+        on_delete=models.PROTECT,
+        related_name='tipos_documento_creados',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
+    
+    class Meta:
+        verbose_name = "Tipo de Documento"
+        verbose_name_plural = "Tipos de Documento"
+        ordering = ['nombre']
+    
+    def __str__(self):
+        return self.nombre
+
+
+class Comentario(models.Model):
+    """
+    Modelo para comentarios en contrapartes
+    """
+    contraparte = models.ForeignKey(
+        Contraparte,
+        on_delete=models.CASCADE,
+        related_name='comentarios',
+        verbose_name="Contraparte"
+    )
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='comentarios_contrapartes',
+        verbose_name="Usuario"
+    )
+    contenido = models.TextField(
+        verbose_name="Comentario",
+        help_text="Contenido del comentario"
+    )
+    
+    # Campos de auditoría
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de creación"
+    )
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Fecha de actualización"
+    )
+    editado = models.BooleanField(
+        default=False,
+        verbose_name="Editado",
+        help_text="Indica si el comentario ha sido editado"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        verbose_name = "Comentario"
+        verbose_name_plural = "Comentarios"
+        ordering = ['-fecha_creacion']
+    
+    def __str__(self):
+        return f"Comentario de {self.usuario.get_full_name() or self.usuario.username} en {self.contraparte.nombre}"
+    
+    def save(self, *args, **kwargs):
+        # Mark as edited if content is being modified (not on creation)
+        if self.pk and self._state.adding is False:
+            self.editado = True
+        super().save(*args, **kwargs)
+
+
 class Documento(models.Model):
     """
     Modelo para documentos asociados a contrapartes
     """
-    TIPOS_DOCUMENTO = [
-        ('dd', 'Debida Diligencia'),
-        ('contrato', 'Contrato'),
-        ('financiero', 'Documento Financiero'),
-        ('legal', 'Documento Legal'),
-        ('identificacion', 'Identificación'),
-        ('certificado', 'Certificado'),
-        ('otro', 'Otro'),
-    ]
-    
     contraparte = models.ForeignKey(
         Contraparte,
         on_delete=models.CASCADE,
@@ -198,11 +339,13 @@ class Documento(models.Model):
         null=True,
         verbose_name="Descripción"
     )
-    tipo = models.CharField(
-        max_length=20,
-        choices=TIPOS_DOCUMENTO,
-        default='otro',
-        verbose_name="Tipo de documento"
+    tipo = models.ForeignKey(
+        TipoDocumento,
+        on_delete=models.PROTECT,
+        related_name='documentos',
+        verbose_name="Tipo de documento",
+        limit_choices_to={'activo': True},
+        help_text="Tipo de documento"
     )
     archivo = models.FileField(
         upload_to=documento_upload_path,
@@ -210,6 +353,20 @@ class Documento(models.Model):
             allowed_extensions=['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'jpg', 'jpeg', 'png']
         )],
         verbose_name="Archivo"
+    )
+    
+    # Fechas del documento
+    fecha_emision = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de emisión",
+        help_text="Fecha en que fue emitido el documento"
+    )
+    fecha_expiracion = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de expiración",
+        help_text="Fecha en que expira la validez del documento"
     )
     
     # Campos de auditoría
@@ -231,6 +388,35 @@ class Documento(models.Model):
         default=True,
         verbose_name="Activo"
     )
+    
+    class Meta:
+        verbose_name = "Documento"
+        verbose_name_plural = "Documentos"
+        ordering = ['-fecha_subida']
+    
+    def __str__(self):
+        return f"{self.nombre} - {self.contraparte.nombre}"
+    
+    @property
+    def esta_vencido(self):
+        """Retorna True si el documento está vencido"""
+        if self.fecha_expiracion:
+            return self.fecha_expiracion < timezone.now().date()
+        return False
+    
+    @property
+    def dias_hasta_expiracion(self):
+        """Retorna los días hasta la expiración"""
+        if self.fecha_expiracion:
+            delta = self.fecha_expiracion - timezone.now().date()
+            return delta.days
+        return None
+    
+    @property
+    def expira_pronto(self):
+        """Retorna True si el documento expira en menos de 30 días"""
+        dias = self.dias_hasta_expiracion
+        return dias is not None and 0 <= dias <= 30
     
     class Meta:
         verbose_name = "Documento"

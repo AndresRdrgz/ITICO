@@ -18,7 +18,7 @@
 {% block content %}
 <!-- Hero Section -->
 <div class="mb-8">
-    <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
         <div class="absolute inset-0 bg-black bg-opacity-20"></div>
         <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
         <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
@@ -26,9 +26,9 @@
         <div class="relative z-10">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                 <div class="mb-6 lg:mb-0">
-                    <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center">
+                    <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center text-white">
                         <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm">
-                            <i class="fas fa-chart-line text-xl"></i>
+                            <i class="fas fa-chart-line text-xl text-white"></i>
                         </div>
                         Dashboard
                     </h1>
@@ -141,8 +141,8 @@
         </div>
         <div class="p-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <a href="{% url 'contrapartes:crear' %}" class="group bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 transition-all duration-300 text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
+                <a href="{% url 'contrapartes:crear' %}" class="group bg-gradient-to-br from-blue-50 to-blue-50 border-2 border-blue-200 rounded-xl p-6 hover:from-blue-100 hover:to-blue-100 hover:border-blue-300 transition-all duration-300 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
                         <i class="fas fa-plus text-2xl"></i>
                     </div>
                     <h3 class="font-semibold text-gray-800 mb-2">Nueva Contraparte</h3>

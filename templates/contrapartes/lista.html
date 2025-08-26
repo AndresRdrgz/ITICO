@@ -49,6 +49,10 @@
                         <i class="fas fa-plus mr-2"></i>
                         Nueva Contraparte
                     </a>
+                    <a href="{% url 'contrapartes:tipo_lista' %}" class="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-tags mr-2"></i>
+                        Gestionar Tipos
+                    </a>
                     <a href="{% url 'contrapartes:exportar' %}" class="bg-white bg-opacity-20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center backdrop-blur-sm">
                         <i class="fas fa-download mr-2"></i>
                         Exportar
@@ -73,11 +77,9 @@
         <div class="flex flex-wrap gap-3">
             <select class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="">Todos los tipos</option>
-                <option value="empresa">Empresa</option>
-                <option value="persona_natural">Persona Natural</option>
-                <option value="entidad_publica">Entidad Pública</option>
-                <option value="ong">ONG</option>
-                <option value="otro">Otro</option>
+                {% for tipo in tipos_contraparte %}
+                <option value="{{ tipo.codigo }}">{{ tipo.nombre }}</option>
+                {% endfor %}
             </select>
             <select class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="">Todos los estados</option>

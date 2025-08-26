@@ -141,38 +141,82 @@
             </div>
         </div>
 
-        <!-- Miembros -->
+        <!-- Tabbed Section: Miembros, Documentos, Comentarios -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                <i class="fas fa-users mr-3 text-blue-600"></i>
-                Miembros ({{ object.miembros.count }})
-            </h2>
-            <button id="add-member-header-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">
-                <i class="fas fa-plus mr-2"></i>
-                Agregar Miembro
-            </button>
+            <!-- Tab Navigation -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="flex space-x-1">
+                        <button id="tab-miembros" class="tab-button active px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center">
+                            <i class="fas fa-users mr-2 text-blue-600"></i>
+                            Miembros
+                            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                                {{ object.miembros.count }}
+                            </span>
+                        </button>
+                        <button id="tab-documentos" class="tab-button px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center">
+                            <i class="fas fa-file-alt mr-2 text-green-600"></i>
+                            Documentos
+                            <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                                {{ object.documentos.count }}
+                            </span>
+                        </button>
+                        <button id="tab-comentarios" class="tab-button px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center">
+                            <i class="fas fa-comments mr-2 text-purple-600"></i>
+                            Comentarios
+                            <span class="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium" id="comentarios-count">
+                                {{ object.comentarios_activos_count }}
+                            </span>
+                        </button>
+                    </div>
+                    <div id="tab-actions" class="flex space-x-2">
+                        <!-- Action buttons will be dynamically added based on active tab -->
+                    </div>
+                </div>
             </div>
-             <div id="miembros-list">
-                {% include 'contrapartes/miembros_list_partial.html' %}
-            </div>
-        </div>
 
-        <!-- Documentos -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-file-alt mr-3 text-blue-600"></i>
-                    Documentos ({{ object.documentos.count }})
-                </h2>
-                <button id="add-document-header-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">
-                    <i class="fas fa-plus mr-2"></i>
-                    Subir Documento
-                </button>
-            </div>
-            
-            <div id="documentos-list">
-                {% include 'contrapartes/documentos_list_partial.html' %}
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Miembros Tab -->
+                <div id="content-miembros" class="tab-pane active">
+                    <div id="miembros-list">
+                        {% include 'contrapartes/miembros_list_partial.html' %}
+                    </div>
+                </div>
+
+                <!-- Documentos Tab -->
+                <div id="content-documentos" class="tab-pane hidden">
+                    <div id="documentos-list">
+                        {% include 'contrapartes/documentos_list_partial.html' %}
+                    </div>
+                </div>
+
+                <!-- Comentarios Tab -->
+                <div id="content-comentarios" class="tab-pane hidden">
+                    <div class="p-6">
+                        <!-- Add Comment Form -->
+                        <form id="comentario-form" class="mb-6">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <textarea id="comentario-contenido" 
+                                          name="contenido" 
+                                          rows="3" 
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none" 
+                                          placeholder="Escriba su comentario aquí..."></textarea>
+                            </div>
+                            <button type="submit" 
+                                    class="w-full bg-purple-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-purple-700 transition-colors duration-200 flex items-center justify-center">
+                                <i class="fas fa-plus mr-2"></i>
+                                Agregar Comentario
+                            </button>
+                        </form>
+                        
+                        <!-- Comments List -->
+                        <div id="comentarios-container">
+                            {% include 'contrapartes/comentarios_list_partial.html' %}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -241,13 +285,17 @@
                     <i class="fas fa-edit text-green-600 mr-3"></i>
                     Editar Contraparte
                 </a>
-                <button id="add-member-sidebar-btn" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    <i class="fas fa-user-plus text-purple-600 mr-3"></i>
+                <button id="add-member-sidebar-btn" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200" onclick="switchToMiembrosTab()">
+                    <i class="fas fa-user-plus text-blue-600 mr-3"></i>
                     Agregar Miembro
                 </button>
-                <button id="add-document-sidebar-btn" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    <i class="fas fa-file-upload text-blue-600 mr-3"></i>
+                <button id="add-document-sidebar-btn" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200" onclick="switchToDocumentosTab()">
+                    <i class="fas fa-file-upload text-green-600 mr-3"></i>
                     Subir Documento
+                </button>
+                <button id="view-comments-sidebar-btn" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200" onclick="switchToComentariosTab()">
+                    <i class="fas fa-comments text-purple-600 mr-3"></i>
+                    Ver Comentarios
                 </button>
                 <a href="#" class="w-full flex items-center px-4 py-3 text-left text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
                     <i class="fas fa-file-alt text-blue-600 mr-3"></i>
@@ -355,6 +403,146 @@
 const CSRF_TOKEN = '{{ csrf_token }}';
 
 document.addEventListener('DOMContentLoaded', function() {
+    // ========== TAB FUNCTIONALITY ==========
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    const tabActions = document.getElementById('tab-actions');
+    
+    // Tab action buttons HTML
+    const actionButtons = {
+        miembros: `
+            <button id="add-member-header-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">
+                <i class="fas fa-plus mr-2"></i>
+                Agregar Miembro
+            </button>
+        `,
+        documentos: `
+            <button id="add-document-header-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm font-medium">
+                <i class="fas fa-plus mr-2"></i>
+                Subir Documento
+            </button>
+        `,
+        comentarios: ''
+    };
+    
+    // Tab styles
+    const tabStyles = {
+        active: 'bg-blue-600 text-white shadow-md',
+        inactive: 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+    };
+    
+    // Switch tab function
+    function switchTab(tabName) {
+        // Update tab buttons
+        tabButtons.forEach(button => {
+            const isActive = button.id === `tab-${tabName}`;
+            button.className = `tab-button px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center ${
+                isActive ? tabStyles.active : tabStyles.inactive
+            }`;
+            if (isActive) button.classList.add('active');
+        });
+        
+        // Update tab content
+        tabPanes.forEach(pane => {
+            const isActive = pane.id === `content-${tabName}`;
+            pane.classList.toggle('hidden', !isActive);
+            if (isActive) pane.classList.add('active');
+        });
+        
+        // Update action buttons
+        tabActions.innerHTML = actionButtons[tabName];
+        
+        // Reattach event listeners for new buttons
+        attachEventListeners();
+        
+        // Attach comments form listener if switching to comments tab
+        if (tabName === 'comentarios') {
+            attachCommentsFormListener();
+        }
+    }
+    
+    // Tab button event listeners
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.id.replace('tab-', '');
+            switchTab(tabName);
+        });
+    });
+    
+    // Initialize first tab
+    switchTab('miembros');
+    
+    // Global functions for sidebar navigation
+    window.switchToMiembrosTab = function() {
+        switchTab('miembros');
+        // Trigger the add member action
+        setTimeout(() => {
+            const addMemberBtn = document.getElementById('add-member-header-btn');
+            if (addMemberBtn) {
+                loadForm();
+                showModal();
+            }
+        }, 100);
+    };
+    
+    window.switchToDocumentosTab = function() {
+        switchTab('documentos');
+        // Trigger the add document action
+        setTimeout(() => {
+            const addDocumentBtn = document.getElementById('add-document-header-btn');
+            if (addDocumentBtn) {
+                loadDocumentForm();
+                showDocumentModal();
+            }
+        }, 100);
+    };
+    
+    window.switchToComentariosTab = function() {
+        switchTab('comentarios');
+    };
+    
+    // Function to attach comments form listener
+    function attachCommentsFormListener() {
+        const comentarioForm = document.getElementById('comentario-form');
+        if (comentarioForm && !comentarioForm.hasAttribute('data-listener-attached')) {
+            comentarioForm.setAttribute('data-listener-attached', 'true');
+            comentarioForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const contenido = document.getElementById('comentario-contenido').value.trim();
+                if (!contenido) {
+                    showNotification('Por favor escriba un comentario', 'error');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('contenido', contenido);
+                formData.append('csrfmiddlewaretoken', getCSRFToken());
+                
+                fetch(`{% url 'contrapartes:comentario_crear_ajax' object.pk %}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('comentarios-container').innerHTML = data.comentarios_html;
+                        document.getElementById('comentario-contenido').value = '';
+                        document.getElementById('comentarios-count').textContent = data.comentarios_count;
+                        showNotification(data.message, 'success');
+                    } else {
+                        showNotification('Error al agregar comentario', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error al agregar comentario', 'error');
+                });
+            });
+        }
+    }
+    
+    // ========== EXISTING FUNCTIONALITY ==========
     const modal = document.getElementById('miembro-modal');
     const modalFormContainer = document.getElementById('modal-form-container');
     const saveBtn = document.getElementById('save-btn');
@@ -733,6 +921,162 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // ========== COMMENTS FUNCTIONALITY ==========
+    
+    // Edit comment function (global)
+    window.editarComentario = function(comentarioId) {
+        const comentarioDiv = document.querySelector(`[data-comentario-id="${comentarioId}"]`);
+        const contenidoDiv = comentarioDiv.querySelector('.comentario-contenido');
+        const editForm = comentarioDiv.querySelector('.comentario-edit-form');
+        
+        // Get current content for editing
+        fetch(`{% url 'contrapartes:comentario_editar_ajax' 0 %}`.replace('0', comentarioId), {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                editForm.querySelector('textarea').value = data.contenido;
+                contenidoDiv.classList.add('hidden');
+                editForm.classList.remove('hidden');
+            } else {
+                showNotification('Error al cargar comentario', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cargar comentario', 'error');
+        });
+    };
+
+    // Cancel edit function (global)
+    window.cancelarEdicion = function(comentarioId) {
+        const comentarioDiv = document.querySelector(`[data-comentario-id="${comentarioId}"]`);
+        const contenidoDiv = comentarioDiv.querySelector('.comentario-contenido');
+        const editForm = comentarioDiv.querySelector('.comentario-edit-form');
+        
+        contenidoDiv.classList.remove('hidden');
+        editForm.classList.add('hidden');
+    };
+
+    // Save edit function (global)
+    window.guardarEdicion = function(comentarioId) {
+        const comentarioDiv = document.querySelector(`[data-comentario-id="${comentarioId}"]`);
+        const editForm = comentarioDiv.querySelector('.comentario-edit-form');
+        const textarea = editForm.querySelector('textarea');
+        
+        if (!textarea.value.trim()) {
+            showNotification('El comentario no puede estar vacío', 'error');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('contenido', textarea.value);
+        formData.append('csrfmiddlewaretoken', getCSRFToken());
+        
+        fetch(`{% url 'contrapartes:comentario_editar_ajax' 0 %}`.replace('0', comentarioId), {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('comentarios-container').innerHTML = data.comentarios_html;
+                showNotification(data.message, 'success');
+            } else {
+                showNotification(data.error || 'Error al actualizar comentario', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al actualizar comentario', 'error');
+        });
+    };
+
+    // Delete comment function (global)
+    window.eliminarComentario = function(comentarioId) {
+        if (!confirm('¿Está seguro de que desea eliminar este comentario?')) {
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', getCSRFToken());
+        
+        fetch(`{% url 'contrapartes:comentario_eliminar_ajax' 0 %}`.replace('0', comentarioId), {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('comentarios-container').innerHTML = data.comentarios_html;
+                document.getElementById('comentarios-count').textContent = data.comentarios_count;
+                showNotification(data.message, 'success');
+            } else {
+                showNotification(data.error || 'Error al eliminar comentario', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al eliminar comentario', 'error');
+        });
+    };
 });
 </script>
+
+<style>
+.tab-button {
+    border: none;
+    cursor: pointer;
+    background: transparent;
+}
+
+.tab-button.active {
+    background: #2563eb !important;
+    color: white !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.tab-button:not(.active) {
+    color: #4b5563;
+}
+
+.tab-button:not(.active):hover {
+    color: #1f2937;
+    background-color: #f3f4f6;
+}
+
+.tab-pane {
+    min-height: 200px;
+}
+
+.tab-pane.hidden {
+    display: none !important;
+}
+
+.tab-content {
+    position: relative;
+}
+
+/* Animation for tab transitions */
+.tab-pane {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
 {% endblock %}

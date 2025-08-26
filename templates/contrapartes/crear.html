@@ -108,22 +108,19 @@
                     <i class="fas fa-tags text-blue-600 mr-2"></i>
                     Tipo de Organización *
                 </label>
-                <select name="{{ form.tipo.name }}" 
-                        id="{{ form.tipo.id_for_label }}"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 {% if form.tipo.errors %}border-red-500 focus:ring-red-500{% endif %}"
-                        required>
-                    <option value="">Seleccione un tipo</option>
-                    <option value="empresa" {% if form.tipo.value == 'empresa' %}selected{% endif %}>Empresa</option>
-                    <option value="persona_natural" {% if form.tipo.value == 'persona_natural' %}selected{% endif %}>Persona Natural</option>
-                    <option value="entidad_publica" {% if form.tipo.value == 'entidad_publica' %}selected{% endif %}>Entidad Pública</option>
-                    <option value="ong" {% if form.tipo.value == 'ong' %}selected{% endif %}>ONG</option>
-                    <option value="otro" {% if form.tipo.value == 'otro' %}selected{% endif %}>Otro</option>
-                </select>
+                {{ form.tipo }}
                 {% if form.tipo.errors %}
                     <div class="mt-1 text-sm text-red-600">
                         {{ form.tipo.errors.0 }}
                     </div>
                 {% endif %}
+                <div class="mt-1 flex items-center justify-between">
+                    <p class="text-sm text-gray-600">Selecciona el tipo de contraparte</p>
+                    <a href="{% url 'contrapartes:tipo_lista' %}" class="text-sm text-blue-600 hover:text-blue-800" target="_blank">
+                        <i class="fas fa-cog mr-1"></i>
+                        Gestionar tipos
+                    </a>
+                </div>
             </div>
 
             <!-- Estado -->

@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tipos de Documento - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Encabezado -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-file-alt text-purple-600 mr-3"></i>
+                    Tipos de Documento
+                </h1>
+                <p class="text-gray-600">Gestione los tipos de documentos disponibles en el sistema</p>
+            </div>
+            <a href="{% url 'contrapartes:tipo_documento_crear' %}" 
+               class="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <i class="fas fa-plus mr-2"></i>
+                Nuevo Tipo
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm font-medium">Total Tipos</p>
+                    <p class="text-3xl font-bold">{{ tipos.count }}</p>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl p-3">
+                    <i class="fas fa-file-alt text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm font-medium">Activos</p>
+                    <p class="text-3xl font-bold">{{ tipos|length }}</p>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl p-3">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-amber-100 text-sm font-medium">Con Expiración</p>
+                    <p class="text-3xl font-bold">{{ tipos|dictsort:"requiere_expiracion"|slice:":1"|length }}</p>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl p-3">
+                    <i class="fas fa-calendar-times text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Búsqueda y filtros -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
+        <form method="get" class="flex flex-col sm:flex-row gap-4">
+            <div class="flex-1">
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ request.GET.search }}"
+                           placeholder="Buscar por código, nombre o descripción..."
+                           class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" 
+                        class="px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-all duration-200 flex items-center gap-2">
+                    <i class="fas fa-search"></i>
+                    <span class="hidden sm:inline">Buscar</span>
+                </button>
+                {% if request.GET.search %}
+                <a href="{% url 'contrapartes:tipo_documento_lista' %}" 
+                   class="px-6 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 transition-all duration-200 flex items-center gap-2">
+                    <i class="fas fa-times"></i>
+                    <span class="hidden sm:inline">Limpiar</span>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de tipos -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        {% if tipos %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Código
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Nombre
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Descripción
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Expiración
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Estado
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Documentos
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for tipo in tipos %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                                            <i class="fas fa-file-alt text-purple-600 text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">{{ tipo.codigo }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">{{ tipo.nombre }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-500 max-w-xs truncate" title="{{ tipo.descripcion }}">
+                                    {{ tipo.descripcion|default:"-" }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if tipo.requiere_expiracion %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                        <i class="fas fa-calendar-times mr-1"></i>
+                                        Sí requiere
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <i class="fas fa-calendar-check mr-1"></i>
+                                        No requiere
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if tipo.activo %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Activo
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-times-circle mr-1"></i>
+                                        Inactivo
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-file mr-1"></i>
+                                    {{ tipo.documentos.count }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center justify-end space-x-2">
+                                    <a href="{% url 'contrapartes:tipo_documento_editar' tipo.pk %}" 
+                                       class="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-lg hover:bg-blue-200 transition-colors duration-200"
+                                       title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if tipo.documentos.count == 0 %}
+                                    <a href="{% url 'contrapartes:tipo_documento_eliminar' tipo.pk %}" 
+                                       class="inline-flex items-center px-3 py-1.5 bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition-colors duration-200"
+                                       title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-400 text-xs font-medium rounded-lg cursor-not-allowed"
+                                          title="No se puede eliminar, tiene documentos asociados">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            {% if is_paginated %}
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Anterior
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                           class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Siguiente
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Mostrando
+                            <span class="font-medium">{{ page_obj.start_index }}</span>
+                            a
+                            <span class="font-medium">{{ page_obj.end_index }}</span>
+                            de
+                            <span class="font-medium">{{ page_obj.paginator.count }}</span>
+                            resultados
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            {% if page_obj.has_previous %}
+                                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-purple-50 text-sm font-medium text-purple-600">
+                                        {{ num }}
+                                    </span>
+                                {% else %}
+                                    <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        {{ num }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-12">
+                <div class="mx-auto h-24 w-24 text-gray-400 mb-4">
+                    <i class="fas fa-file-alt text-6xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay tipos de documento</h3>
+                <p class="text-gray-500 mb-6">
+                    {% if request.GET.search %}
+                        No se encontraron tipos de documento que coincidan con tu búsqueda.
+                    {% else %}
+                        Comienza creando el primer tipo de documento del sistema.
+                    {% endif %}
+                </p>
+                {% if not request.GET.search %}
+                <a href="{% url 'contrapartes:tipo_documento_crear' %}" 
+                   class="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-all duration-200">
+                    <i class="fas fa-plus mr-2"></i>
+                    Crear Primer Tipo
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Volver -->
+    <div class="mt-8 flex justify-start">
+        <a href="{% url 'contrapartes:lista' %}" 
+           class="inline-flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-xl hover:bg-gray-600 transition-all duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver a Contrapartes
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Tipo de Documento - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Encabezado -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
+        <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-plus text-purple-600 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">
+                    Crear Tipo de Documento
+                </h1>
+                <p class="text-gray-600 mt-1">
+                    Defina un nuevo tipo de documento para el sistema
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <form method="post" class="divide-y divide-gray-200">
+            {% csrf_token %}
+            
+            <!-- Información básica -->
+            <div class="p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-info-circle text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900">Información Básica</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Código -->
+                    <div>
+                        <label for="{{ form.codigo.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Código *
+                        </label>
+                        {{ form.codigo }}
+                        {% if form.codigo.errors %}
+                            <div class="mt-2 text-sm text-red-600">
+                                {% for error in form.codigo.errors %}
+                                    <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Identificador único del tipo (solo letras, números y guiones bajos)
+                        </p>
+                    </div>
+
+                    <!-- Nombre -->
+                    <div>
+                        <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Nombre *
+                        </label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                            <div class="mt-2 text-sm text-red-600">
+                                {% for error in form.nombre.errors %}
+                                    <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Nombre descriptivo del tipo de documento
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="mt-6">
+                    <label for="{{ form.descripcion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Descripción
+                    </label>
+                    {{ form.descripcion }}
+                    {% if form.descripcion.errors %}
+                        <div class="mt-2 text-sm text-red-600">
+                            {% for error in form.descripcion.errors %}
+                                <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Descripción detallada del tipo de documento (opcional)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Configuración -->
+            <div class="p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-8 w-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-cog text-amber-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900">Configuración</h3>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Requiere expiración -->
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            {{ form.requiere_expiracion }}
+                        </div>
+                        <div class="ml-3">
+                            <label for="{{ form.requiere_expiracion.id_for_label }}" class="text-sm font-medium text-gray-700">
+                                Requiere fecha de expiración
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-calendar-times mr-1"></i>
+                                Marque si este tipo de documento tiene fecha de expiración que debe ser controlada
+                            </p>
+                            {% if form.requiere_expiracion.errors %}
+                                <div class="mt-2 text-sm text-red-600">
+                                    {% for error in form.requiere_expiracion.errors %}
+                                        <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Activo -->
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            {{ form.activo }}
+                        </div>
+                        <div class="ml-3">
+                            <label for="{{ form.activo.id_for_label }}" class="text-sm font-medium text-gray-700">
+                                Tipo activo
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-toggle-on mr-1"></i>
+                                Desmarque para deshabilitar este tipo de documento sin eliminarlo
+                            </p>
+                            {% if form.activo.errors %}
+                                <div class="mt-2 text-sm text-red-600">
+                                    {% for error in form.activo.errors %}
+                                        <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Errores generales del formulario -->
+            {% if form.non_field_errors %}
+                <div class="p-8 bg-red-50 border-l-4 border-red-400">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">
+                                Errores en el formulario
+                            </h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    {% for error in form.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Botones de acción -->
+            <div class="px-8 py-6 bg-gray-50 flex flex-col sm:flex-row gap-4 sm:justify-end">
+                <a href="{% url 'contrapartes:tipo_documento_lista' %}" 
+                   class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 bg-white font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 order-2 sm:order-1">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="inline-flex items-center justify-center px-8 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 order-1 sm:order-2">
+                    <i class="fas fa-save mr-2"></i>
+                    Crear Tipo
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-400 text-xl"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">
+                    Información importante
+                </h3>
+                <div class="mt-2 text-sm text-blue-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>El código debe ser único y no puede ser modificado una vez creado</li>
+                        <li>Los tipos con "Requiere expiración" activado mostrarán alertas cuando los documentos estén próximos a vencer</li>
+                        <li>Los tipos inactivos no aparecerán como opción al crear nuevos documentos</li>
+                        <li>Puede editar el nombre, descripción y configuración en cualquier momento</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para mejorar la experiencia -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-generar código basado en el nombre
+    const nombreField = document.getElementById('{{ form.nombre.id_for_label }}');
+    const codigoField = document.getElementById('{{ form.codigo.id_for_label }}');
+    
+    if (nombreField && codigoField && !codigoField.value) {
+        nombreField.addEventListener('input', function() {
+            const nombre = this.value.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')  // Remover caracteres especiales
+                .replace(/\s+/g, '_')         // Reemplazar espacios con guiones bajos
+                .substring(0, 20);            // Limitar longitud
+            
+            if (!codigoField.value || codigoField.dataset.autoGenerated === 'true') {
+                codigoField.value = nombre;
+                codigoField.dataset.autoGenerated = 'true';
+            }
+        });
+        
+        codigoField.addEventListener('input', function() {
+            this.dataset.autoGenerated = 'false';
+        });
+    }
+
+    // Validación en tiempo real
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input[required], textarea[required]');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value.trim() === '') {
+                this.classList.add('border-red-300', 'focus:border-red-500', 'focus:ring-red-500');
+                this.classList.remove('border-gray-300', 'focus:border-purple-500', 'focus:ring-purple-500');
+            } else {
+                this.classList.remove('border-red-300', 'focus:border-red-500', 'focus:ring-red-500');
+                this.classList.add('border-gray-300', 'focus:border-purple-500', 'focus:ring-purple-500');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
