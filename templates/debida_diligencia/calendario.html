@@ -22,6 +22,7 @@
 {% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <!-- Header Section -->
 <div class="mb-8">
     <div class="bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
@@ -59,8 +60,8 @@
     </div>
 </div>
 
-<!-- Main Content -->
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+<!-- Main Content: Calendar and Sidebar -->
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
     <!-- Calendar Section -->
     <div class="lg:col-span-3">
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -243,6 +244,210 @@
         </div>
     </div>
 </div>
+
+<!-- Table Section - Full Width -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <!-- Table Header -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-list mr-3 text-orange-600"></i>
+                Lista de Vencimientos Próximos
+            </h2>
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2">
+                    <label for="table-filter" class="text-sm font-medium text-gray-600">Filtrar:</label>
+                    <select id="table-filter" class="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        <option value="all">Todos</option>
+                        <option value="dd">Solo DD</option>
+                        <option value="document">Solo Documentos</option>
+                        <option value="critical">Solo Críticos</option>
+                        <option value="upcoming">Próximos 30 días</option>
+                    </select>
+                </div>
+                <button id="export-table" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 text-sm font-medium">
+                    <i class="fas fa-download mr-2"></i>
+                    Exportar
+                </button>
+            </div>
+        </div>
+    </div>
+        
+        <!-- Table Content -->
+        <div class="overflow-x-auto">
+            <table id="vencimientos-table" class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Tipo
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Contraparte
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Descripción
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Fecha de Vencimiento
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Días Restantes
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Prioridad
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="vencimientos-tbody" class="bg-white divide-y divide-gray-200">
+                    {% for event in events %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-200 event-row" 
+                        data-type="{{ event.type }}" 
+                        data-priority="{{ event.priority }}" 
+                        data-days="{{ event.days_until }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                {% if event.type == 'dd' %}
+                                    <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-shield-alt text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">Debida Diligencia</div>
+                                    </div>
+                                {% else %}
+                                    <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-file-alt text-green-600 text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">Documento</div>
+                                        {% if event.document_type %}
+                                        <div class="text-xs text-gray-500">{{ event.document_type }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ event.contraparte }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ event.title }}</div>
+                            <div class="text-xs text-gray-500">{{ event.description|truncatechars:80 }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ event.date|date:"d M Y" }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                {% if event.days_until < 0 %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>
+                                        Vencido
+                                    </span>
+                                {% elif event.days_until == 0 %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Hoy
+                                    </span>
+                                {% elif event.days_until <= 7 %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        {{ event.days_until }} día{{ event.days_until|pluralize }}
+                                    </span>
+                                {% elif event.days_until <= 30 %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        {{ event.days_until }} días
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        {{ event.days_until }} días
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if event.priority == 'critical' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+                                    Crítico
+                                </span>
+                            {% elif event.priority == 'high' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>
+                                    Alto
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                    Medio
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="/contrapartes/detalle/{{ event.contraparte_id }}/" 
+                                   class="text-orange-600 hover:text-orange-900 transition-colors duration-200"
+                                   title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if event.type == 'dd' %}
+                                    <button onclick="iniciarDD({{ event.contraparte_id }})" 
+                                            class="text-blue-600 hover:text-blue-900 transition-colors duration-200"
+                                            title="Iniciar DD">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                {% else %}
+                                    <button onclick="renovarDocumento({{ event.contraparte_id }}, '{{ event.document_type|escapejs }}')" 
+                                            class="text-green-600 hover:text-green-900 transition-colors duration-200"
+                                            title="Renovar documento">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                {% endif %}
+                                <button onclick="enviarRecordatorio({{ event.contraparte_id }}, '{{ event.type }}')" 
+                                        class="text-purple-600 hover:text-purple-900 transition-colors duration-200"
+                                        title="Enviar recordatorio">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-calendar-check text-gray-400 text-4xl mb-4"></i>
+                                <p class="text-gray-500 text-lg font-medium">No hay vencimientos próximos</p>
+                                <p class="text-gray-400 text-sm">Todas las debidas diligencias y documentos están al día</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Table Footer with Pagination -->
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    Mostrando <span id="showing-count">{{ events|length }}</span> de <span id="total-count">{{ events|length }}</span> elementos
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="prev-page" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="page-info" class="px-3 py-1 text-sm text-gray-700">Página 1 de 1</span>
+                    <button id="next-page" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <!-- Event Detail Modal -->
 <div id="event-modal" class="fixed inset-0 z-50 hidden">
@@ -710,6 +915,192 @@ class Calendar {
     }
 }
 
+// Table functionality
+class VencimientosTable {
+    constructor() {
+        this.currentPage = 1;
+        this.itemsPerPage = 10;
+        this.filteredRows = [];
+        this.init();
+    }
+    
+    init() {
+        this.setupFiltering();
+        this.setupPagination();
+        this.setupActions();
+        this.applyFilter('all');
+    }
+    
+    setupFiltering() {
+        const filterSelect = document.getElementById('table-filter');
+        if (filterSelect) {
+            filterSelect.addEventListener('change', (e) => {
+                this.applyFilter(e.target.value);
+            });
+        }
+    }
+    
+    applyFilter(filterType) {
+        const rows = document.querySelectorAll('.event-row');
+        this.filteredRows = [];
+        
+        rows.forEach(row => {
+            let show = false;
+            const type = row.dataset.type;
+            const priority = row.dataset.priority;
+            const days = parseInt(row.dataset.days);
+            
+            switch(filterType) {
+                case 'all':
+                    show = true;
+                    break;
+                case 'dd':
+                    show = type === 'dd';
+                    break;
+                case 'document':
+                    show = type === 'document';
+                    break;
+                case 'critical':
+                    show = priority === 'critical';
+                    break;
+                case 'upcoming':
+                    show = days <= 30;
+                    break;
+            }
+            
+            if (show) {
+                this.filteredRows.push(row);
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        this.updateCounts();
+        this.currentPage = 1;
+        this.updatePagination();
+    }
+    
+    updateCounts() {
+        const showingCount = document.getElementById('showing-count');
+        const totalCount = document.getElementById('total-count');
+        
+        if (showingCount) showingCount.textContent = this.filteredRows.length;
+        if (totalCount) totalCount.textContent = document.querySelectorAll('.event-row').length;
+    }
+    
+    setupPagination() {
+        // For now, disable pagination if there are fewer than itemsPerPage items
+        // This is a basic implementation
+        this.updatePagination();
+    }
+    
+    updatePagination() {
+        const totalPages = Math.ceil(this.filteredRows.length / this.itemsPerPage);
+        const pageInfo = document.getElementById('page-info');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        
+        if (pageInfo) {
+            pageInfo.textContent = `Página ${this.currentPage} de ${totalPages || 1}`;
+        }
+        
+        if (prevBtn) {
+            prevBtn.disabled = this.currentPage <= 1;
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = this.currentPage >= totalPages;
+        }
+    }
+    
+    setupActions() {
+        // Export functionality
+        const exportBtn = document.getElementById('export-table');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => this.exportTable());
+        }
+    }
+    
+    exportTable() {
+        // Simple CSV export
+        const headers = ['Tipo', 'Contraparte', 'Descripción', 'Fecha Vencimiento', 'Días Restantes', 'Prioridad'];
+        let csvContent = headers.join(',') + '\n';
+        
+        this.filteredRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const rowData = [];
+            
+            // Extract text content from specific cells
+            rowData.push(cells[0].querySelector('.text-sm.font-medium').textContent.trim()); // Tipo
+            rowData.push(cells[1].querySelector('.text-sm.font-medium').textContent.trim()); // Contraparte
+            rowData.push(cells[2].querySelector('.text-sm').textContent.trim()); // Descripción
+            rowData.push(cells[3].querySelector('.text-sm').textContent.trim()); // Fecha
+            rowData.push(cells[4].textContent.trim().replace(/\s+/g, ' ')); // Días
+            rowData.push(cells[5].textContent.trim().replace(/\s+/g, ' ')); // Prioridad
+            
+            csvContent += rowData.map(field => `"${field}"`).join(',') + '\n';
+        });
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `vencimientos_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+}
+
+// Global functions for table actions
+function iniciarDD(contraparteId) {
+    if (confirm('¿Está seguro de que desea iniciar el proceso de Debida Diligencia?')) {
+        // Redirect to DD initiation page
+        window.location.href = `/debida-diligencia/solicitar/?contraparte=${contraparteId}`;
+    }
+}
+
+function renovarDocumento(contraparteId, documentType) {
+    if (confirm(`¿Desea renovar el documento ${documentType}?`)) {
+        // Redirect to document renewal page
+        window.location.href = `/contrapartes/detalle/${contraparteId}/#documentos`;
+    }
+}
+
+function enviarRecordatorio(contraparteId, eventType) {
+    if (confirm('¿Desea enviar un recordatorio sobre este vencimiento?')) {
+        // Here you would make an AJAX call to send the reminder
+        fetch('/notificaciones/enviar-recordatorio/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                contraparte_id: contraparteId,
+                event_type: eventType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Recordatorio enviado exitosamente');
+            } else {
+                alert('Error al enviar recordatorio');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al enviar recordatorio');
+        });
+    }
+}
+
 // CSS for calendar view buttons
 const style = document.createElement('style');
 style.textContent = `
@@ -735,6 +1126,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const calendar = new Calendar();
     // Make calendar instance globally available
     window.calendarInstance = calendar;
+    
+    // Initialize table functionality
+    const vencimientosTable = new VencimientosTable();
+    window.vencimientosTable = vencimientosTable;
     
     // Setup modal close functionality
     const modal = document.getElementById('event-modal');
