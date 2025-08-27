@@ -24,7 +24,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #database production settings db name "itico", username "itico", password "postgres"
-DEBUG = True
+DEBUG = False
 if DEBUG:
     DATABASES = {
         'default': {
@@ -41,7 +41,14 @@ else:
     }
 
 # ALLOWED_HOSTS configuration for production
-ALLOWED_HOSTS = ['*']
+if DEBUG:
+    ALLOWED_HOSTS = ['*']  # Allow all hosts in development
+else:
+    ALLOWED_HOSTS = [
+        'app.iticore.com',
+        'localhost',
+        '127.0.0.1',
+    ]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -254,9 +261,23 @@ LOGOUT_REDIRECT_URL = '/login/'
 
 # Security Settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Solo para desarrollo
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+if DEBUG:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "https://app.iticore.com",
+    ]
+
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = [
+    "https://app.iticore.com",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
 # Logging
