@@ -175,8 +175,8 @@ class ContraparteListView(LoginRequiredMixin, ListView):
         
         # Estadísticas para los cards
         total = Contraparte.objects.count()
-        activas = Contraparte.objects.filter(estado='activa').count()
-        pendientes = Contraparte.objects.filter(estado='pendiente').count()
+        activas = Contraparte.objects.filter(estado_nuevo__codigo='activa').count()
+        pendientes = Contraparte.objects.filter(estado_nuevo__codigo='pendiente').count()
         
         # DD próximas a vencer (30 días)
         fecha_limite = timezone.now().date() + timedelta(days=30)
@@ -194,6 +194,9 @@ class ContraparteListView(LoginRequiredMixin, ListView):
         
         # Tipos de contraparte para filtros
         context['tipos_contraparte'] = TipoContraparte.objects.filter(activo=True).order_by('nombre')
+        
+        # Estados de contraparte para filtros
+        context['estados_contraparte'] = EstadoContraparte.objects.filter(activo=True).order_by('nombre')
         
         return context
 

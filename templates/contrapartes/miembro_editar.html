@@ -22,7 +22,7 @@
         <li class="flex items-center">
             <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
             <a href="{% url 'contrapartes:detalle' object.contraparte.pk %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
-                {{ object.contraparte.nombre|truncatechars:20 }}
+                {{ object.contraparte.nombre|default:object.contraparte.full_company_name|default:"Sin nombre"|truncatechars:20 }}
             </a>
         </li>
         <li class="flex items-center">
@@ -52,7 +52,7 @@
                     </div>
                 </div>
                 <p class="text-blue-100">
-                    Miembro de <strong>{{ object.contraparte.nombre }}</strong>
+                    Miembro de <strong>{{ object.contraparte.nombre|default:object.contraparte.full_company_name|default:"Sin nombre" }}</strong>
                 </p>
             </div>
         </div>

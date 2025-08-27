@@ -1,260 +1,454 @@
 {% extends 'base.html' %}
 
-{% block title %}Editar {{ object.nombre }} - ITICO{% endblock %}
+{% block title %}Editar {{ object.nombre|default:object.full_company_name|default:"Sin nombre" }} - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:lista' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                Contrapartes
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:detalle' object.pk %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                {{ object.nombre|default:object.full_company_name|default:"Sin nombre"|truncatechars:30 }}
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white mr-2">
+                <i class="fas fa-edit text-sm"></i>
+            </div>
+            <span class="font-semibold text-gray-800">Editar</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Editar Contraparte</h1>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Content - Form -->
-        <div class="lg:col-span-2">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-                            <input type="text" name="nombre" value="{{ object.nombre }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nacionalidad</label>
-                            <input type="text" name="nacionalidad" value="{{ object.nacionalidad }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-                            <select name="tipo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                {% for tipo in form.tipo.field.queryset %}
-                                    <option value="{{ tipo.id }}" {% if object.tipo == tipo %}selected{% endif %}>{{ tipo.nombre }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                            <select name="estado" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="activa" {% if object.estado == 'activa' %}selected{% endif %}>Activa</option>
-                                <option value="inactiva" {% if object.estado == 'inactiva' %}selected{% endif %}>Inactiva</option>
-                                <option value="pendiente" {% if object.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                                <option value="rechazada" {% if object.estado == 'rechazada' %}selected{% endif %}>Rechazada</option>
-                                <option value="en_revision" {% if object.estado == 'en_revision' %}selected{% endif %}>En Revisión</option>
-                            </select>
-                        </div>
-                        
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                            <textarea name="descripcion" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">{{ object.descripcion }}</textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6 flex justify-end space-x-4">
-                        <a href="{% url 'contrapartes:detalle' object.pk %}" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300">
-                            Cancelar
-                        </a>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                            Guardar Cambios
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
         
-        <!-- Sidebar - Comments Section -->
-        <div class="lg:col-span-1">
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-bold text-gray-800 flex items-center">
-                        <div class="w-6 h-6 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white mr-2">
-                            <i class="fas fa-comments text-xs"></i>
-                        </div>
-                        Comentarios
-                        <span id="comentarios-count" class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
-                            {{ object.comentarios_activos_count }}
-                        </span>
-                    </h2>
+        <div class="relative z-10">
+            <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center text-white">
+                <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm">
+                    <i class="fas fa-edit text-xl text-white"></i>
                 </div>
-                
-                <div class="p-6">
-                    <!-- Add Comment Form -->
-                                        <!-- Add Comment Form -->
-                    <form id="comentario-form" class="mb-6">
-                        {% csrf_token %}
-                        <div class="mb-4">
-                            <textarea id="comentario-contenido" 
-                                      name="contenido" 
-                                      rows="3" 
-                                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none" 
-                                      placeholder="Escriba su comentario aquí..."></textarea>
-                        </div>
-                        <button type="submit" 
-                                class="w-full bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center">
-                            <i class="fas fa-plus mr-2"></i>
-                            Agregar Comentario
-                        </button>
-                    </form>
-                    
-                    <!-- Comments List -->
-                    <div id="comentarios-container">
-                        {% include 'contrapartes/comentarios_list_partial.html' %}
-                    </div>
-                </div>
-            </div>
+                Editar Contraparte
+            </h1>
+            <p class="text-lg text-blue-100 leading-relaxed">
+                Actualiza la información de la contraparte en el sistema
+            </p>
         </div>
     </div>
 </div>
 
-<!-- JavaScript for Comments -->
-<script>
-// CSRF token for AJAX requests
-const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+<!-- Form Section -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <!-- Form Header -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-edit mr-3 text-blue-600"></i>
+            Información General
+        </h2>
+        <p class="text-sm text-gray-600 mt-1">Modifica los campos que desees actualizar</p>
+    </div>
 
-// Add comment
-document.getElementById('comentario-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const contenido = document.getElementById('comentario-contenido').value.trim();
-    if (!contenido) {
-        alert('Por favor escriba un comentario');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('contenido', contenido);
-    formData.append('csrfmiddlewaretoken', csrfToken);
-    
-    fetch(`{% url 'contrapartes:comentario_crear_ajax' object.pk %}`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('comentarios-container').innerHTML = data.comentarios_html;
-            document.getElementById('comentario-contenido').value = '';
-            document.getElementById('comentarios-count').textContent = data.comentarios_count;
-            showMessage(data.message, 'success');
-        } else {
-            showMessage('Error al agregar comentario', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showMessage('Error al agregar comentario', 'error');
-    });
-});
+    <form method="post" class="p-6" id="contraparte-form">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Full Company Name -->
+            <div class="lg:col-span-2">
+                <label for="{{ form.full_company_name.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-building text-blue-600 mr-2"></i>
+                    Full Company Name *
+                </label>
+                {{ form.full_company_name }}
+                {% if form.full_company_name.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.full_company_name.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
 
-// Edit comment
-function editarComentario(comentarioId) {
-    const comentarioDiv = document.querySelector(`[data-comentario-id="${comentarioId}"]`);
-    const contenidoDiv = comentarioDiv.querySelector('.comentario-contenido');
-    const editForm = comentarioDiv.querySelector('.comentario-edit-form');
-    
-    // Get current content for editing
-    fetch(`{% url 'contrapartes:comentario_editar_ajax' 0 %}`.replace('0', comentarioId), {
-        method: 'GET',
-        headers: {
-            'X-CSRFToken': csrfToken
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const textarea = editForm.querySelector('textarea');
-            textarea.value = data.contenido;
-            contenidoDiv.classList.add('hidden');
-            editForm.classList.remove('hidden');
-        }
-    });
-}
+            <!-- Trading Name -->
+            <div>
+                <label for="{{ form.trading_name.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-tag text-blue-600 mr-2"></i>
+                    Trading Name
+                </label>
+                {{ form.trading_name }}
+                {% if form.trading_name.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.trading_name.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
 
-// Cancel edit
-function cancelarEdicion(comentarioId) {
-    const comentarioDiv = document.querySelector(`[data-comentario-id="${comentarioId}"]`);
-    const contenidoDiv = comentarioDiv.querySelector('.comentario-contenido');
-    const editForm = comentarioDiv.querySelector('.comentario-edit-form');
-    
-    contenidoDiv.classList.remove('hidden');
-    editForm.classList.add('hidden');
-}
+            <!-- Company Website -->
+            <div>
+                <label for="{{ form.company_website.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-globe text-blue-600 mr-2"></i>
+                    Company Website
+                </label>
+                {{ form.company_website }}
+                {% if form.company_website.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.company_website.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
 
-// Save edit
-function guardarEdicion(comentarioId) {
-    const comentarioDiv = document.querySelector(`[data-comentario-id="${comentarioId}"]`);
-    const editForm = comentarioDiv.querySelector('.comentario-edit-form');
-    const textarea = editForm.querySelector('textarea');
-    
-    const formData = new FormData();
-    formData.append('contenido', textarea.value);
-    formData.append('csrfmiddlewaretoken', csrfToken);
-    
-    fetch(`{% url 'contrapartes:comentario_editar_ajax' 0 %}`.replace('0', comentarioId), {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('comentarios-container').innerHTML = data.comentarios_html;
-            showMessage(data.message, 'success');
-        } else {
-            showMessage('Error al actualizar comentario', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showMessage('Error al actualizar comentario', 'error');
-    });
-}
+            <!-- Home Regulatory Body -->
+            <div>
+                <label for="{{ form.home_regulatory_body.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-university text-blue-600 mr-2"></i>
+                    Home Regulatory Body or Supervisory Authority
+                </label>
+                {{ form.home_regulatory_body }}
+                {% if form.home_regulatory_body.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.home_regulatory_body.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
 
-// Delete comment
-function eliminarComentario(comentarioId) {
-    if (!confirm('¿Está seguro de que desea eliminar este comentario?')) {
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', csrfToken);
-    
-    fetch(`{% url 'contrapartes:comentario_eliminar_ajax' 0 %}`.replace('0', comentarioId), {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('comentarios-container').innerHTML = data.comentarios_html;
-            document.getElementById('comentarios-count').textContent = data.comentarios_count;
-            showMessage(data.message, 'success');
-        } else {
-            showMessage('Error al eliminar comentario', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showMessage('Error al eliminar comentario', 'error');
-    });
-}
+            <!-- Is Licensed by Regulatory Body -->
+            <div>
+                <label for="{{ form.is_licensed_by_regulatory_body.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-certificate text-blue-600 mr-2"></i>
+                    Is the company licensed by the Regulatory Body?
+                </label>
+                {{ form.is_licensed_by_regulatory_body }}
+                {% if form.is_licensed_by_regulatory_body.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.is_licensed_by_regulatory_body.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
 
-// Show message function
-function showMessage(message, type) {
-    // Create a simple toast notification
-    const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500' : 'bg-red-500'
-    }`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 300);
-    }, 3000);
-}
-</script>
+            <!-- Is Publicly Listed -->
+            <div>
+                <label for="{{ form.is_publicly_listed.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                    Is the Company publicly listed?
+                </label>
+                {{ form.is_publicly_listed }}
+                {% if form.is_publicly_listed.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.is_publicly_listed.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Publicly Listed Country -->
+            <div>
+                <label for="{{ form.publicly_listed_country.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-flag text-blue-600 mr-2"></i>
+                    Country (if publicly listed)
+                </label>
+                {{ form.publicly_listed_country }}
+                {% if form.publicly_listed_country.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.publicly_listed_country.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Is Holding Company -->
+            <div>
+                <label for="{{ form.is_holding_company.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-sitemap text-blue-600 mr-2"></i>
+                    Is the Company a Holding Company?
+                </label>
+                {{ form.is_holding_company }}
+                {% if form.is_holding_company.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.is_holding_company.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- External Auditors -->
+            <div class="lg:col-span-2">
+                <label for="{{ form.external_auditors.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-user-check text-blue-600 mr-2"></i>
+                    Name and Address of External Auditors
+                </label>
+                {{ form.external_auditors }}
+                {% if form.external_auditors.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.external_auditors.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Registered Address -->
+            <div>
+                <label for="{{ form.registered_address.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-map-marker-alt text-blue-600 mr-2"></i>
+                    Registered Address *
+                </label>
+                {{ form.registered_address }}
+                {% if form.registered_address.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.registered_address.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Business Address -->
+            <div>
+                <label for="{{ form.business_address.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-building text-blue-600 mr-2"></i>
+                    Business Address
+                </label>
+                {{ form.business_address }}
+                {% if form.business_address.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.business_address.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Contact Telephone -->
+            <div>
+                <label for="{{ form.contact_telephone.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-phone text-blue-600 mr-2"></i>
+                    Contact Telephone Number
+                </label>
+                {{ form.contact_telephone }}
+                {% if form.contact_telephone.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.contact_telephone.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Contact Email -->
+            <div>
+                <label for="{{ form.contact_email.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-envelope text-blue-600 mr-2"></i>
+                    Contact E-mail Address
+                </label>
+                {{ form.contact_email }}
+                {% if form.contact_email.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.contact_email.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Company Nature and Business -->
+            <div class="lg:col-span-2">
+                <label for="{{ form.company_nature_business.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-briefcase text-blue-600 mr-2"></i>
+                    Company Nature and Type of Business *
+                </label>
+                {{ form.company_nature_business }}
+                {% if form.company_nature_business.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.company_nature_business.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Domicile -->
+            <div>
+                <label for="{{ form.domicile.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-globe-americas text-blue-600 mr-2"></i>
+                    Domicile *
+                </label>
+                {{ form.domicile }}
+                {% if form.domicile.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.domicile.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Company Incorporation/Registration -->
+            <div>
+                <label for="{{ form.company_incorporation_registration.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+                    Company Incorporation/Registration *
+                </label>
+                {{ form.company_incorporation_registration }}
+                {% if form.company_incorporation_registration.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.company_incorporation_registration.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Date of Incorporation -->
+            <div>
+                <label for="{{ form.date_incorporation.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-calendar text-blue-600 mr-2"></i>
+                    Date of Incorporation/Registration *
+                </label>
+                {{ form.date_incorporation }}
+                {% if form.date_incorporation.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.date_incorporation.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Number of Employees -->
+            <div>
+                <label for="{{ form.number_of_employees.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-users text-blue-600 mr-2"></i>
+                    Number of Employees
+                </label>
+                {{ form.number_of_employees }}
+                {% if form.number_of_employees.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.number_of_employees.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Tipo -->
+            <div>
+                <label for="{{ form.tipo.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-tags text-blue-600 mr-2"></i>
+                    Tipo de Organización *
+                </label>
+                {{ form.tipo }}
+                {% if form.tipo.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.tipo.errors.0 }}
+                    </div>
+                {% endif %}
+                <div class="mt-1 flex items-center justify-between">
+                    <p class="text-sm text-gray-600">Selecciona el tipo de contraparte</p>
+                    <a href="{% url 'contrapartes:tipo_lista' %}" class="text-sm text-blue-600 hover:text-blue-800" target="_blank">
+                        <i class="fas fa-cog mr-1"></i>
+                        Gestionar tipos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Estado -->
+            <div>
+                <label for="{{ form.estado_nuevo.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-circle text-blue-600 mr-2"></i>
+                    Estado
+                </label>
+                {{ form.estado_nuevo }}
+                {% if form.estado_nuevo.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.estado_nuevo.errors.0 }}
+                    </div>
+                {% endif %}
+                <div class="mt-1 flex items-center justify-between">
+                    <p class="text-sm text-gray-600">Selecciona el estado de la contraparte</p>
+                    <a href="{% url 'contrapartes:estado_lista' %}" class="text-sm text-blue-600 hover:text-blue-800" target="_blank">
+                        <i class="fas fa-cog mr-1"></i>
+                        Gestionar estados
+                    </a>
+                </div>
+            </div>
+
+            <!-- Fecha Próxima DD -->
+            <div>
+                <label for="{{ form.fecha_proxima_dd.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                    Próxima Debida Diligencia
+                </label>
+                {{ form.fecha_proxima_dd }}
+                {% if form.fecha_proxima_dd.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.fecha_proxima_dd.errors.0 }}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-600">Fecha de la próxima renovación de DD</p>
+            </div>
+
+            <!-- Descripción -->
+            <div class="lg:col-span-2">
+                <label for="{{ form.descripcion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left text-blue-600 mr-2"></i>
+                    Descripción Adicional
+                </label>
+                {{ form.descripcion }}
+                {% if form.descripcion.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.descripcion.errors.0 }}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-600">Información adicional que considere relevante</p>
+            </div>
+
+            <!-- Notas -->
+            <div class="lg:col-span-2">
+                <label for="{{ form.notas.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-sticky-note text-blue-600 mr-2"></i>
+                    Notas Adicionales
+                </label>
+                {{ form.notas }}
+                {% if form.notas.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.notas.errors.0 }}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-600">Notas internas sobre la contraparte</p>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-4 mt-8 pt-6 border-t border-gray-200">
+            <a href="{% url 'contrapartes:detalle' object.pk %}" class="w-full sm:w-auto px-6 py-3 text-gray-700 bg-gray-100 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200 text-center">
+                <i class="fas fa-times mr-2"></i>
+                Cancelar
+            </a>
+            <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700">
+                <i class="fas fa-save mr-2"></i>
+                Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Info Box -->
+<div class="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-6">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <i class="fas fa-info-circle text-blue-600"></i>
+            </div>
+        </div>
+        <div class="ml-4">
+            <h3 class="text-lg font-semibold text-blue-900 mb-2">Información Importante</h3>
+            <ul class="text-blue-800 space-y-1 text-sm">
+                <li class="flex items-center">
+                    <i class="fas fa-check-circle text-blue-600 mr-2"></i>
+                    Los cambios se guardarán inmediatamente al hacer clic en "Guardar Cambios"
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check-circle text-blue-600 mr-2"></i>
+                    Puede modificar cualquier campo según sea necesario
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check-circle text-blue-600 mr-2"></i>
+                    Los campos marcados con (*) son obligatorios
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
 {% endblock %}

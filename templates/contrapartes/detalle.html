@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ object.nombre }} - ITICO{% endblock %}
+{% block title %}{{ object.nombre|default:object.full_company_name|default:"Sin nombre" }} - ITICO{% endblock %}
 
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mb-6">
@@ -21,7 +21,7 @@
             <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-green-500 to-blue-600 text-white mr-2">
                 <i class="fas fa-eye text-sm"></i>
             </div>
-            <span class="font-semibold text-gray-800">{{ object.nombre|truncatechars:30 }}</span>
+                                    <span class="font-semibold text-gray-800">{{ object.nombre|default:object.full_company_name|default:"Sin nombre"|truncatechars:30 }}</span>
         </li>
     </ol>
 </nav>
@@ -40,12 +40,12 @@
             <div class="mb-6 lg:mb-0">
                 <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center text-white">
                 <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm text-white">
-                    {{ object.nombre|first|upper }}
+                                                {{ object.nombre|default:object.full_company_name|default:"N"|first|upper }}
                 </div>
-                {{ object.nombre }}
+                                            {{ object.nombre|default:object.full_company_name|default:"Sin nombre" }}
                 </h1>
                 <p class="text-lg text-white leading-relaxed">
-                {{ object.get_tipo_display }} • {{ object.nacionalidad }}
+                                        {{ object.get_tipo_display }} • {{ object.nacionalidad|default:object.domicile|default:"No especificada" }}
                 <br>
                 <span class="text-sm opacity-90 text-white">{{ object.miembros.count }} miembro{{ object.miembros.count|pluralize:"s" }} registrado{{ object.miembros.count|pluralize:"s" }}</span>
                 </p>
@@ -88,32 +88,39 @@
                     
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 mb-1">Estado</label>
-                        {% if object.estado == 'activa' %}
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                <i class="fas fa-circle text-xs mr-1"></i>
-                                {{ object.get_estado_display }}
-                            </span>
-                        {% elif object.estado == 'pendiente' %}
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                <i class="fas fa-clock text-xs mr-1"></i>
-                                {{ object.get_estado_display }}
-                            </span>
-                        {% elif object.estado == 'inactiva' %}
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                                <i class="fas fa-pause text-xs mr-1"></i>
-                                {{ object.get_estado_display }}
-                            </span>
+                        {% if object.estado_nuevo %}
+                            {% if object.estado_nuevo.codigo == 'activa' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-circle text-xs mr-1"></i>
+                                    {{ object.estado_nuevo.nombre }}
+                                </span>
+                            {% elif object.estado_nuevo.codigo == 'pendiente' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-clock text-xs mr-1"></i>
+                                    {{ object.estado_nuevo.nombre }}
+                                </span>
+                            {% elif object.estado_nuevo.codigo == 'inactiva' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                    <i class="fas fa-pause text-xs mr-1"></i>
+                                    {{ object.estado_nuevo.nombre }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-times text-xs mr-1"></i>
+                                    {{ object.estado_nuevo.nombre }}
+                                </span>
+                            {% endif %}
                         {% else %}
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                                <i class="fas fa-times text-xs mr-1"></i>
-                                {{ object.get_estado_display }}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-question text-xs mr-1"></i>
+                                Sin estado
                             </span>
                         {% endif %}
                     </div>
                     
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 mb-1">Nacionalidad</label>
-                        <p class="text-gray-900">{{ object.nacionalidad }}</p>
+                        <p class="text-gray-900">{{ object.nacionalidad|default:object.domicile|default:"No especificada" }}</p>
                     </div>
                     
                     <div>
@@ -372,7 +379,7 @@
                         <i class="fas fa-file-upload mr-3"></i>
                         Subir Nuevo Documento
                     </h3>
-                    <p class="text-blue-100 text-sm mt-1">{{ object.nombre }}</p>
+                    <p class="text-blue-100 text-sm mt-1">{{ object.nombre|default:object.full_company_name|default:"Sin nombre" }}</p>
                 </div>
                 
                 <!-- Modal Body -->
@@ -416,7 +423,7 @@
                         <i class="fas fa-user-plus mr-3"></i>
                         Agregar Nuevo Miembro
                     </h3>
-                    <p class="text-blue-100 text-sm mt-1">{{ object.nombre }}</p>
+                    <p class="text-blue-100 text-sm mt-1">{{ object.nombre|default:object.full_company_name|default:"Sin nombre" }}</p>
                 </div>
                 
                 <!-- Modal Body -->

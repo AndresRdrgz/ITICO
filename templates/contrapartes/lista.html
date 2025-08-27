@@ -83,11 +83,9 @@
             </select>
             <select class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="">Todos los estados</option>
-                <option value="activa">Activa</option>
-                <option value="inactiva">Inactiva</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="rechazada">Rechazada</option>
-                <option value="en_revision">En Revisión</option>
+                {% for estado in estados_contraparte %}
+                <option value="{{ estado.codigo }}">{{ estado.nombre }}</option>
+                {% endfor %}
             </select>
         </div>
     </div>
@@ -177,10 +175,10 @@
                             <td class="py-4 px-6">
                                 <div class="flex items-center">
                                     <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold mr-3">
-                                        {{ contraparte.nombre|first|upper }}
+                                        {{ contraparte.nombre|default:contraparte.full_company_name|default:"N"|first|upper }}
                                     </div>
                                     <div>
-                                        <h3 class="font-semibold text-gray-900">{{ contraparte.nombre }}</h3>
+                                        <h3 class="font-semibold text-gray-900">{{ contraparte.nombre|default:contraparte.full_company_name|default:"Sin nombre" }}</h3>
                                         <p class="text-sm text-gray-600">{{ contraparte.miembros.count }} miembro{{ contraparte.miembros.count|pluralize:"s" }}</p>
                                     </div>
                                 </div>
@@ -191,29 +189,36 @@
                                 </span>
                             </td>
                             <td class="py-4 px-6">
-                                {% if contraparte.estado == 'activa' %}
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-circle text-xs mr-1"></i>
-                                        {{ contraparte.get_estado_display }}
-                                    </span>
-                                {% elif contraparte.estado == 'pendiente' %}
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                        <i class="fas fa-clock text-xs mr-1"></i>
-                                        {{ contraparte.get_estado_display }}
-                                    </span>
-                                {% elif contraparte.estado == 'inactiva' %}
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                                        <i class="fas fa-pause text-xs mr-1"></i>
-                                        {{ contraparte.get_estado_display }}
-                                    </span>
+                                {% if contraparte.estado_nuevo %}
+                                    {% if contraparte.estado_nuevo.codigo == 'activa' %}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-circle text-xs mr-1"></i>
+                                            {{ contraparte.estado_nuevo.nombre }}
+                                        </span>
+                                    {% elif contraparte.estado_nuevo.codigo == 'pendiente' %}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                            <i class="fas fa-clock text-xs mr-1"></i>
+                                            {{ contraparte.estado_nuevo.nombre }}
+                                        </span>
+                                    {% elif contraparte.estado_nuevo.codigo == 'inactiva' %}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                            <i class="fas fa-pause text-xs mr-1"></i>
+                                            {{ contraparte.estado_nuevo.nombre }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                            <i class="fas fa-times text-xs mr-1"></i>
+                                            {{ contraparte.estado_nuevo.nombre }}
+                                        </span>
+                                    {% endif %}
                                 {% else %}
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                                        <i class="fas fa-times text-xs mr-1"></i>
-                                        {{ contraparte.get_estado_display }}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                        <i class="fas fa-question text-xs mr-1"></i>
+                                        Sin estado
                                     </span>
                                 {% endif %}
                             </td>
-                            <td class="py-4 px-6 text-gray-900">{{ contraparte.nacionalidad }}</td>
+                            <td class="py-4 px-6 text-gray-900">{{ contraparte.nacionalidad|default:contraparte.domicile|default:"No especificada" }}</td>
                             <td class="py-4 px-6">
                                 {% if contraparte.fecha_proxima_dd %}
                                     <div class="flex items-center">
@@ -255,10 +260,10 @@
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
                             <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold mr-3">
-                                {{ contraparte.nombre|first|upper }}
+                                {{ contraparte.nombre|default:contraparte.full_company_name|default:"N"|first|upper }}
                             </div>
                             <div>
-                                <h3 class="font-semibold text-gray-900">{{ contraparte.nombre }}</h3>
+                                <h3 class="font-semibold text-gray-900">{{ contraparte.nombre|default:contraparte.full_company_name|default:"Sin nombre" }}</h3>
                                 <p class="text-sm text-gray-600">{{ contraparte.get_tipo_display }}</p>
                             </div>
                         </div>
@@ -275,23 +280,29 @@
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <span class="text-gray-600">Estado:</span>
-                            {% if contraparte.estado == 'activa' %}
-                                <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    {{ contraparte.get_estado_display }}
-                                </span>
-                            {% elif contraparte.estado == 'pendiente' %}
-                                <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    {{ contraparte.get_estado_display }}
-                                </span>
+                            {% if contraparte.estado_nuevo %}
+                                {% if contraparte.estado_nuevo.codigo == 'activa' %}
+                                    <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {{ contraparte.estado_nuevo.nombre }}
+                                    </span>
+                                {% elif contraparte.estado_nuevo.codigo == 'pendiente' %}
+                                    <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        {{ contraparte.estado_nuevo.nombre }}
+                                    </span>
+                                {% else %}
+                                    <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        {{ contraparte.estado_nuevo.nombre }}
+                                    </span>
+                                {% endif %}
                             {% else %}
                                 <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                    {{ contraparte.get_estado_display }}
+                                    Sin estado
                                 </span>
                             {% endif %}
                         </div>
                         <div>
                             <span class="text-gray-600">Nacionalidad:</span>
-                            <span class="ml-1 text-gray-900">{{ contraparte.nacionalidad }}</span>
+                            <span class="ml-1 text-gray-900">{{ contraparte.nacionalidad|default:contraparte.domicile|default:"No especificada" }}</span>
                         </div>
                         <div class="col-span-2">
                             <span class="text-gray-600">Próxima DD:</span>
