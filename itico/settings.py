@@ -40,6 +40,15 @@ else:
         )
     }
 
+    """
+    DATABASES = {
+        'default': dj_database_url.config(
+            default='postgresql://itico:FP.h05t1l3@localhost:5432/itico',
+            conn_max_age=600,
+        )
+    }
+    """
+
 # ALLOWED_HOSTS configuration for production
 if DEBUG:
     ALLOWED_HOSTS = ['*']  # Allow all hosts in development
@@ -334,9 +343,14 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    
+    # Only enable HTTPS settings in actual production (not local testing)
+    IS_PRODUCTION = config('IS_PRODUCTION', default=False, cast=bool)
+    
+    if IS_PRODUCTION:
+        SECURE_HSTS_SECONDS = 31536000
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+        SECURE_HSTS_PRELOAD = True
+        SECURE_SSL_REDIRECT = True
+        SESSION_COOKIE_SECURE = True
+        CSRF_COOKIE_SECURE = True
