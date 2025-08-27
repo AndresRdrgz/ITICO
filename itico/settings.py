@@ -23,14 +23,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+#database production settings db name "itico", username "itico", password "postgres"
+DEBUG = True
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default='postgresql://itico:FP.h05t1l3@localhost:5432/itico',
+            conn_max_age=600,
+        )
+    }
 
 # ALLOWED_HOSTS configuration for production
-if DEBUG:
-    ALLOWED_HOSTS = ['*']
-else:
-    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.onrender.com').split(',')
-# Application definition
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -112,42 +123,6 @@ WSGI_APPLICATION = 'itico.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 # Use different databases for development and production
-if DEBUG:
-    # Development: Use SQLite3
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-    print("[ITICO] Development mode: Using SQLite3 database")
-else:
-    # Production: Use PostgreSQL from Render
-    DATABASE_URL = config('DATABASE_URL', default='')
-    
-    if DATABASE_URL:
-        # Use DATABASE_URL if available (Render provides this)
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-            )
-        }
-        print(f"[ITICO] Production mode: Using PostgreSQL from DATABASE_URL")
-    else:
-        # Fallback to individual environment variables
-        DATABASES = {
-            'default': {
-                'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
-                'NAME': config('DB_NAME', default='iticodv'),
-                'USER': config('DB_USER', default='iticodv_user'),
-                'PASSWORD': config('DB_PASSWORD', default=''),
-                'HOST': config('DB_HOST', default='dpg-d2m8je95pdvs73bgqtjg-a'),
-                'PORT': config('DB_PORT', default='5432'),
-            }
-        }
-        print(f"[ITICO] Production mode: Using PostgreSQL from individual env vars")
 
 # Debug database configuration
 db_config = DATABASES['default']
@@ -206,8 +181,38 @@ STATICFILES_DIRS = [
 ]
 
 # Media files
+# Media files configuration (user uploads)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Ensure media directory exists
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+
+# Additional media settings for better handling
+MEDIA_FILES_MAX_SIZE = 50 * 1024 * 1024  # 50MB
+ALLOWED_MEDIA_EXTENSIONS = [
+    'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg',  # Images
+    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',  # Documents
+    'txt', 'csv', 'json', 'xml',  # Text files
+    'mp4', 'avi', 'mov', 'wmv', 'flv', 'webm',  # Videos
+    'mp3', 'wav', 'ogg', 'aac',  # Audio
+    'zip', 'rar', '7z', 'tar', 'gz',  # Archives
+]
+
+# Media file security settings for production
+if not DEBUG:
+    # In production, consider additional security for media files
+    # Maximum file size for uploads (50MB)
+    FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
+    DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
+    
+    # File upload permissions
+    FILE_UPLOAD_PERMISSIONS = 0o644
+    FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+else:
+    # Development settings - more permissive
+    FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB for development
+    DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB for development
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
