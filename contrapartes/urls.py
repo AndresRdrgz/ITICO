@@ -42,6 +42,9 @@ urlpatterns = [
     path('comentarios/<int:pk>/ajax/editar/', views.ComentarioUpdateAjaxView.as_view(), name='comentario_editar_ajax'),
     path('comentarios/<int:pk>/ajax/eliminar/', views.ComentarioDeleteAjaxView.as_view(), name='comentario_eliminar_ajax'),
     
+    # Fecha DD
+    path('<int:pk>/fecha-dd/ajax/actualizar/', views.ContraparteFechaDDUpdateView.as_view(), name='fecha_dd_actualizar_ajax'),
+    
     # Búsqueda y filtros
     path('buscar/', views.ContraparteBuscarView.as_view(), name='buscar'),
     

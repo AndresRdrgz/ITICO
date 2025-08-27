@@ -232,43 +232,90 @@
                 </h3>
             </div>
             <div class="p-6">
-                {% if object.fecha_proxima_dd %}
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-gray-900 mb-1">
-                            {{ object.fecha_proxima_dd|date:"d/m/Y" }}
+                <!-- Display Mode -->
+                <div id="dd-display-mode">
+                    {% if object.fecha_proxima_dd %}
+                        <div class="text-center">
+                            <div class="flex items-center justify-center mb-1">
+                                <div class="text-2xl font-bold text-gray-900" id="dd-fecha-display">
+                                    {{ object.fecha_proxima_dd|date:"d/m/Y" }}
+                                </div>
+                                <button id="edit-dd-fecha-btn" class="ml-2 text-gray-400 hover:text-blue-600 transition-colors duration-200" title="Editar fecha">
+                                    <i class="fas fa-edit text-sm"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">Próxima renovación</p>
+                            
+                            <div id="dd-status-indicator">
+                                {% if object.requiere_dd_pronto %}
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                            <span class="font-semibold text-red-800">Atención Requerida</span>
+                                        </div>
+                                        <p class="text-sm text-red-700">
+                                            Faltan <span id="dias-restantes">{{ object.dias_hasta_proxima_dd }}</span> días para la renovación
+                                        </p>
+                                    </div>
+                                {% else %}
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                            <span class="font-semibold text-green-800">Al día</span>
+                                        </div>
+                                        <p class="text-sm text-green-700">
+                                            Faltan <span id="dias-restantes">{{ object.dias_hasta_proxima_dd }}</span> días
+                                        </p>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-600 mb-4">Próxima renovación</p>
+                    {% else %}
+                        <div class="text-center">
+                            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                                <i class="fas fa-question text-gray-400"></i>
+                            </div>
+                            <p class="text-gray-600 mb-4">No hay fecha definida</p>
+                            <button id="set-dd-fecha-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                                <i class="fas fa-calendar-plus mr-2"></i>
+                                Establecer Fecha
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Edit Mode -->
+                <div id="dd-edit-mode" class="hidden">
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600 mb-4">Editar fecha de debida diligencia</p>
                         
-                        {% if object.requiere_dd_pronto %}
-                            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                                <div class="flex items-center justify-center mb-2">
-                                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
-                                    <span class="font-semibold text-red-800">Atención Requerida</span>
-                                </div>
-                                <p class="text-sm text-red-700">
-                                    Faltan {{ object.dias_hasta_proxima_dd }} días para la renovación
-                                </p>
-                            </div>
-                        {% else %}
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                                <div class="flex items-center justify-center mb-2">
-                                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
-                                    <span class="font-semibold text-green-800">Al día</span>
-                                </div>
-                                <p class="text-sm text-green-700">
-                                    Faltan {{ object.dias_hasta_proxima_dd }} días
-                                </p>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="text-center">
-                        <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                            <i class="fas fa-question text-gray-400"></i>
+                        <div class="mb-4">
+                            <input type="date" 
+                                   id="dd-fecha-input" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   value="{% if object.fecha_proxima_dd %}{{ object.fecha_proxima_dd|date:'Y-m-d' }}{% endif %}">
                         </div>
-                        <p class="text-gray-600">No hay fecha definida</p>
+                        
+                        <div class="flex space-x-2">
+                            <button id="save-dd-fecha-btn" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                                <i class="fas fa-save mr-2"></i>
+                                Guardar
+                            </button>
+                            <button id="cancel-dd-fecha-btn" class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
-                {% endif %}
+                </div>
+
+                <!-- Loading State -->
+                <div id="dd-loading" class="hidden text-center">
+                    <div class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-50 text-blue-700">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        Actualizando...
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1026,6 +1073,150 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Error al eliminar comentario', 'error');
         });
     };
+
+    // DD Date Editing Functionality
+    const ddDisplayMode = document.getElementById('dd-display-mode');
+    const ddEditMode = document.getElementById('dd-edit-mode');
+    const ddLoading = document.getElementById('dd-loading');
+    const editDDBtn = document.getElementById('edit-dd-fecha-btn');
+    const setDDBtn = document.getElementById('set-dd-fecha-btn');
+    const saveDDBtn = document.getElementById('save-dd-fecha-btn');
+    const cancelDDBtn = document.getElementById('cancel-dd-fecha-btn');
+    const ddFechaInput = document.getElementById('dd-fecha-input');
+    const ddFechaDisplay = document.getElementById('dd-fecha-display');
+    const ddStatusIndicator = document.getElementById('dd-status-indicator');
+    const diasRestantes = document.getElementById('dias-restantes');
+
+    function enterEditMode() {
+        ddDisplayMode.classList.add('hidden');
+        ddEditMode.classList.remove('hidden');
+        ddFechaInput.focus();
+    }
+
+    function exitEditMode() {
+        ddEditMode.classList.add('hidden');
+        ddDisplayMode.classList.remove('hidden');
+    }
+
+    function showLoading() {
+        ddDisplayMode.classList.add('hidden');
+        ddEditMode.classList.add('hidden');
+        ddLoading.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        ddLoading.classList.add('hidden');
+        ddDisplayMode.classList.remove('hidden');
+    }
+
+    function updateDDStatus(data) {
+        // Update the display date
+        if (ddFechaDisplay) {
+            ddFechaDisplay.textContent = data.fecha_formateada;
+        }
+
+        // Update days remaining
+        if (diasRestantes) {
+            diasRestantes.textContent = data.dias_restantes;
+        }
+
+        // Update status indicator
+        if (ddStatusIndicator && data.requiere_dd_pronto !== undefined) {
+            const isUrgent = data.requiere_dd_pronto;
+            const statusClasses = isUrgent ? 
+                'bg-red-50 border border-red-200' : 
+                'bg-green-50 border border-green-200';
+            const iconClass = isUrgent ? 'fas fa-exclamation-triangle text-red-600' : 'fas fa-check-circle text-green-600';
+            const titleClass = isUrgent ? 'font-semibold text-red-800' : 'font-semibold text-green-800';
+            const title = isUrgent ? 'Atención Requerida' : 'Al día';
+            const textClass = isUrgent ? 'text-sm text-red-700' : 'text-sm text-green-700';
+
+            ddStatusIndicator.innerHTML = `
+                <div class="${statusClasses} rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-center mb-2">
+                        <i class="${iconClass} mr-2"></i>
+                        <span class="${titleClass}">${title}</span>
+                    </div>
+                    <p class="${textClass}">
+                        Faltan <span id="dias-restantes">${data.dias_restantes}</span> días para la renovación
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    function saveDDFecha() {
+        const fechaValue = ddFechaInput.value;
+        
+        if (!fechaValue) {
+            showNotification('Por favor selecciona una fecha', 'error');
+            return;
+        }
+
+        showLoading();
+
+        const formData = new FormData();
+        formData.append('fecha_proxima_dd', fechaValue);
+        formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+        fetch(`{% url 'contrapartes:fecha_dd_actualizar_ajax' object.pk %}`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showNotification('Fecha de debida diligencia actualizada correctamente', 'success');
+                
+                // Reload the page to ensure all UI elements are properly updated
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                showNotification(data.error || 'Error al actualizar la fecha', 'error');
+                exitEditMode();
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showNotification('Error al conectar con el servidor', 'error');
+            exitEditMode();
+        });
+    }
+
+    // Event listeners
+    if (editDDBtn) {
+        editDDBtn.addEventListener('click', enterEditMode);
+    }
+
+    if (setDDBtn) {
+        setDDBtn.addEventListener('click', enterEditMode);
+    }
+
+    if (saveDDBtn) {
+        saveDDBtn.addEventListener('click', saveDDFecha);
+    }
+
+    if (cancelDDBtn) {
+        cancelDDBtn.addEventListener('click', exitEditMode);
+    }
+
+    // Handle Enter key in date input
+    if (ddFechaInput) {
+        ddFechaInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveDDFecha();
+            } else if (e.key === 'Escape') {
+                exitEditMode();
+            }
+        });
+    }
 });
 </script>
 

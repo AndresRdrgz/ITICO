@@ -457,6 +457,94 @@ class ComentarioDeleteAjaxView(LoginRequiredMixin, View):
     
     def post(self, request, pk):
         comentario = get_object_or_404(Comentario, pk=pk)
+        contraparte = comentario.contraparte
+        
+        # Soft delete - mark as inactive
+        comentario.activo = False
+        comentario.save()
+        
+        # Render updated comments list
+        comentarios_html = render_to_string('contrapartes/comentarios_list_partial.html', {
+            'object': contraparte,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Comentario eliminado exitosamente',
+            'comentarios_html': comentarios_html,
+            'comentarios_count': contraparte.comentarios.filter(activo=True).count()
+        })
+
+
+class ContraparteFechaDDUpdateView(LoginRequiredMixin, View):
+    """Vista AJAX para actualizar la fecha de debida diligencia"""
+    
+    def post(self, request, pk):
+        from datetime import datetime
+        
+        contraparte = get_object_or_404(Contraparte, pk=pk)
+        
+        # Get the new date from request
+        nueva_fecha = request.POST.get('fecha_proxima_dd')
+        
+        if not nueva_fecha:
+            return JsonResponse({
+                'success': False,
+                'message': 'Fecha requerida'
+            }, status=400)
+        
+        try:
+            # Parse the date (format: YYYY-MM-DD)
+            fecha_obj = datetime.strptime(nueva_fecha, '%Y-%m-%d').date()
+            
+            # Update the contraparte
+            contraparte.fecha_proxima_dd = fecha_obj
+            contraparte.save(update_fields=['fecha_proxima_dd', 'fecha_actualizacion'])
+            
+            # Calculate days until DD
+            from datetime import date
+            today = date.today()
+            dias_hasta_dd = (fecha_obj - today).days
+            
+            # Determine status
+            if dias_hasta_dd < 0:
+                status_text = "Vencida"
+                status_class = "danger"
+                dias_text = f"Vencida hace {abs(dias_hasta_dd)} días"
+            elif dias_hasta_dd == 0:
+                status_text = "Vence hoy"
+                status_class = "danger"
+                dias_text = "Vence hoy"
+            elif dias_hasta_dd <= 30:
+                status_text = "Próxima a vencer"
+                status_class = "warning"
+                dias_text = f"Faltan {dias_hasta_dd} días"
+            else:
+                status_text = "Al día"
+                status_class = "success"
+                dias_text = f"Faltan {dias_hasta_dd} días"
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Fecha de debida diligencia actualizada exitosamente',
+                'fecha_formatted': fecha_obj.strftime('%d/%m/%Y'),
+                'dias_hasta_dd': dias_hasta_dd,
+                'status_text': status_text,
+                'status_class': status_class,
+                'dias_text': dias_text
+            })
+            
+        except ValueError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Formato de fecha inválido'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error al actualizar fecha: {str(e)}'
+            }, status=500)
+        comentario = get_object_or_404(Comentario, pk=pk)
         
         # Check if user can delete this comment
         if comentario.usuario != request.user and not request.user.is_staff:
