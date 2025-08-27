@@ -24,7 +24,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #database production settings db name "itico", username "itico", password "postgres"
-DEBUG = False
+DEBUG = True
 if DEBUG:
     DATABASES = {
         'default': {
