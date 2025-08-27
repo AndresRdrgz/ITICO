@@ -3,7 +3,7 @@ Configuración del Django Admin para Contrapartes
 """
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import TipoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
+from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
 
 
 @admin.register(TipoContraparte)
@@ -58,6 +58,91 @@ class TipoContraparteAdmin(admin.ModelAdmin):
     
     def save_model(self, request, obj, form, change):
         if not change:  # If creating new tipo
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(EstadoContraparte)
+class EstadoContraparteAdmin(admin.ModelAdmin):
+    list_display = [
+        'codigo',
+        'nombre',
+        'color_badge',
+        'activo_badge',
+        'contrapartes_count',
+        'creado_por',
+        'fecha_creacion'
+    ]
+    list_filter = [
+        'activo',
+        'fecha_creacion',
+        'creado_por'
+    ]
+    search_fields = [
+        'codigo',
+        'nombre',
+        'descripcion'
+    ]
+    readonly_fields = [
+        'creado_por',
+        'fecha_creacion',
+        'fecha_actualizacion'
+    ]
+    fieldsets = (
+        ('Información Básica', {
+            'fields': (
+                'codigo',
+                'nombre',
+                'descripcion',
+                'color',
+                'activo'
+            )
+        }),
+        ('Auditoría', {
+            'fields': (
+                'creado_por',
+                'fecha_creacion',
+                'fecha_actualizacion'
+            ),
+            'classes': ['collapse']
+        })
+    )
+    
+    def color_badge(self, obj):
+        """Muestra el color como un badge"""
+        return format_html(
+            '<div style="display: inline-flex; align-items: center;">'
+            '<div style="width: 20px; height: 20px; background-color: {}; border-radius: 50%; border: 1px solid #ccc; margin-right: 8px;"></div>'
+            '<span style="font-family: monospace; font-size: 12px;">{}</span>'
+            '</div>',
+            obj.color,
+            obj.color
+        )
+    color_badge.short_description = 'Color'
+    
+    def activo_badge(self, obj):
+        """Muestra el estado activo como badge"""
+        if obj.activo:
+            return format_html(
+                '<span style="color: green; font-weight: bold;">✓ Activo</span>'
+            )
+        else:
+            return format_html(
+                '<span style="color: red; font-weight: bold;">✗ Inactivo</span>'
+            )
+    activo_badge.short_description = 'Estado'
+    
+    def contrapartes_count(self, obj):
+        """Muestra el número de contrapartes con este estado"""
+        count = obj.contrapartes.count()
+        return format_html(
+            '<span style="font-weight: bold;">{} contrapartes</span>',
+            count
+        )
+    contrapartes_count.short_description = 'Contrapartes'
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # If creating new estado
             obj.creado_por = request.user
         super().save_model(request, obj, form, change)
 
@@ -145,7 +230,7 @@ class ContraparteAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         'tipo', 
-        'estado', 
+        'estado_nuevo', 
         'nacionalidad', 
         'fecha_creacion',
         'fecha_proxima_dd'
@@ -156,7 +241,7 @@ class ContraparteAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Información Básica', {
-            'fields': ('nombre', 'tipo', 'nacionalidad', 'estado')
+            'fields': ('nombre', 'tipo', 'nacionalidad', 'estado_nuevo')
         }),
         ('Debida Diligencia', {
             'fields': ('fecha_proxima_dd',)
@@ -173,19 +258,19 @@ class ContraparteAdmin(admin.ModelAdmin):
     
     def estado_badge(self, obj):
         """Muestra el estado con colores"""
-        colors = {
-            'activa': 'green',
-            'inactiva': 'gray',
-            'pendiente': 'orange',
-            'rechazada': 'red',
-            'en_revision': 'blue',
-        }
-        color = colors.get(obj.estado, 'gray')
-        return format_html(
-            '<span style="color: {}; font-weight: bold;">{}</span>',
-            color,
-            obj.get_estado_display()
-        )
+        if obj.estado_nuevo:
+            return format_html(
+                '<div style="display: inline-flex; align-items: center;">'
+                '<div style="width: 12px; height: 12px; background-color: {}; border-radius: 50%; margin-right: 8px;"></div>'
+                '<span style="font-weight: bold;">{}</span>'
+                '</div>',
+                obj.estado_nuevo.color,
+                obj.estado_nuevo.nombre
+            )
+        else:
+            return format_html(
+                '<span style="color: gray; font-style: italic;">Sin estado</span>'
+            )
     estado_badge.short_description = 'Estado'
 
 

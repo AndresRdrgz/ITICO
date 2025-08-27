@@ -30,15 +30,15 @@
 {% block content %}
 <!-- Header Section -->
 <div class="mb-8">
-    <div class="bg-gradient-to-r from-green-600 via-blue-600 to-purple-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
         <div class="absolute inset-0 bg-black bg-opacity-20"></div>
         <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
         <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
         
         <div class="relative z-10">
-            <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center">
+            <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center text-white">
                 <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm">
-                    <i class="fas fa-plus text-xl"></i>
+                    <i class="fas fa-plus text-xl text-white"></i>
                 </div>
                 Nueva Contraparte
             </h1>
@@ -51,53 +51,283 @@
 
 <!-- Form Section -->
 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <h2 class="text-xl font-bold text-gray-800 flex items-center">
-            <i class="fas fa-edit mr-3 text-green-600"></i>
-            Información de la Contraparte
-        </h2>
+    <!-- Progress Bar Section -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-edit mr-3 text-blue-600"></i>
+                General Information
+            </h2>
+            <div class="text-sm text-gray-600">
+                <span id="progress-text">0% Complete</span>
+            </div>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+            <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+        </div>
+        <div class="flex items-center text-sm text-gray-600">
+            <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+            <span id="progress-status">Complete todos los campos obligatorios (*) para continuar</span>
+        </div>
+        <!-- Missing Fields List -->
+        <div id="missing-fields" class="mt-3 hidden">
+            <div class="text-sm font-medium text-red-600 mb-2">Campos faltantes:</div>
+            <div id="missing-fields-list" class="flex flex-wrap gap-2"></div>
+        </div>
     </div>
 
-    <form method="post" class="p-6">
+    <form method="post" class="p-6" id="contraparte-form">
         {% csrf_token %}
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Nombre -->
+            <!-- Full Company Name -->
             <div class="lg:col-span-2">
-                <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                <label for="{{ form.full_company_name.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
                     <i class="fas fa-building text-blue-600 mr-2"></i>
-                    Nombre de la Contraparte *
+                    Full Company Name *
                 </label>
-                <input type="text" 
-                       name="{{ form.nombre.name }}" 
-                       id="{{ form.nombre.id_for_label }}"
-                       value="{{ form.nombre.value|default:'' }}"
-                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 {% if form.nombre.errors %}border-red-500 focus:ring-red-500{% endif %}"
-                       placeholder="Ingrese el nombre completo de la contraparte"
-                       required>
-                {% if form.nombre.errors %}
+                {{ form.full_company_name }}
+                {% if form.full_company_name.errors %}
                     <div class="mt-1 text-sm text-red-600">
-                        {{ form.nombre.errors.0 }}
+                        {{ form.full_company_name.errors.0 }}
                     </div>
                 {% endif %}
             </div>
 
-            <!-- Nacionalidad -->
+            <!-- Trading Name -->
             <div>
-                <label for="{{ form.nacionalidad.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-flag text-blue-600 mr-2"></i>
-                    Nacionalidad *
+                <label for="{{ form.trading_name.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-tag text-blue-600 mr-2"></i>
+                    Trading Name
                 </label>
-                <input type="text" 
-                       name="{{ form.nacionalidad.name }}" 
-                       id="{{ form.nacionalidad.id_for_label }}"
-                       value="{{ form.nacionalidad.value|default:'' }}"
-                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 {% if form.nacionalidad.errors %}border-red-500 focus:ring-red-500{% endif %}"
-                       placeholder="Ej: Colombia, Estados Unidos"
-                       required>
-                {% if form.nacionalidad.errors %}
+                {{ form.trading_name }}
+                {% if form.trading_name.errors %}
                     <div class="mt-1 text-sm text-red-600">
-                        {{ form.nacionalidad.errors.0 }}
+                        {{ form.trading_name.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Company Website -->
+            <div>
+                <label for="{{ form.company_website.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-globe text-blue-600 mr-2"></i>
+                    Company Website
+                </label>
+                {{ form.company_website }}
+                {% if form.company_website.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.company_website.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Home Regulatory Body -->
+            <div>
+                <label for="{{ form.home_regulatory_body.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-university text-blue-600 mr-2"></i>
+                    Home Regulatory Body or Supervisory Authority
+                </label>
+                {{ form.home_regulatory_body }}
+                {% if form.home_regulatory_body.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.home_regulatory_body.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Is Licensed by Regulatory Body -->
+            <div>
+                <label for="{{ form.is_licensed_by_regulatory_body.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-certificate text-blue-600 mr-2"></i>
+                    Is the company licensed by the Regulatory Body?
+                </label>
+                {{ form.is_licensed_by_regulatory_body }}
+                {% if form.is_licensed_by_regulatory_body.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.is_licensed_by_regulatory_body.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Is Publicly Listed -->
+            <div>
+                <label for="{{ form.is_publicly_listed.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                    Is the Company publicly listed?
+                </label>
+                {{ form.is_publicly_listed }}
+                {% if form.is_publicly_listed.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.is_publicly_listed.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Publicly Listed Country -->
+            <div>
+                <label for="{{ form.publicly_listed_country.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-flag text-blue-600 mr-2"></i>
+                    Country (if publicly listed)
+                </label>
+                {{ form.publicly_listed_country }}
+                {% if form.publicly_listed_country.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.publicly_listed_country.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Is Holding Company -->
+            <div>
+                <label for="{{ form.is_holding_company.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-sitemap text-blue-600 mr-2"></i>
+                    Is the Company a Holding Company?
+                </label>
+                {{ form.is_holding_company }}
+                {% if form.is_holding_company.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.is_holding_company.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- External Auditors -->
+            <div class="lg:col-span-2">
+                <label for="{{ form.external_auditors.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-user-check text-blue-600 mr-2"></i>
+                    Name and Address of External Auditors
+                </label>
+                {{ form.external_auditors }}
+                {% if form.external_auditors.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.external_auditors.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Registered Address -->
+            <div>
+                <label for="{{ form.registered_address.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-map-marker-alt text-blue-600 mr-2"></i>
+                    Registered Address *
+                </label>
+                {{ form.registered_address }}
+                {% if form.registered_address.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.registered_address.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Business Address -->
+            <div>
+                <label for="{{ form.business_address.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-building text-blue-600 mr-2"></i>
+                    Business Address
+                </label>
+                {{ form.business_address }}
+                {% if form.business_address.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.business_address.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Contact Telephone -->
+            <div>
+                <label for="{{ form.contact_telephone.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-phone text-blue-600 mr-2"></i>
+                    Contact Telephone Number
+                </label>
+                {{ form.contact_telephone }}
+                {% if form.contact_telephone.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.contact_telephone.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Contact Email -->
+            <div>
+                <label for="{{ form.contact_email.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-envelope text-blue-600 mr-2"></i>
+                    Contact E-mail Address
+                </label>
+                {{ form.contact_email }}
+                {% if form.contact_email.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.contact_email.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Company Nature and Business -->
+            <div class="lg:col-span-2">
+                <label for="{{ form.company_nature_business.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-briefcase text-blue-600 mr-2"></i>
+                    Company Nature and Type of Business *
+                </label>
+                {{ form.company_nature_business }}
+                {% if form.company_nature_business.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.company_nature_business.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Domicile -->
+            <div>
+                <label for="{{ form.domicile.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-globe-americas text-blue-600 mr-2"></i>
+                    Domicile *
+                </label>
+                {{ form.domicile }}
+                {% if form.domicile.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.domicile.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Company Incorporation/Registration -->
+            <div>
+                <label for="{{ form.company_incorporation_registration.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+                    Company Incorporation/Registration *
+                </label>
+                {{ form.company_incorporation_registration }}
+                {% if form.company_incorporation_registration.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.company_incorporation_registration.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Date of Incorporation -->
+            <div>
+                <label for="{{ form.date_incorporation.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-calendar text-blue-600 mr-2"></i>
+                    Date of Incorporation/Registration *
+                </label>
+                {{ form.date_incorporation }}
+                {% if form.date_incorporation.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.date_incorporation.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Number of Employees -->
+            <div>
+                <label for="{{ form.number_of_employees.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-users text-blue-600 mr-2"></i>
+                    Number of Employees
+                </label>
+                {{ form.number_of_employees }}
+                {% if form.number_of_employees.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.number_of_employees.errors.0 }}
                     </div>
                 {% endif %}
             </div>
@@ -129,15 +359,7 @@
                     <i class="fas fa-circle text-blue-600 mr-2"></i>
                     Estado Inicial
                 </label>
-                <select name="{{ form.estado.name }}" 
-                        id="{{ form.estado.id_for_label }}"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 {% if form.estado.errors %}border-red-500 focus:ring-red-500{% endif %}">
-                    <option value="pendiente" {% if form.estado.value == 'pendiente' or not form.estado.value %}selected{% endif %}>Pendiente de Aprobación</option>
-                    <option value="activa" {% if form.estado.value == 'activa' %}selected{% endif %}>Activa</option>
-                    <option value="en_revision" {% if form.estado.value == 'en_revision' %}selected{% endif %}>En Revisión</option>
-                    <option value="inactiva" {% if form.estado.value == 'inactiva' %}selected{% endif %}>Inactiva</option>
-                    <option value="rechazada" {% if form.estado.value == 'rechazada' %}selected{% endif %}>Rechazada</option>
-                </select>
+                {{ form.estado }}
                 {% if form.estado.errors %}
                     <div class="mt-1 text-sm text-red-600">
                         {{ form.estado.errors.0 }}
@@ -150,13 +372,9 @@
             <div class="lg:col-span-2">
                 <label for="{{ form.descripcion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
                     <i class="fas fa-align-left text-blue-600 mr-2"></i>
-                    Descripción
+                    Descripción Adicional
                 </label>
-                <textarea name="{{ form.descripcion.name }}" 
-                          id="{{ form.descripcion.id_for_label }}"
-                          rows="4"
-                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 {% if form.descripcion.errors %}border-red-500 focus:ring-red-500{% endif %}"
-                          placeholder="Descripción adicional sobre la contraparte (opcional)">{{ form.descripcion.value|default:'' }}</textarea>
+                {{ form.descripcion }}
                 {% if form.descripcion.errors %}
                     <div class="mt-1 text-sm text-red-600">
                         {{ form.descripcion.errors.0 }}
@@ -172,7 +390,7 @@
                 <i class="fas fa-times mr-2"></i>
                 Cancelar
             </a>
-            <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+            <button type="submit" disabled class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl opacity-50 cursor-not-allowed">
                 <i class="fas fa-save mr-2"></i>
                 Guardar Contraparte
             </button>
@@ -207,4 +425,311 @@
         </div>
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<div id="confirmation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-2xl bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white mr-3">
+                        <i class="fas fa-check-circle text-sm"></i>
+                    </div>
+                    Confirmar Creación de Contraparte
+                </h3>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="py-6">
+                <div class="mb-6">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-center text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <span class="font-medium">Por favor revise la información antes de continuar</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Summary Content -->
+                <div class="space-y-4 max-h-96 overflow-y-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="summary-content">
+                        <!-- Summary will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                <button id="cancel-submit" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors duration-200">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancelar
+                </button>
+                <button id="confirm-submit" class="px-6 py-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all duration-200">
+                    <i class="fas fa-save mr-2"></i>
+                    Confirmar y Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Required fields for progress calculation
+    const requiredFields = [
+        'id_full_company_name',
+        'id_registered_address', 
+        'id_company_nature_business',
+        'id_domicile',
+        'id_company_incorporation_registration',
+        'id_date_incorporation',
+        'id_tipo'
+    ];
+    
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const progressStatus = document.getElementById('progress-status');
+    const missingFieldsContainer = document.getElementById('missing-fields');
+    const missingFieldsList = document.getElementById('missing-fields-list');
+    const form = document.getElementById('contraparte-form');
+    const modal = document.getElementById('confirmation-modal');
+    const summaryContent = document.getElementById('summary-content');
+    
+    function getFieldLabel(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            const label = field.closest('.grid > div').querySelector('label');
+            return label ? label.textContent.replace(' *', '').replace(/\s*\n\s*/g, ' ').trim() : fieldId;
+        }
+        return fieldId;
+    }
+    
+    function updateProgress() {
+        let completedFields = 0;
+        let missingFields = [];
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                const fieldLabel = getFieldLabel(fieldId);
+                let isCompleted = false;
+                
+                if (field.type === 'select-one') {
+                    isCompleted = field.value !== '' && field.value !== 'null' && field.value !== null;
+                } else if (field.type === 'date') {
+                    isCompleted = field.value !== '';
+                } else {
+                    isCompleted = field.value.trim() !== '';
+                }
+                
+                if (isCompleted) {
+                    completedFields++;
+                    field.closest('.grid > div').classList.remove('border-l-4', 'border-red-300', 'bg-red-50');
+                    field.closest('.grid > div').classList.add('border-l-4', 'border-green-300', 'bg-green-50');
+                } else {
+                    field.closest('.grid > div').classList.remove('border-l-4', 'border-green-300', 'bg-green-50');
+                    field.closest('.grid > div').classList.add('border-l-4', 'border-red-300', 'bg-red-50');
+                    missingFields.push(fieldLabel);
+                }
+            }
+        });
+        
+        const progressPercentage = Math.round((completedFields / requiredFields.length) * 100);
+        
+        // Update progress bar
+        progressBar.style.width = progressPercentage + '%';
+        progressText.textContent = progressPercentage + '% Complete';
+        
+        // Update missing fields display
+        if (missingFields.length > 0) {
+            missingFieldsContainer.classList.remove('hidden');
+            missingFieldsList.innerHTML = missingFields.map(field => 
+                `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    ${field}
+                </span>`
+            ).join('');
+        } else {
+            missingFieldsContainer.classList.add('hidden');
+        }
+        
+        // Update status message
+        if (progressPercentage === 100) {
+            progressStatus.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>¡Todos los campos obligatorios están completos!';
+            progressBar.classList.remove('from-blue-500', 'to-indigo-600');
+            progressBar.classList.add('from-green-500', 'to-emerald-600');
+        } else {
+            const remaining = requiredFields.length - completedFields;
+            progressStatus.innerHTML = `<i class="fas fa-exclamation-circle mr-2 text-amber-500"></i>Faltan ${remaining} campos obligatorios por completar`;
+            progressBar.classList.remove('from-green-500', 'to-emerald-600');
+            progressBar.classList.add('from-blue-500', 'to-indigo-600');
+        }
+        
+        // Enable/disable submit button
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (progressPercentage === 100) {
+            submitButton.disabled = false;
+            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            submitButton.classList.add('hover:from-green-700', 'hover:to-blue-700');
+        } else {
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+            submitButton.classList.remove('hover:from-green-700', 'hover:to-blue-700');
+        }
+    }
+    
+    function generateSummary() {
+        const allFields = [
+            { id: 'id_full_company_name', label: 'Full Company Name', icon: 'fas fa-building' },
+            { id: 'id_trading_name', label: 'Trading Name', icon: 'fas fa-tag' },
+            { id: 'id_company_website', label: 'Company Website', icon: 'fas fa-globe' },
+            { id: 'id_home_regulatory_body', label: 'Home Regulatory Body', icon: 'fas fa-university' },
+            { id: 'id_is_licensed_by_regulatory_body', label: 'Licensed by Regulatory Body', icon: 'fas fa-certificate' },
+            { id: 'id_is_publicly_listed', label: 'Publicly Listed', icon: 'fas fa-chart-line' },
+            { id: 'id_publicly_listed_country', label: 'Listed Country', icon: 'fas fa-flag' },
+            { id: 'id_is_holding_company', label: 'Holding Company', icon: 'fas fa-sitemap' },
+            { id: 'id_external_auditors', label: 'External Auditors', icon: 'fas fa-user-check' },
+            { id: 'id_registered_address', label: 'Registered Address', icon: 'fas fa-map-marker-alt' },
+            { id: 'id_business_address', label: 'Business Address', icon: 'fas fa-building' },
+            { id: 'id_contact_telephone', label: 'Contact Telephone', icon: 'fas fa-phone' },
+            { id: 'id_contact_email', label: 'Contact Email', icon: 'fas fa-envelope' },
+            { id: 'id_company_nature_business', label: 'Company Nature & Business', icon: 'fas fa-briefcase' },
+            { id: 'id_domicile', label: 'Domicile', icon: 'fas fa-globe-americas' },
+            { id: 'id_company_incorporation_registration', label: 'Incorporation/Registration', icon: 'fas fa-file-alt' },
+            { id: 'id_date_incorporation', label: 'Incorporation Date', icon: 'fas fa-calendar' },
+            { id: 'id_number_of_employees', label: 'Number of Employees', icon: 'fas fa-users' },
+            { id: 'id_tipo', label: 'Tipo de Organización', icon: 'fas fa-tags' },
+            { id: 'id_estado_nuevo', label: 'Estado', icon: 'fas fa-circle' },
+            { id: 'id_descripcion', label: 'Descripción', icon: 'fas fa-align-left' }
+        ];
+        
+        let summaryHTML = '';
+        
+        allFields.forEach(fieldInfo => {
+            const field = document.getElementById(fieldInfo.id);
+            if (field) {
+                let value = '';
+                let hasValue = false;
+                
+                if (field.type === 'select-one') {
+                    const selectedOption = field.options[field.selectedIndex];
+                    if (selectedOption && selectedOption.value !== '' && selectedOption.value !== 'null') {
+                        value = selectedOption.text;
+                        hasValue = true;
+                    }
+                } else if (field.type === 'textarea') {
+                    value = field.value.trim();
+                    hasValue = value !== '';
+                    if (hasValue && value.length > 100) {
+                        value = value.substring(0, 100) + '...';
+                    }
+                } else {
+                    value = field.value.trim();
+                    hasValue = value !== '';
+                }
+                
+                if (hasValue) {
+                    const isRequired = requiredFields.includes(fieldInfo.id);
+                    summaryHTML += `
+                        <div class="bg-gray-50 rounded-lg p-3 ${isRequired ? 'border-l-4 border-blue-500' : ''}">
+                            <div class="flex items-start">
+                                <i class="${fieldInfo.icon} text-blue-600 mt-1 mr-2 flex-shrink-0"></i>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-gray-700 mb-1">
+                                        ${fieldInfo.label}
+                                        ${isRequired ? '<span class="text-red-500">*</span>' : ''}
+                                    </div>
+                                    <div class="text-sm text-gray-600 break-words">${value}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        });
+        
+        summaryContent.innerHTML = summaryHTML;
+    }
+    
+    // Form submission handling
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Generate and show summary
+        generateSummary();
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    });
+    
+    // Modal event handlers
+    document.getElementById('close-modal').addEventListener('click', function() {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    });
+    
+    document.getElementById('cancel-submit').addEventListener('click', function() {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    });
+    
+    document.getElementById('confirm-submit').addEventListener('click', function() {
+        // Actually submit the form
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        
+        // Create a new form element to bypass our event listener
+        const realForm = document.createElement('form');
+        realForm.method = 'post';
+        realForm.action = form.action;
+        
+        // Copy all form data
+        const formData = new FormData(form);
+        for (let [key, value] of formData.entries()) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            realForm.appendChild(input);
+        }
+        
+        document.body.appendChild(realForm);
+        realForm.submit();
+    });
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    });
+    
+    // Add event listeners to all form fields
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', updateProgress);
+            field.addEventListener('change', updateProgress);
+        }
+    });
+    
+    // Initial progress calculation
+    updateProgress();
+    
+    // Add visual indicators to required field containers
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            const container = field.closest('.grid > div');
+            if (container) {
+                container.classList.add('transition-all', 'duration-300', 'rounded-lg', 'p-3', 'mb-2');
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

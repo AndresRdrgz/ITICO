@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Estado de Contraparte - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:lista' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                Contrapartes
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'contrapartes:estado_lista' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                Estados de Contraparte
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-green-500 to-blue-600 text-white mr-2">
+                <i class="fas fa-plus text-sm"></i>
+            </div>
+            <span class="font-semibold text-gray-800">Nuevo Estado</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-green-600 via-blue-600 to-indigo-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
+        
+        <div class="relative z-10">
+            <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center">
+                <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm">
+                    <i class="fas fa-plus text-xl"></i>
+                </div>
+                Nuevo Estado de Contraparte
+            </h1>
+            <p class="text-lg text-green-100 leading-relaxed">
+                Crea un nuevo estado para clasificar las contrapartes
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Form Section -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-edit mr-3 text-green-600"></i>
+            Información del Estado
+        </h2>
+        <p class="text-sm text-gray-600 mt-1">Complete los campos para crear el nuevo estado</p>
+    </div>
+
+    <form method="post" class="p-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Código -->
+            <div>
+                <label for="{{ form.codigo.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Código *
+                </label>
+                {{ form.codigo }}
+                {% if form.codigo.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {% for error in form.codigo.errors %}
+                            <p class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">Código único para identificar el estado (ej: activa, pendiente)</p>
+            </div>
+
+            <!-- Nombre -->
+            <div>
+                <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Nombre *
+                </label>
+                {{ form.nombre }}
+                {% if form.nombre.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {% for error in form.nombre.errors %}
+                            <p class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">Nombre descriptivo del estado</p>
+            </div>
+
+            <!-- Color -->
+            <div>
+                <label for="{{ form.color.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Color
+                </label>
+                {{ form.color }}
+                {% if form.color.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {% for error in form.color.errors %}
+                            <p class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">Color para mostrar el estado en la interfaz</p>
+            </div>
+
+            <!-- Activo -->
+            <div class="flex items-center">
+                <div class="flex items-center h-5">
+                    {{ form.activo }}
+                    <label for="{{ form.activo.id_for_label }}" class="ml-3 text-sm font-semibold text-gray-700">
+                        Estado activo
+                    </label>
+                </div>
+                {% if form.activo.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {% for error in form.activo.errors %}
+                            <p class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500 ml-8">Determina si el estado estará disponible para nuevas contrapartes</p>
+            </div>
+
+            <!-- Descripción -->
+            <div class="lg:col-span-2">
+                <label for="{{ form.descripcion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Descripción
+                </label>
+                {{ form.descripcion }}
+                {% if form.descripcion.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {% for error in form.descripcion.errors %}
+                            <p class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">Descripción detallada del estado (opcional)</p>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-4 mt-8 pt-6 border-t border-gray-200">
+            <a href="{% url 'contrapartes:estado_lista' %}" 
+               class="w-full sm:w-auto px-6 py-3 text-gray-700 bg-gray-100 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200 text-center">
+                <i class="fas fa-times mr-2"></i>
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                <i class="fas fa-save mr-2"></i>
+                Crear Estado
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Info Box -->
+<div class="mt-8 bg-green-50 border border-green-200 rounded-2xl p-6">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                <i class="fas fa-info-circle text-green-600"></i>
+            </div>
+        </div>
+        <div class="ml-4">
+            <h3 class="text-lg font-semibold text-green-900 mb-2">Información Importante</h3>
+            <ul class="text-green-800 space-y-1 text-sm">
+                <li class="flex items-start">
+                    <i class="fas fa-circle text-xs text-green-600 mt-2 mr-2"></i>
+                    <span>El código debe ser único y se recomienda usar un formato consistente (ej: activa, pendiente, rechazada)</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-circle text-xs text-green-600 mt-2 mr-2"></i>
+                    <span>El color seleccionado se usará para mostrar el estado en las listas y reportes</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-circle text-xs text-green-600 mt-2 mr-2"></i>
+                    <span>Solo los estados activos estarán disponibles al crear o editar contrapartes</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

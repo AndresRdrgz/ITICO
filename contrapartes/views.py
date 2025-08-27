@@ -13,8 +13,8 @@ from django.http import JsonResponse
 from django.views import View
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from .models import TipoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
-from .forms import TipoContraparteForm, ContraparteForm, MiembroForm, DocumentoForm, ComentarioForm
+from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
+from .forms import TipoContraparteForm, EstadoContraparteForm, ContraparteForm, MiembroForm, DocumentoForm, ComentarioForm
 
 
 # ====== VISTAS PARA TIPO CONTRAPARTE ======
@@ -58,6 +58,54 @@ class TipoContraparteDeleteView(LoginRequiredMixin, DeleteView):
     model = TipoContraparte
     template_name = 'contrapartes/tipo_eliminar.html'
     success_url = reverse_lazy('contrapartes:tipo_lista')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contrapartes_count'] = self.object.contrapartes.count()
+        return context
+
+
+# ====== VISTAS PARA ESTADO CONTRAPARTE ======
+class EstadoContraparteListView(LoginRequiredMixin, ListView):
+    model = EstadoContraparte
+    template_name = 'contrapartes/estado_lista.html'
+    context_object_name = 'estados'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = EstadoContraparte.objects.all()
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(codigo__icontains=search) | 
+                Q(nombre__icontains=search) |
+                Q(descripcion__icontains=search)
+            )
+        return queryset
+
+
+class EstadoContraparteCreateView(LoginRequiredMixin, CreateView):
+    model = EstadoContraparte
+    form_class = EstadoContraparteForm
+    template_name = 'contrapartes/estado_crear.html'
+    success_url = reverse_lazy('contrapartes:estado_lista')
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        return super().form_valid(form)
+
+
+class EstadoContraparteUpdateView(LoginRequiredMixin, UpdateView):
+    model = EstadoContraparte
+    form_class = EstadoContraparteForm
+    template_name = 'contrapartes/estado_editar.html'
+    success_url = reverse_lazy('contrapartes:estado_lista')
+
+
+class EstadoContraparteDeleteView(LoginRequiredMixin, DeleteView):
+    model = EstadoContraparte
+    template_name = 'contrapartes/estado_eliminar.html'
+    success_url = reverse_lazy('contrapartes:estado_lista')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

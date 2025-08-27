@@ -13,6 +13,12 @@ urlpatterns = [
     path('tipos/<int:pk>/editar/', views.TipoContraparteUpdateView.as_view(), name='tipo_editar'),
     path('tipos/<int:pk>/eliminar/', views.TipoContraparteDeleteView.as_view(), name='tipo_eliminar'),
     
+    # Gestión de estados de contraparte
+    path('estados/', views.EstadoContraparteListView.as_view(), name='estado_lista'),
+    path('estados/crear/', views.EstadoContraparteCreateView.as_view(), name='estado_crear'),
+    path('estados/<int:pk>/editar/', views.EstadoContraparteUpdateView.as_view(), name='estado_editar'),
+    path('estados/<int:pk>/eliminar/', views.EstadoContraparteDeleteView.as_view(), name='estado_eliminar'),
+    
     # Gestión de tipos de documento
     path('tipos-documento/', views.TipoDocumentoListView.as_view(), name='tipo_documento_lista'),
     path('tipos-documento/crear/', views.TipoDocumentoCreateView.as_view(), name='tipo_documento_crear'),

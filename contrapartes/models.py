@@ -65,20 +65,201 @@ class TipoContraparte(models.Model):
         return self.nombre
 
 
+class EstadoContraparte(models.Model):
+    """
+    Modelo para los estados de contraparte
+    """
+    codigo = models.CharField(
+        max_length=20, 
+        unique=True,
+        verbose_name="Código",
+        help_text="Código único para identificar el estado (ej: activa, pendiente, etc.)"
+    )
+    nombre = models.CharField(
+        max_length=100, 
+        verbose_name="Nombre",
+        help_text="Nombre descriptivo del estado de contraparte"
+    )
+    descripcion = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name="Descripción",
+        help_text="Descripción detallada del estado de contraparte"
+    )
+    color = models.CharField(
+        max_length=7,
+        default='#6B7280',
+        verbose_name="Color",
+        help_text="Color hexadecimal para mostrar el estado (ej: #10B981 para verde)"
+    )
+    activo = models.BooleanField(
+        default=True, 
+        verbose_name="Activo",
+        help_text="Indica si este estado está disponible para contrapartes"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User, 
+        on_delete=models.PROTECT,
+        related_name='estados_contraparte_creados',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
+    
+    class Meta:
+        verbose_name = "Estado de Contraparte"
+        verbose_name_plural = "Estados de Contraparte"
+        ordering = ['nombre']
+    
+    def __str__(self):
+        return self.nombre
+
+
 class Contraparte(models.Model):
     """
     Modelo principal para las contrapartes
     """
-    ESTADOS_CONTRAPARTE = [
-        ('activa', 'Activa'),
-        ('inactiva', 'Inactiva'),
-        ('pendiente', 'Pendiente de Aprobación'),
-        ('rechazada', 'Rechazada'),
-        ('en_revision', 'En Revisión'),
-    ]
     
-    nombre = models.CharField(max_length=255, verbose_name="Nombre")
-    nacionalidad = models.CharField(max_length=100, verbose_name="Nacionalidad")
+    # General Information Fields
+    full_company_name = models.CharField(
+        max_length=255, 
+        verbose_name="Full Company Name",
+        help_text="Complete legal name of the company",
+        blank=True,  # Allow empty for backward compatibility
+        null=True
+    )
+    trading_name = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True,
+        verbose_name="Trading Name",
+        help_text="Commercial or trade name if different from legal name"
+    )
+    company_website = models.URLField(
+        blank=True, 
+        null=True,
+        verbose_name="Company Website",
+        help_text="Official company website URL"
+    )
+    home_regulatory_body = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Home Regulatory Body or Supervisory Authority",
+        help_text="Primary regulatory authority overseeing the company"
+    )
+    is_licensed_by_regulatory_body = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="Is the company licensed by the Regulatory Body?",
+        help_text="Whether the company holds necessary regulatory licenses"
+    )
+    is_publicly_listed = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="Is the Company publicly listed?",
+        help_text="Whether the company is publicly traded"
+    )
+    publicly_listed_country = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Country of public listing",
+        help_text="Country where the company is publicly listed"
+    )
+    is_holding_company = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="Is the Company a Holding Company?",
+        help_text="Whether the company operates as a holding company"
+    )
+    external_auditors = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Name and Address of External Auditors",
+        help_text="Details of the company's external auditing firm"
+    )
+    
+    # Address Information
+    registered_address = models.TextField(
+        verbose_name="Registered Address",
+        help_text="Official registered address of the company",
+        blank=True,  # Allow empty for backward compatibility
+        null=True
+    )
+    business_address = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Business Address", 
+        help_text="Primary business operating address"
+    )
+    
+    # Contact Information
+    contact_telephone = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Contact Telephone Number",
+        help_text="Primary contact phone number"
+    )
+    contact_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Contact E-mail Address",
+        help_text="Primary contact email address"
+    )
+    
+    # Business Information
+    company_nature_business = models.TextField(
+        verbose_name="Company Nature and Type of Business",
+        help_text="Description of the company's business activities and nature",
+        blank=True,  # Allow empty for backward compatibility
+        null=True
+    )
+    domicile = models.CharField(
+        max_length=100,
+        verbose_name="Domicile",
+        help_text="Legal domicile or jurisdiction of incorporation",
+        blank=True,  # Allow empty for backward compatibility
+        null=True
+    )
+    company_incorporation_registration = models.CharField(
+        max_length=100,
+        verbose_name="Company Incorporation/Registration",
+        help_text="Registration or incorporation number",
+        blank=True,  # Allow empty for backward compatibility
+        null=True
+    )
+    date_incorporation = models.DateField(
+        verbose_name="Date of Incorporation/Registration",
+        help_text="Date when the company was legally incorporated",
+        blank=True,  # Allow empty for backward compatibility
+        null=True
+    )
+    number_of_employees = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Number of Employees",
+        help_text="Current number of employees"
+    )
+    
+    # Legacy fields for backward compatibility
+    nombre = models.CharField(
+        max_length=255, 
+        verbose_name="Nombre",
+        blank=True,
+        null=True,
+        help_text="Legacy field - use full_company_name instead"
+    )
+    nacionalidad = models.CharField(
+        max_length=100, 
+        verbose_name="Nacionalidad",
+        blank=True,
+        null=True,
+        help_text="Legacy field - use domicile instead"
+    )
     tipo = models.ForeignKey(
         TipoContraparte,
         on_delete=models.PROTECT,
@@ -87,11 +268,15 @@ class Contraparte(models.Model):
         limit_choices_to={'activo': True},
         help_text="Tipo de contraparte"
     )
-    estado = models.CharField(
-        max_length=20, 
-        choices=ESTADOS_CONTRAPARTE, 
-        default='pendiente',
-        verbose_name="Estado"
+    estado_nuevo = models.ForeignKey(
+        EstadoContraparte,
+        on_delete=models.PROTECT,
+        related_name='contrapartes',
+        verbose_name="Estado",
+        limit_choices_to={'activo': True},
+        help_text="Estado de la contraparte",
+        null=True,
+        blank=True
     )
     fecha_proxima_dd = models.DateField(
         verbose_name="Próxima Debida Diligencia",

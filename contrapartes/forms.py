@@ -2,7 +2,7 @@
 Formularios para la aplicación de contrapartes
 """
 from django import forms
-from .models import TipoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
+from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
 
 
 class TipoContraparteForm(forms.ModelForm):
@@ -31,25 +31,130 @@ class TipoContraparteForm(forms.ModelForm):
         }
 
 
+class EstadoContraparteForm(forms.ModelForm):
+    """Formulario para crear/editar estados de contraparte"""
+    
+    class Meta:
+        model = EstadoContraparte
+        fields = ['codigo', 'nombre', 'descripcion', 'color', 'activo']
+        widgets = {
+            'codigo': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Ej: activa, pendiente, rechazada'
+            }),
+            'nombre': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Ej: Activa, Pendiente, Rechazada'
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200',
+                'rows': 4,
+                'placeholder': 'Descripción detallada del estado de contraparte (opcional)'
+            }),
+            'color': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200',
+                'type': 'color',
+                'placeholder': '#6B7280'
+            }),
+            'activo': forms.CheckboxInput(attrs={
+                'class': 'h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded'
+            })
+        }
+
+
 class ContraparteForm(forms.ModelForm):
     """Formulario para crear/editar contrapartes"""
     
     class Meta:
         model = Contraparte
-        fields = ['nombre', 'nacionalidad', 'tipo', 'estado', 'descripcion']
+        fields = [
+            'full_company_name', 'trading_name', 'company_website', 
+            'home_regulatory_body', 'is_licensed_by_regulatory_body', 
+            'is_publicly_listed', 'publicly_listed_country', 'is_holding_company',
+            'external_auditors', 'registered_address', 'business_address',
+            'contact_telephone', 'contact_email', 'company_nature_business',
+            'domicile', 'company_incorporation_registration', 'date_incorporation',
+            'number_of_employees', 'tipo', 'estado_nuevo', 'descripcion'
+        ]
         widgets = {
-            'nombre': forms.TextInput(attrs={
+            'full_company_name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
-                'placeholder': 'Ingrese el nombre completo de la contraparte'
+                'placeholder': 'Enter the complete legal name of the company'
             }),
-            'nacionalidad': forms.TextInput(attrs={
+            'trading_name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
-                'placeholder': 'Ej: Colombia, Estados Unidos'
+                'placeholder': 'Trading or commercial name (if different)'
+            }),
+            'company_website': forms.URLInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'https://www.company.com'
+            }),
+            'home_regulatory_body': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Regulatory authority name'
+            }),
+            'is_licensed_by_regulatory_body': forms.Select(choices=[(None, 'Select...'), (True, 'YES'), (False, 'NO')], attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
+            }),
+            'is_publicly_listed': forms.Select(choices=[(None, 'Select...'), (True, 'YES'), (False, 'NO')], attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
+            }),
+            'publicly_listed_country': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Country where publicly listed'
+            }),
+            'is_holding_company': forms.Select(choices=[(None, 'Select...'), (True, 'YES'), (False, 'NO')], attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
+            }),
+            'external_auditors': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'rows': 3,
+                'placeholder': 'Name and address of external auditors'
+            }),
+            'registered_address': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'rows': 3,
+                'placeholder': 'Complete registered address'
+            }),
+            'business_address': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'rows': 3,
+                'placeholder': 'Primary business address'
+            }),
+            'contact_telephone': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': '+1 (555) 123-4567'
+            }),
+            'contact_email': forms.EmailInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'contact@company.com'
+            }),
+            'company_nature_business': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'rows': 4,
+                'placeholder': 'Describe the nature and type of business'
+            }),
+            'domicile': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Legal domicile/jurisdiction'
+            }),
+            'company_incorporation_registration': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Registration/incorporation number'
+            }),
+            'date_incorporation': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'type': 'date'
+            }),
+            'number_of_employees': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Number of employees',
+                'min': '0'
             }),
             'tipo': forms.Select(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
             }),
-            'estado': forms.Select(attrs={
+            'estado_nuevo': forms.Select(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
             }),
             'descripcion': forms.Textarea(attrs={
