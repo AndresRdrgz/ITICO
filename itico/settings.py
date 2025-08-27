@@ -28,14 +28,14 @@ DEBUG = True
 if DEBUG:
     DATABASES = {
         'default': dj_database_url.config(
-            default='postgresql://itico:FP.h05t1l3@localhost:5432/itico',
+            default='postgresql://itico:postgres@localhost:5432/itico',
             conn_max_age=600,
         )
     }
 else:
     DATABASES = {
         'default': dj_database_url.config(
-            default='postgresql://itico:FP.h05t1l3@localhost:5432/itico',
+            default='postgresql://itico:postgres@localhost:5432/itico',
             conn_max_age=600,
         )
     }
