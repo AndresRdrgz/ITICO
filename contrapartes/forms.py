@@ -2,7 +2,7 @@
 Formularios para la aplicación de contrapartes
 """
 from django import forms
-from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
+from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario, Calificacion, Calificador, Outlook
 
 
 class TipoContraparteForm(forms.ModelForm):
@@ -183,24 +183,24 @@ class MiembroForm(forms.ModelForm):
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={
                 'type': 'date',
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 text-gray-900'
             }),
             'tipo_persona': forms.Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 text-gray-900'
             }),
             'categoria': forms.Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 text-gray-900'
             }),
             'nombre': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 text-gray-900',
                 'placeholder': 'Ingrese el nombre completo'
             }),
             'numero_identificacion': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 text-gray-900',
                 'placeholder': 'Ej: 12345678'
             }),
             'nacionalidad': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 text-gray-900',
                 'placeholder': 'Ej: Peruana, Colombiana'
             }),
         }
@@ -211,32 +211,55 @@ class DocumentoForm(forms.ModelForm):
     
     class Meta:
         model = Documento
-        fields = ['nombre', 'descripcion', 'tipo', 'archivo', 'fecha_emision', 'fecha_expiracion']
+        fields = ['descripcion', 'tipo', 'archivo', 'fecha_emision', 'fecha_expiracion']
         widgets = {
-            'nombre': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
-                'placeholder': 'Nombre del documento'
-            }),
             'descripcion': forms.Textarea(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
                 'rows': 3,
                 'placeholder': 'Descripción del documento (opcional)'
             }),
             'tipo': forms.Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
+                'id': 'documento-tipo-select'
             }),
             'archivo': forms.FileInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900'
             }),
             'fecha_emision': forms.DateInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
                 'type': 'date'
             }),
             'fecha_expiracion': forms.DateInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
                 'type': 'date'
             })
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make date fields not required by default
+        self.fields['fecha_emision'].required = False
+        self.fields['fecha_expiracion'].required = False
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo = cleaned_data.get('tipo')
+        fecha_emision = cleaned_data.get('fecha_emision')
+        fecha_expiracion = cleaned_data.get('fecha_expiracion')
+        
+        if tipo and tipo.requiere_expiracion:
+            # If tipo requires dates, make them required
+            if not fecha_emision:
+                self.add_error('fecha_emision', 'La fecha de emisión es requerida para este tipo de documento.')
+            
+            if not fecha_expiracion:
+                self.add_error('fecha_expiracion', 'La fecha de expiración es requerida para este tipo de documento.')
+            
+            # Validate that fecha_emision is before fecha_expiracion
+            if fecha_emision and fecha_expiracion and fecha_emision >= fecha_expiracion:
+                self.add_error('fecha_expiracion', 'La fecha de expiración debe ser posterior a la fecha de emisión.')
+        
+        return cleaned_data
 
 
 class TipoDocumentoForm(forms.ModelForm):
@@ -281,7 +304,7 @@ class ComentarioForm(forms.ModelForm):
         fields = ['contenido']
         widgets = {
             'contenido': forms.Textarea(attrs={
-                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none',
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none text-gray-900',
                 'rows': 3,
                 'placeholder': 'Escriba su comentario aquí...'
             })
@@ -290,3 +313,41 @@ class ComentarioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['contenido'].label = ''
+
+
+class CalificacionForm(forms.ModelForm):
+    """Formulario para crear/editar calificaciones"""
+    
+    class Meta:
+        model = Calificacion
+        fields = [
+            'calificador', 'outlook', 'calificacion', 'fecha', 'documento_soporte'
+        ]
+        widgets = {
+            'calificador': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900'
+            }),
+            'outlook': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900'
+            }),
+            'calificacion': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
+                'placeholder': 'Ej: AAA, AA, A, BBB, BB, B, CCC, CC, C, D, NR'
+            }),
+            'fecha': forms.DateTimeInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
+                'type': 'datetime-local'
+            }),
+            'documento_soporte': forms.FileInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900'
+            })
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Personalizar labels
+        self.fields['calificador'].label = 'Calificador *'
+        self.fields['outlook'].label = 'Outlook *'
+        self.fields['calificacion'].label = 'Calificación *'
+        self.fields['fecha'].label = 'Fecha *'
+        self.fields['documento_soporte'].label = 'Documento de Soporte'

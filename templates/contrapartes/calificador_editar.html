@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Calificador - ITICO{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center">
+            <a href="{% url 'contrapartes:calificador_lista' %}" 
+               class="text-blue-600 hover:text-blue-800 mr-4">
+                <i class="fas fa-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Editar Calificador</h1>
+                <p class="text-gray-600 mt-2">Modificar información del calificador "{{ object.nombre }}"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="max-w-2xl">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Nombre -->
+                <div>
+                    <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre del Calificador *
+                    </label>
+                    <input type="text" 
+                           name="{{ form.nombre.name }}" 
+                           id="{{ form.nombre.id_for_label }}"
+                           value="{{ form.nombre.value|default:object.nombre }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent {% if form.nombre.errors %}border-red-500{% endif %}"
+                           placeholder="Ej: Standard & Poor's, Moody's, Fitch Ratings">
+                    {% if form.nombre.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.nombre.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if form.nombre.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.nombre.help_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Estado -->
+                <div>
+                    <label for="{{ form.activo.id_for_label }}" class="flex items-center">
+                        <input type="checkbox" 
+                               name="{{ form.activo.name }}" 
+                               id="{{ form.activo.id_for_label }}"
+                               {% if form.activo.value|default:object.activo %}checked{% endif %}
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <span class="ml-2 text-sm text-gray-700">Activo</span>
+                    </label>
+                    {% if form.activo.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.activo.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if form.activo.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.activo.help_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <a href="{% url 'contrapartes:calificador_lista' %}" 
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        Cancelar
+                    </a>
+                    <button type="submit" 
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-save mr-2"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

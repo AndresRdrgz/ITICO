@@ -78,70 +78,221 @@
                 </h2>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Tipo</label>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                            {{ object.get_tipo_display }}
-                        </span>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Estado</label>
-                        {% if object.estado_nuevo %}
-                            {% if object.estado_nuevo.codigo == 'activa' %}
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                    <i class="fas fa-circle text-xs mr-1"></i>
-                                    {{ object.estado_nuevo.nombre }}
-                                </span>
-                            {% elif object.estado_nuevo.codigo == 'pendiente' %}
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                    <i class="fas fa-clock text-xs mr-1"></i>
-                                    {{ object.estado_nuevo.nombre }}
-                                </span>
-                            {% elif object.estado_nuevo.codigo == 'inactiva' %}
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                                    <i class="fas fa-pause text-xs mr-1"></i>
-                                    {{ object.estado_nuevo.nombre }}
+                <div class="max-h-96 overflow-y-auto pr-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Full Company Name -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Full Company Name *</label>
+                            <p class="text-gray-900 font-medium">{{ object.full_company_name|default:object.nombre|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Trading Name -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Trading Name</label>
+                            <p class="text-gray-900">{{ object.trading_name|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Company Website -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Company Website</label>
+                            {% if object.company_website %}
+                                <a href="{{ object.company_website }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline">
+                                    {{ object.company_website }}
+                                </a>
+                            {% else %}
+                                <p class="text-gray-500">No especificado</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Home Regulatory Body -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Home Regulatory Body</label>
+                            <p class="text-gray-900">{{ object.home_regulatory_body|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Is Licensed by Regulatory Body -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Licensed by Regulatory Body</label>
+                            {% if object.is_licensed_by_regulatory_body is not None %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if object.is_licensed_by_regulatory_body %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    <i class="fas fa-{% if object.is_licensed_by_regulatory_body %}check{% else %}times{% endif %} text-xs mr-1"></i>
+                                    {{ object.is_licensed_by_regulatory_body|yesno:"Sí,No" }}
                                 </span>
                             {% else %}
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                                    <i class="fas fa-times text-xs mr-1"></i>
-                                    {{ object.estado_nuevo.nombre }}
+                                <p class="text-gray-500">No especificado</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Is Publicly Listed -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Publicly Listed</label>
+                            {% if object.is_publicly_listed is not None %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if object.is_publicly_listed %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    <i class="fas fa-{% if object.is_publicly_listed %}check{% else %}times{% endif %} text-xs mr-1"></i>
+                                    {{ object.is_publicly_listed|yesno:"Sí,No" }}
+                                </span>
+                            {% else %}
+                                <p class="text-gray-500">No especificado</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Publicly Listed Country -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Listed Country</label>
+                            <p class="text-gray-900">{{ object.publicly_listed_country|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Is Holding Company -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Holding Company</label>
+                            {% if object.is_holding_company is not None %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if object.is_holding_company %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    <i class="fas fa-{% if object.is_holding_company %}check{% else %}times{% endif %} text-xs mr-1"></i>
+                                    {{ object.is_holding_company|yesno:"Sí,No" }}
+                                </span>
+                            {% else %}
+                                <p class="text-gray-500">No especificado</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- External Auditors -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">External Auditors</label>
+                            <p class="text-gray-900">{{ object.external_auditors|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Registered Address -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Registered Address *</label>
+                            <p class="text-gray-900 font-medium">{{ object.registered_address|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Business Address -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Business Address</label>
+                            <p class="text-gray-900">{{ object.business_address|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Contact Telephone -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Contact Telephone</label>
+                            {% if object.contact_telephone %}
+                                <p class="text-gray-900">{{ object.contact_telephone }}</p>
+                            {% else %}
+                                <p class="text-gray-500">No especificado</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Contact Email -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Contact Email</label>
+                            {% if object.contact_email %}
+                                <a href="mailto:{{ object.contact_email }}" class="text-blue-600 hover:text-blue-800 underline">
+                                    {{ object.contact_email }}
+                                </a>
+                            {% else %}
+                                <p class="text-gray-500">No especificado</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Company Nature and Business -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Company Nature and Business *</label>
+                            <p class="text-gray-900 font-medium">{{ object.company_nature_business|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Domicile -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Domicile *</label>
+                            <p class="text-gray-900 font-medium">{{ object.domicile|default:object.nacionalidad|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Company Incorporation/Registration -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Incorporation/Registration *</label>
+                            <p class="text-gray-900 font-medium">{{ object.company_incorporation_registration|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Date of Incorporation -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Date of Incorporation *</label>
+                            <p class="text-gray-900 font-medium">{{ object.date_incorporation|date:"d/m/Y"|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Number of Employees -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Number of Employees</label>
+                            <p class="text-gray-900">{{ object.number_of_employees|default:"No especificado" }}</p>
+                        </div>
+                        
+                        <!-- Tipo -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Tipo</label>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                {{ object.get_tipo_display }}
+                            </span>
+                        </div>
+                        
+                        <!-- Estado -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Estado</label>
+                            {% if object.estado_nuevo %}
+                                {% if object.estado_nuevo.codigo == 'activa' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-circle text-xs mr-1"></i>
+                                        {{ object.estado_nuevo.nombre }}
+                                    </span>
+                                {% elif object.estado_nuevo.codigo == 'pendiente' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock text-xs mr-1"></i>
+                                        {{ object.estado_nuevo.nombre }}
+                                    </span>
+                                {% elif object.estado_nuevo.codigo == 'inactiva' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                        <i class="fas fa-pause text-xs mr-1"></i>
+                                        {{ object.estado_nuevo.nombre }}
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-times text-xs mr-1"></i>
+                                        {{ object.estado_nuevo.nombre }}
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                    <i class="fas fa-question text-xs mr-1"></i>
+                                    Sin estado
                                 </span>
                             {% endif %}
-                        {% else %}
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                                <i class="fas fa-question text-xs mr-1"></i>
-                                Sin estado
-                            </span>
-                        {% endif %}
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Nacionalidad</label>
-                        <p class="text-gray-900">{{ object.nacionalidad|default:object.domicile|default:"No especificada" }}</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Fecha de Registro</label>
-                        <p class="text-gray-900">{{ object.fecha_creacion|date:"d/m/Y H:i" }}</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Creado por</label>
-                        <p class="text-gray-900">{{ object.creado_por.get_full_name|default:object.creado_por.username }}</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Última Actualización</label>
-                        <p class="text-gray-900">{{ object.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        
+                        <!-- Fecha de Registro -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Fecha de Registro</label>
+                            <p class="text-gray-900">{{ object.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        
+                        <!-- Creado por -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Creado por</label>
+                            <p class="text-gray-900">{{ object.creado_por.get_full_name|default:object.creado_por.username }}</p>
+                        </div>
+                        
+                        <!-- Última Actualización -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Última Actualización</label>
+                            <p class="text-gray-900">{{ object.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                        </div>
                     </div>
                 </div>
                 
+                <!-- Description Section -->
                 {% if object.descripcion %}
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">Descripción</label>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-align-left text-indigo-600 mr-2"></i>
+                            Descripción Adicional
+                        </h3>
                         <p class="text-gray-700 leading-relaxed">{{ object.descripcion }}</p>
                     </div>
                 {% endif %}
@@ -173,6 +324,13 @@
                             Comentarios
                             <span class="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium" id="comentarios-count">
                                 {{ object.comentarios_activos_count }}
+                            </span>
+                        </button>
+                        <button id="tab-calificaciones" class="tab-button px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center">
+                            <i class="fas fa-star mr-2 text-orange-600"></i>
+                            Calificaciones
+                            <span class="ml-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-medium" id="calificaciones-count">
+                                {{ object.calificaciones_activas_count }}
                             </span>
                         </button>
                     </div>
@@ -222,6 +380,13 @@
                         <div id="comentarios-container">
                             {% include 'contrapartes/comentarios_list_partial.html' %}
                         </div>
+                    </div>
+                </div>
+
+                <!-- Calificaciones Tab -->
+                <div id="content-calificaciones" class="tab-pane hidden">
+                    <div id="calificaciones-list">
+                        {% include 'contrapartes/calificaciones_list_partial.html' %}
                     </div>
                 </div>
             </div>
@@ -326,6 +491,86 @@
             </div>
         </div>
 
+        <!-- Calificaciones -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-star mr-3 text-orange-600"></i>
+                    Calificaciones
+                </h3>
+            </div>
+            <div class="p-4">
+                {% if object.calificaciones.all %}
+                    <div class="space-y-3">
+                        {% for calificacion in object.calificaciones.all|slice:":3" %}
+                            {% if calificacion.activo %}
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm font-semibold text-gray-900 truncate">
+                                                {{ calificacion.calificador.nombre }}
+                                            </span>
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                {{ calificacion.calificacion }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-xs text-gray-600">
+                                                {{ calificacion.fecha|date:"d/m/Y" }}
+                                            </span>
+                                            <span class="text-xs text-green-600">
+                                                <i class="fas fa-chart-line mr-1"></i>{{ calificacion.outlook.outlook }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-1 ml-2">
+                                        <button onclick="editarCalificacion({{ calificacion.id }})" 
+                                                class="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors duration-200" 
+                                                title="Editar">
+                                            <i class="fas fa-edit text-xs"></i>
+                                        </button>
+                                        <button onclick="eliminarCalificacion({{ calificacion.id }})" 
+                                                class="p-1 text-red-600 hover:bg-red-50 rounded transition-colors duration-200" 
+                                                title="Eliminar">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if object.calificaciones_activas_count > 3 %}
+                            <div class="text-center pt-2">
+                                <span class="text-xs text-gray-500">
+                                    +{{ object.calificaciones_activas_count|add:"-3" }} más calificaciones
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t border-gray-200">
+                        <button onclick="switchToCalificacionesTab()" 
+                                class="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 text-sm font-medium">
+                            <i class="fas fa-eye mr-2"></i>
+                            Ver Todas las Calificaciones
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="text-center py-6">
+                        <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+                            <i class="fas fa-star text-orange-600"></i>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">No hay calificaciones registradas</p>
+                        <button onclick="switchToCalificacionesTab()" 
+                                class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 text-sm font-medium">
+                            <i class="fas fa-plus mr-2"></i>
+                            Agregar Primera Calificación
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
         <!-- Quick Actions -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -377,7 +622,7 @@
                 <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
                     <h3 class="text-xl font-bold text-white flex items-center">
                         <i class="fas fa-file-upload mr-3"></i>
-                        Subir Nuevo Documento
+                        <span id="documento-modal-title">Subir Nuevo Documento</span>
                     </h3>
                     <p class="text-blue-100 text-sm mt-1">{{ object.nombre|default:object.full_company_name|default:"Sin nombre" }}</p>
                 </div>
@@ -400,7 +645,7 @@
                     </button>
                     <button type="button" id="save-document-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
                         <i class="fas fa-upload mr-2"></i>
-                        Subir Documento
+                        <span id="documento-save-text">Subir Documento</span>
                     </button>
                 </div>
             </div>
@@ -452,6 +697,50 @@
     </div>
 </div>
 
+<!-- Modal para Agregar/Editar Calificación -->
+<div id="calificacion-modal" class="fixed inset-0 z-50 hidden">
+    <!-- Overlay -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+    
+    <!-- Modal Content -->
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all w-full max-w-2xl">
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-4">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-star mr-3"></i>
+                        <span id="calificacion-modal-title">Agregar Nueva Calificación</span>
+                    </h3>
+                    <p class="text-orange-100 text-sm mt-1">{{ object.nombre|default:object.full_company_name|default:"Sin nombre" }}</p>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="px-6 py-6">
+                    <div id="modal-calificacion-form-container">
+                        <!-- Form will be loaded here via AJAX -->
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                            <p class="text-gray-600 mt-2">Cargando formulario...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="bg-gray-50 px-6 py-4 flex items-center justify-end space-x-3">
+                    <button type="button" id="cancel-calificacion-btn" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                        Cancelar
+                    </button>
+                    <button type="button" id="save-calificacion-btn" class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        <span id="calificacion-save-text">Guardar Calificación</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // CSRF token for AJAX requests
 const CSRF_TOKEN = '{{ csrf_token }}';
@@ -476,7 +765,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 Subir Documento
             </button>
         `,
-        comentarios: ''
+        comentarios: '',
+        calificaciones: `
+            <button id="add-calificacion-header-btn" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 text-sm font-medium">
+                <i class="fas fa-plus mr-2"></i>
+                Agregar Calificación
+            </button>
+        `
     };
     
     // Tab styles
@@ -555,6 +850,10 @@ document.addEventListener('DOMContentLoaded', function() {
         switchTab('comentarios');
     };
     
+    window.switchToCalificacionesTab = function() {
+        switchTab('calificaciones');
+    };
+    
     // Function to attach comments form listener
     function attachCommentsFormListener() {
         const comentarioForm = document.getElementById('comentario-form');
@@ -608,6 +907,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveDocumentBtn = document.getElementById('save-document-btn');
     const cancelDocumentBtn = document.getElementById('cancel-document-btn');
     
+    // Calification modal elements
+    const calificacionModal = document.getElementById('calificacion-modal');
+    const calificacionModalFormContainer = document.getElementById('modal-calificacion-form-container');
+    const saveCalificacionBtn = document.getElementById('save-calificacion-btn');
+    const cancelCalificacionBtn = document.getElementById('cancel-calificacion-btn');
+    
     // Get CSRF token
     function getCSRFToken() {
         return CSRF_TOKEN || 
@@ -635,6 +940,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function hideDocumentModal() {
         documentModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Calification modal functions
+    function showCalificacionModal() {
+        calificacionModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function hideCalificacionModal() {
+        calificacionModal.classList.add('hidden');
         document.body.style.overflow = 'auto';
     }
     
@@ -686,6 +1002,15 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 documentModalFormContainer.innerHTML = data.form_html;
+                
+                // Clear document ID for create mode
+                const form = document.getElementById('documento-form');
+                if (form) {
+                    form.removeAttribute('data-documento-id');
+                }
+                
+                // Initialize date field toggle functionality after form is loaded
+                initializeDocumentFormDateFields();
             } else {
                 documentModalFormContainer.innerHTML = '<div class="text-red-600 text-center py-4">Error al cargar el formulario</div>';
             }
@@ -693,6 +1018,151 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error:', error);
             documentModalFormContainer.innerHTML = '<div class="text-red-600 text-center py-4">Error al cargar el formulario</div>';
+        });
+    }
+    
+    // Initialize document form date field functionality
+    function initializeDocumentFormDateFields() {
+        const tipoSelect = document.querySelector('#documento-modal select[name="tipo"]');
+        const fechaEmisionContainer = document.getElementById('fecha-emision-container');
+        const fechaExpiracionContainer = document.getElementById('fecha-expiracion-container');
+        const fechaEmisionRequired = document.getElementById('fecha-emision-required');
+        const fechaExpiracionRequired = document.getElementById('fecha-expiracion-required');
+        
+        if (!tipoSelect || !fechaEmisionContainer || !fechaExpiracionContainer) {
+            return; // Elements not found, exit early
+        }
+        
+        // Function to toggle date fields based on tipo selection
+        function toggleDateFields() {
+            const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                const requiereExpiracion = selectedOption.getAttribute('data-requiere-expiracion') === 'true';
+                
+                // Show date fields if tipo requires dates
+                if (requiereExpiracion) {
+                    fechaEmisionContainer.classList.remove('hidden');
+                    fechaExpiracionContainer.classList.remove('hidden');
+                    fechaEmisionRequired.classList.remove('hidden');
+                    fechaExpiracionRequired.classList.remove('hidden');
+                    
+                    // Make fields required
+                    const fechaEmisionInput = fechaEmisionContainer.querySelector('input');
+                    const fechaExpiracionInput = fechaExpiracionContainer.querySelector('input');
+                    if (fechaEmisionInput) fechaEmisionInput.required = true;
+                    if (fechaExpiracionInput) fechaExpiracionInput.required = true;
+                } else {
+                    fechaEmisionContainer.classList.add('hidden');
+                    fechaExpiracionContainer.classList.add('hidden');
+                    fechaEmisionRequired.classList.add('hidden');
+                    fechaExpiracionRequired.classList.add('hidden');
+                    
+                    // Make fields not required
+                    const fechaEmisionInput = fechaEmisionContainer.querySelector('input');
+                    const fechaExpiracionInput = fechaExpiracionContainer.querySelector('input');
+                    if (fechaEmisionInput) fechaEmisionInput.required = false;
+                    if (fechaExpiracionInput) fechaExpiracionInput.required = false;
+                }
+            } else {
+                // Hide date fields if no tipo is selected
+                fechaEmisionContainer.classList.add('hidden');
+                fechaExpiracionContainer.classList.add('hidden');
+                fechaEmisionRequired.classList.add('hidden');
+                fechaExpiracionRequired.classList.add('hidden');
+            }
+        }
+        
+        // Add event listener for tipo selection change
+        tipoSelect.addEventListener('change', toggleDateFields);
+        
+        // Initial call to set correct state
+        toggleDateFields();
+    }
+    
+    // Initialize document form date field functionality
+    function initializeDocumentFormDateFields() {
+        const tipoSelect = document.querySelector('#documento-modal select[name="tipo"]');
+        const fechaEmisionContainer = document.getElementById('fecha-emision-container');
+        const fechaExpiracionContainer = document.getElementById('fecha-expiracion-container');
+        const fechaEmisionRequired = document.getElementById('fecha-emision-required');
+        const fechaExpiracionRequired = document.getElementById('fecha-expiracion-required');
+        
+        if (!tipoSelect || !fechaEmisionContainer || !fechaExpiracionContainer) {
+            return; // Elements not found, exit early
+        }
+        
+        // Function to toggle date fields based on tipo selection
+        function toggleDateFields() {
+            const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                const requiereExpiracion = selectedOption.getAttribute('data-requiere-expiracion') === 'true';
+                
+                // Show date fields if tipo requires dates
+                if (requiereExpiracion) {
+                    fechaEmisionContainer.classList.remove('hidden');
+                    fechaExpiracionContainer.classList.remove('hidden');
+                    fechaEmisionRequired.classList.remove('hidden');
+                    fechaExpiracionRequired.classList.remove('hidden');
+                    
+                    // Make fields required
+                    const fechaEmisionInput = fechaEmisionContainer.querySelector('input');
+                    const fechaExpiracionInput = fechaExpiracionContainer.querySelector('input');
+                    if (fechaEmisionInput) fechaEmisionInput.required = true;
+                    if (fechaExpiracionInput) fechaExpiracionInput.required = true;
+                } else {
+                    fechaEmisionContainer.classList.add('hidden');
+                    fechaExpiracionContainer.classList.add('hidden');
+                    fechaEmisionRequired.classList.add('hidden');
+                    fechaExpiracionRequired.classList.add('hidden');
+                    
+                    // Make fields not required
+                    const fechaEmisionInput = fechaEmisionContainer.querySelector('input');
+                    const fechaExpiracionInput = fechaExpiracionContainer.querySelector('input');
+                    if (fechaEmisionInput) fechaEmisionInput.required = false;
+                    if (fechaExpiracionInput) fechaExpiracionInput.required = false;
+                }
+            } else {
+                // Hide date fields if no tipo is selected
+                fechaEmisionContainer.classList.add('hidden');
+                fechaExpiracionContainer.classList.add('hidden');
+                fechaEmisionRequired.classList.add('hidden');
+                fechaExpiracionRequired.classList.add('hidden');
+            }
+        }
+        
+        // Add event listener for tipo selection change
+        tipoSelect.addEventListener('change', toggleDateFields);
+        
+        // Initial call to set correct state
+        toggleDateFields();
+    }
+    
+    // Load calification form via AJAX
+    function loadCalificacionForm() {
+        calificacionModalFormContainer.innerHTML = `
+            <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                <p class="text-gray-600 mt-2">Cargando formulario...</p>
+            </div>
+        `;
+        
+        fetch("{% url 'contrapartes:calificacion_crear_ajax' object.pk %}", {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                calificacionModalFormContainer.innerHTML = data.form_html;
+            } else {
+                calificacionModalFormContainer.innerHTML = '<div class="text-red-600 text-center py-4">Error al cargar el formulario</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            calificacionModalFormContainer.innerHTML = '<div class="text-red-600 text-center py-4">Error al cargar el formulario</div>';
         });
     }
     
@@ -726,16 +1196,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update members list
                 document.getElementById('miembros-list').innerHTML = data.miembros_html;
                 
-                // Update member count in header
-                const memberCountElements = document.querySelectorAll('.miembros-count');
-                memberCountElements.forEach(el => {
-                    el.textContent = data.miembros_count;
-                });
-                
-                // Update header text
-                const headerText = document.querySelector('h2 .fas.fa-users').parentElement;
-                if (headerText) {
-                    headerText.innerHTML = `<i class="fas fa-users mr-3 text-purple-600"></i>Miembros (${data.miembros_count})`;
+                // Update member count in tab button
+                const memberCountSpan = document.querySelector('#tab-miembros span');
+                if (memberCountSpan) {
+                    memberCountSpan.textContent = data.miembros_count;
                 }
                 
                 // Show success message
@@ -775,11 +1239,19 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('csrfmiddlewaretoken', csrfToken);
         }
         
+        // Check if this is an edit or create operation
+        const documentoId = form.getAttribute('data-documento-id');
+        const isEdit = documentoId && documentoId !== '';
+        
         // Disable save button
         saveDocumentBtn.disabled = true;
-        saveDocumentBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Subiendo...';
+        saveDocumentBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
         
-        fetch("{% url 'contrapartes:documento_crear_ajax' object.pk %}", {
+        const url = isEdit ? 
+            `{% url 'contrapartes:documento_editar_ajax' 0 %}`.replace('0', documentoId) :
+            "{% url 'contrapartes:documento_crear_ajax' object.pk %}";
+        
+        fetch(url, {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
@@ -792,39 +1264,110 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update documents list
                 document.getElementById('documentos-list').innerHTML = data.documentos_html;
                 
-                // Update document count in header
-                const documentCountElements = document.querySelectorAll('.documentos-count');
-                documentCountElements.forEach(el => {
-                    el.textContent = data.documentos_count;
-                });
-                
-                // Update header text
-                const headerText = document.querySelector('h2 .fas.fa-file-alt').parentElement;
-                if (headerText) {
-                    headerText.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-600"></i>Documentos (${data.documentos_count})`;
+                // Update document count in tab button
+                const documentCountSpan = document.querySelector('#tab-documentos span');
+                if (documentCountSpan) {
+                    documentCountSpan.textContent = data.documentos_count;
                 }
                 
                 // Show success message
-                showNotification('Documento subido exitosamente', 'success');
+                showNotification(data.message, 'success');
                 
                 // Hide modal
                 hideDocumentModal();
+                
+                // Reset modal title and button text
+                document.getElementById('documento-modal-title').textContent = 'Subir Nuevo Documento';
+                document.getElementById('documento-save-text').textContent = 'Subir Documento';
                 
                 // Reattach event listeners for new buttons
                 attachEventListeners();
             } else {
                 // Show form with errors
                 documentModalFormContainer.innerHTML = data.form_html;
+                
+                // Reinitialize date fields if form was reloaded
+                initializeDocumentFormDateFields();
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('Error al subir el documento', 'error');
+            showNotification('Error al guardar el documento', 'error');
         })
         .finally(() => {
             // Re-enable save button
             saveDocumentBtn.disabled = false;
-            saveDocumentBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Subir Documento';
+            const isEdit = document.getElementById('documento-form').getAttribute('data-documento-id');
+            const buttonText = isEdit ? 'Actualizar Documento' : 'Subir Documento';
+            saveDocumentBtn.innerHTML = `<i class="fas fa-upload mr-2"></i>${buttonText}`;
+        });
+    }
+    
+    // Save calification form via AJAX
+    function saveCalificacionForm() {
+        const form = document.getElementById('calificacion-form');
+        if (!form) return;
+        
+        const formData = new FormData(form);
+        
+        // Add CSRF token
+        const csrfToken = getCSRFToken();
+        if (csrfToken) {
+            formData.append('csrfmiddlewaretoken', csrfToken);
+        }
+        
+        // Check if this is an edit or create operation
+        const calificacionId = form.getAttribute('data-calificacion-id');
+        const isEdit = calificacionId && calificacionId !== '';
+        
+        // Disable save button
+        saveCalificacionBtn.disabled = true;
+        saveCalificacionBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+        
+        const url = isEdit ? 
+            `{% url 'contrapartes:calificacion_editar_ajax' 0 %}`.replace('0', calificacionId) :
+            "{% url 'contrapartes:calificacion_crear_ajax' object.pk %}";
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update califications list
+                document.getElementById('calificaciones-list').innerHTML = data.calificaciones_html;
+                
+                // Update calification count in header
+                const calificationCountElements = document.querySelectorAll('.calificaciones-count');
+                calificationCountElements.forEach(el => {
+                    el.textContent = data.calificaciones_count;
+                });
+                
+                // Show success message
+                showNotification(data.message, 'success');
+                
+                // Hide modal
+                hideCalificacionModal();
+                
+                // Reattach event listeners for new buttons
+                attachEventListeners();
+            } else {
+                // Show form with errors
+                calificacionModalFormContainer.innerHTML = data.form_html;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al guardar la calificación', 'error');
+        })
+        .finally(() => {
+            // Re-enable save button
+            saveCalificacionBtn.disabled = false;
+            saveCalificacionBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Guardar Calificación';
         });
     }
     
@@ -898,7 +1441,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
+        
+        // Add calification buttons
+        const addCalificacionBtns = [
+            document.getElementById('add-calificacion-header-btn')
+        ];
+        
+        addCalificacionBtns.forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    showCalificacionModal();
+                    loadCalificacionForm();
+                });
+            }
+        });
     }
+    
+    // Edit document function (global)
+    window.editarDocumento = function(documentoId) {
+        fetch(`{% url 'contrapartes:documento_editar_ajax' 0 %}`.replace('0', documentoId), {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                documentModalFormContainer.innerHTML = data.form_html;
+                document.getElementById('documento-modal-title').textContent = 'Editar Documento';
+                document.getElementById('documento-save-text').textContent = 'Actualizar Documento';
+                
+                // Set document ID on form for edit mode
+                const form = document.getElementById('documento-form');
+                if (form) {
+                    form.setAttribute('data-documento-id', documentoId);
+                }
+                
+                // Initialize date field toggle functionality after form is loaded
+                initializeDocumentFormDateFields();
+                
+                showDocumentModal();
+            } else {
+                showNotification('Error al cargar documento', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cargar documento', 'error');
+        });
+    };
     
     // Delete document function
     window.eliminarDocumento = function(documentoId) {
@@ -919,10 +1512,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update documents list
                 document.getElementById('documentos-list').innerHTML = data.documentos_html;
                 
-                // Update document count in header
-                const headerText = document.querySelector('h2 .fas.fa-file-alt').parentElement;
-                if (headerText) {
-                    headerText.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-600"></i>Documentos (${data.documentos_count})`;
+                // Update document count in tab button
+                const documentCountSpan = document.querySelector('#tab-documentos span');
+                if (documentCountSpan) {
+                    documentCountSpan.textContent = data.documentos_count;
                 }
                 
                 // Show success message
@@ -940,12 +1533,68 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
     
+    // Edit calification function (global)
+    window.editarCalificacion = function(calificacionId) {
+        fetch(`{% url 'contrapartes:calificacion_editar_ajax' 0 %}`.replace('0', calificacionId), {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                calificacionModalFormContainer.innerHTML = data.form_html;
+                document.getElementById('calificacion-modal-title').textContent = 'Editar Calificación';
+                document.getElementById('calificacion-save-text').textContent = 'Actualizar Calificación';
+                showCalificacionModal();
+            } else {
+                showNotification('Error al cargar calificación', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al cargar calificación', 'error');
+        });
+    };
+    
+    // Delete calification function (global)
+    window.eliminarCalificacion = function(calificacionId) {
+        if (!confirm('¿Está seguro de que desea eliminar esta calificación?')) {
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', getCSRFToken());
+        
+        fetch(`{% url 'contrapartes:calificacion_eliminar_ajax' 0 %}`.replace('0', calificacionId), {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('calificaciones-list').innerHTML = data.calificaciones_html;
+                document.getElementById('calificaciones-count').textContent = data.calificaciones_count;
+                showNotification(data.message, 'success');
+            } else {
+                showNotification(data.error || 'Error al eliminar calificación', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al eliminar calificación', 'error');
+        });
+    };
+    
     // Initial event listeners
     attachEventListeners();
     
     // Modal close events
     cancelBtn.addEventListener('click', hideModal);
     cancelDocumentBtn.addEventListener('click', hideDocumentModal);
+    cancelCalificacionBtn.addEventListener('click', hideCalificacionModal);
     
     // Close modal when clicking outside
     modal.addEventListener('click', function(e) {
@@ -960,9 +1609,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    calificacionModal.addEventListener('click', function(e) {
+        if (e.target === calificacionModal) {
+            hideCalificacionModal();
+        }
+    });
+    
     // Save button events
     saveBtn.addEventListener('click', saveForm);
     saveDocumentBtn.addEventListener('click', saveDocumentForm);
+    saveCalificacionBtn.addEventListener('click', saveCalificacionForm);
     
     // Close modal with ESC key
     document.addEventListener('keydown', function(e) {
@@ -972,6 +1628,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (!documentModal.classList.contains('hidden')) {
                 hideDocumentModal();
+            }
+            if (!calificacionModal.classList.contains('hidden')) {
+                hideCalificacionModal();
             }
         }
     });
@@ -1275,6 +1934,38 @@ document.addEventListener('DOMContentLoaded', function() {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Ensure form fields have good text contrast */
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="password"],
+textarea,
+select {
+    color: #111827 !important; /* text-gray-900 */
+}
+
+/* Ensure form fields have good text contrast when they have values */
+input[type="text"]:not(:placeholder-shown),
+input[type="email"]:not(:placeholder-shown),
+input[type="url"]:not(:placeholder-shown),
+input[type="number"]:not(:placeholder-shown),
+input[type="date"]:not(:placeholder-shown),
+input[type="datetime-local"]:not(:placeholder-shown),
+input[type="password"]:not(:placeholder-shown),
+textarea:not(:placeholder-shown),
+select:not([value=""]) {
+    color: #111827 !important; /* text-gray-900 */
+}
+
+/* Ensure select options are readable */
+select option {
+    color: #111827 !important;
+    background-color: white !important;
 }
 </style>
 {% endblock %}

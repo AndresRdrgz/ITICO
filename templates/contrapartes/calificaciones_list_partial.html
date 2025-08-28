@@ -1,0 +1,95 @@
+{% if object.calificaciones.all %}
+    <div class="space-y-4">
+        {% for calificacion in object.calificaciones.all %}
+            {% if calificacion.activo %}
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <!-- Header -->
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-building text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">{{ calificacion.calificador.nombre }}</h4>
+                                        <p class="text-sm text-gray-600">{{ calificacion.fecha|date:"d/m/Y H:i" }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <!-- Calificación Badge -->
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-star text-xs mr-1"></i>
+                                        {{ calificacion.calificacion }}
+                                    </span>
+                                    <!-- Outlook Badge -->
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-chart-line text-xs mr-1"></i>
+                                        {{ calificacion.outlook.outlook }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Document Info -->
+                            {% if calificacion.documento_soporte %}
+                                <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-file text-gray-500 mr-2"></i>
+                                        <span class="text-sm text-gray-700">{{ calificacion.documento_soporte.name|slice:"-30:" }}</span>
+                                        <a href="{{ calificacion.documento_soporte.url }}" 
+                                           target="_blank" 
+                                           class="ml-auto text-blue-600 hover:text-blue-800 text-sm">
+                                            <i class="fas fa-download mr-1"></i>
+                                            Descargar
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Audit Info -->
+                            <div class="mt-3 pt-3 border-t border-gray-100">
+                                <div class="flex items-center justify-between text-xs text-gray-500">
+                                    <span>
+                                        <i class="fas fa-user mr-1"></i>
+                                        {{ calificacion.creado_por.get_full_name|default:calificacion.creado_por.username }}
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-clock mr-1"></i>
+                                        {{ calificacion.fecha_creacion|date:"d/m/Y H:i" }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="ml-4 flex flex-col space-y-2">
+                            <button onclick="editarCalificacion({{ calificacion.id }})" 
+                                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200" 
+                                    title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="eliminarCalificacion({{ calificacion.id }})" 
+                                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200" 
+                                    title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-12">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center">
+            <i class="fas fa-star text-orange-600 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No hay calificaciones</h3>
+        <p class="text-gray-600 mb-6">Esta contraparte aún no tiene calificaciones registradas.</p>
+        <button onclick="showCalificacionModal()" 
+                class="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 font-medium">
+            <i class="fas fa-plus mr-2"></i>
+            Agregar Primera Calificación
+        </button>
+    </div>
+{% endif %}

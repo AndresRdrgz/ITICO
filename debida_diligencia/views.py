@@ -105,13 +105,13 @@ class CalendarioDDView(LoginRequiredMixin, TemplateView):
             
             events.append({
                 'id': f'doc_{documento.id}',
-                'title': f'{documento.nombre}',
+                'title': f'{documento.tipo.nombre}',
                 'date': documento.fecha_expiracion.isoformat(),
                 'type': 'document',
                 'priority': priority,
                 'contraparte': documento.contraparte.nombre,
                 'contraparte_id': documento.contraparte.id,
-                'description': f'Expiración de documento: {documento.nombre}',
+                'description': f'Expiración de documento: {documento.tipo.nombre}',
                 'url': f'/contrapartes/{documento.contraparte.id}/',
                 'days_until': days_until,
                 'document_type': documento.tipo.nombre if documento.tipo else 'Sin tipo'

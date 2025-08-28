@@ -1,0 +1,87 @@
+{% if calificacion %}
+    <!-- Edit Mode -->
+    <form id="calificacion-form" data-calificacion-id="{{ calificacion.id }}">
+{% else %}
+    <!-- Create Mode -->
+    <form id="calificacion-form" data-calificacion-id="">
+{% endif %}
+    {% csrf_token %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Calificador -->
+        <div class="md:col-span-2">
+            <label for="{{ form.calificador.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-building text-blue-600 mr-2"></i>
+                {{ form.calificador.label }}
+            </label>
+            {{ form.calificador }}
+            {% if form.calificador.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {{ form.calificador.errors.0 }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Outlook -->
+        <div>
+            <label for="{{ form.outlook.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                {{ form.outlook.label }}
+            </label>
+            {{ form.outlook }}
+            {% if form.outlook.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {{ form.outlook.errors.0 }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Calificación -->
+        <div>
+            <label for="{{ form.calificacion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-star text-yellow-600 mr-2"></i>
+                {{ form.calificacion.label }}
+            </label>
+            {{ form.calificacion }}
+            {% if form.calificacion.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {{ form.calificacion.errors.0 }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Fecha -->
+        <div class="md:col-span-2">
+            <label for="{{ form.fecha.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-calendar text-purple-600 mr-2"></i>
+                {{ form.fecha.label }}
+            </label>
+            {{ form.fecha }}
+            {% if form.fecha.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {{ form.fecha.errors.0 }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Documento de Soporte -->
+        <div class="md:col-span-2">
+            <label for="{{ form.documento_soporte.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-file-upload text-orange-600 mr-2"></i>
+                {{ form.documento_soporte.label }}
+            </label>
+            {{ form.documento_soporte }}
+            {% if form.documento_soporte.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {{ form.documento_soporte.errors.0 }}
+                </div>
+            {% endif %}
+            {% if calificacion and calificacion.documento_soporte %}
+                <div class="mt-2 text-sm text-gray-600">
+                    <i class="fas fa-file mr-1"></i>
+                    Archivo actual: {{ calificacion.documento_soporte.name|slice:"-20:" }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</form>

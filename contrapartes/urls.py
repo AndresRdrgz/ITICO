@@ -25,6 +25,18 @@ urlpatterns = [
     path('tipos-documento/<int:pk>/editar/', views.TipoDocumentoUpdateView.as_view(), name='tipo_documento_editar'),
     path('tipos-documento/<int:pk>/eliminar/', views.TipoDocumentoDeleteView.as_view(), name='tipo_documento_eliminar'),
     
+    # Gestión de calificadores
+    path('calificadores/', views.CalificadorListView.as_view(), name='calificador_lista'),
+    path('calificadores/crear/', views.CalificadorCreateView.as_view(), name='calificador_crear'),
+    path('calificadores/<int:pk>/editar/', views.CalificadorUpdateView.as_view(), name='calificador_editar'),
+    path('calificadores/<int:pk>/eliminar/', views.CalificadorDeleteView.as_view(), name='calificador_eliminar'),
+    
+    # Gestión de outlooks
+    path('outlooks/', views.OutlookListView.as_view(), name='outlook_lista'),
+    path('outlooks/crear/', views.OutlookCreateView.as_view(), name='outlook_crear'),
+    path('outlooks/<int:pk>/editar/', views.OutlookUpdateView.as_view(), name='outlook_editar'),
+    path('outlooks/<int:pk>/eliminar/', views.OutlookDeleteView.as_view(), name='outlook_eliminar'),
+    
     # Lista y gestión de contrapartes
     path('', views.ContraparteListView.as_view(), name='lista'),
     path('crear/', views.ContraparteCreateView.as_view(), name='crear'),
@@ -41,6 +53,7 @@ urlpatterns = [
     
     # Gestión de documentos
     path('<int:contraparte_pk>/documentos/ajax/crear/', views.DocumentoCreateAjaxView.as_view(), name='documento_crear_ajax'),
+    path('documentos/<int:pk>/ajax/editar/', views.DocumentoUpdateAjaxView.as_view(), name='documento_editar_ajax'),
     path('documentos/<int:pk>/eliminar/', views.DocumentoDeleteView.as_view(), name='documento_eliminar'),
     
     # Gestión de comentarios
@@ -50,6 +63,11 @@ urlpatterns = [
     
     # Fecha DD
     path('<int:pk>/fecha-dd/ajax/actualizar/', views.ContraparteFechaDDUpdateView.as_view(), name='fecha_dd_actualizar_ajax'),
+    
+    # Gestión de calificaciones
+    path('<int:contraparte_pk>/calificaciones/ajax/crear/', views.CalificacionCreateAjaxView.as_view(), name='calificacion_crear_ajax'),
+    path('calificaciones/<int:pk>/ajax/editar/', views.CalificacionUpdateAjaxView.as_view(), name='calificacion_editar_ajax'),
+    path('calificaciones/<int:pk>/ajax/eliminar/', views.CalificacionDeleteAjaxView.as_view(), name='calificacion_eliminar_ajax'),
     
     # Búsqueda y filtros
     path('buscar/', views.ContraparteBuscarView.as_view(), name='buscar'),

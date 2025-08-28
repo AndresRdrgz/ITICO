@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eliminar Outlook - ITICO{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center">
+            <a href="{% url 'contrapartes:outlook_lista' %}" 
+               class="text-blue-600 hover:text-blue-800 mr-4">
+                <i class="fas fa-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Eliminar Outlook</h1>
+                <p class="text-gray-600 mt-2">Confirmar eliminación del outlook</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation -->
+    <div class="max-w-2xl">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="text-center mb-6">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                    <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">¿Está seguro que desea eliminar este outlook?</h3>
+                <p class="text-sm text-gray-500">Esta acción no se puede deshacer.</p>
+            </div>
+
+            <!-- Outlook Info -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-900">{{ object.outlook }}</h4>
+                        <p class="text-sm text-gray-600">
+                            Creado por: {{ object.creado_por.get_full_name|default:object.creado_por.username }}
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            Fecha de creación: {{ object.fecha_creacion|date:"d/m/Y H:i" }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        {% if object.activo %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Activo
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                Inactivo
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning about related records -->
+            {% if calificaciones_count > 0 %}
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">Advertencia</h3>
+                        <div class="mt-2 text-sm text-yellow-700">
+                            <p>Este outlook tiene <strong>{{ calificaciones_count }}</strong> calificación(es) asociada(s).</p>
+                            <p class="mt-1">Si elimina este outlook, las calificaciones existentes mantendrán la referencia pero no se podrán crear nuevas calificaciones con este outlook.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <a href="{% url 'contrapartes:outlook_lista' %}" 
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        Cancelar
+                    </a>
+                    <button type="submit" 
+                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-trash mr-2"></i>
+                        Eliminar Outlook
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

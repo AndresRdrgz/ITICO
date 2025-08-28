@@ -71,6 +71,60 @@
                     </div>
                 </div>
                 
+                <!-- Mantenimiento Section -->
+                <div class="mb-4">
+                    <button onclick="toggleMantenimiento()" class="w-full nav-link group flex items-center px-4 py-3 text-white rounded-xl hover:bg-white hover:bg-opacity-10 transition-all duration-300 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-teal-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                        <div class="relative flex items-center w-full">
+                            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-white bg-opacity-10 group-hover:bg-opacity-20 transition-all duration-300 mr-3">
+                                <i class="fas fa-cogs text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <span class="font-medium group-hover:translate-x-1 transition-transform duration-300">Mantenimiento</span>
+                            <div class="ml-auto transition-transform duration-300" id="mantenimiento-arrow">
+                                <i class="fas fa-chevron-down text-sm"></i>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <!-- Collapsible Mantenimiento Menu -->
+                    <div id="mantenimiento-menu" class="mt-2 ml-4 space-y-1 transition-all duration-300 max-h-0 overflow-hidden">
+                        <a href="{% url 'contrapartes:tipo_lista' %}" class="nav-link group flex items-center px-4 py-2 text-white rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-300">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white bg-opacity-5 group-hover:bg-opacity-10 transition-all duration-300 mr-3">
+                                <i class="fas fa-tags text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <span class="font-medium text-sm group-hover:translate-x-1 transition-transform duration-300">Tipos de Contraparte</span>
+                        </a>
+                        
+                        <a href="{% url 'contrapartes:estado_lista' %}" class="nav-link group flex items-center px-4 py-2 text-white rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-300">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white bg-opacity-5 group-hover:bg-opacity-10 transition-all duration-300 mr-3">
+                                <i class="fas fa-toggle-on text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <span class="font-medium text-sm group-hover:translate-x-1 transition-transform duration-300">Estados de Contraparte</span>
+                        </a>
+                        
+                        <a href="{% url 'contrapartes:tipo_documento_lista' %}" class="nav-link group flex items-center px-4 py-2 text-white rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-300">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white bg-opacity-5 group-hover:bg-opacity-10 transition-all duration-300 mr-3">
+                                <i class="fas fa-file-alt text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <span class="font-medium text-sm group-hover:translate-x-1 transition-transform duration-300">Tipos de Documento</span>
+                        </a>
+                        
+                        <a href="{% url 'contrapartes:calificador_lista' %}" class="nav-link group flex items-center px-4 py-2 text-white rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-300">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white bg-opacity-5 group-hover:bg-opacity-10 transition-all duration-300 mr-3">
+                                <i class="fas fa-star text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <span class="font-medium text-sm group-hover:translate-x-1 transition-transform duration-300">Calificadores</span>
+                        </a>
+                        
+                        <a href="{% url 'contrapartes:outlook_lista' %}" class="nav-link group flex items-center px-4 py-2 text-white rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-300">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white bg-opacity-5 group-hover:bg-opacity-10 transition-all duration-300 mr-3">
+                                <i class="fas fa-chart-line text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <span class="font-medium text-sm group-hover:translate-x-1 transition-transform duration-300">Outlooks</span>
+                        </a>
+                    </div>
+                </div>
+                
                 <a href="{% url 'notificaciones:lista' %}" class="nav-link group flex items-center px-4 py-3 text-white rounded-xl hover:bg-white hover:bg-opacity-10 transition-all duration-300 relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                     <div class="relative flex items-center w-full">
@@ -117,19 +171,55 @@ function toggleCumplimiento() {
     }
 }
 
-// Initialize collapsible state from localStorage on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const menu = document.getElementById('cumplimiento-menu');
-    const arrow = document.getElementById('cumplimiento-arrow');
-    const isExpanded = localStorage.getItem('cumplimiento-expanded');
+function toggleMantenimiento() {
+    const menu = document.getElementById('mantenimiento-menu');
+    const arrow = document.getElementById('mantenimiento-arrow');
     
-    // Default to expanded if no preference is stored
-    if (isExpanded === null || isExpanded === 'true') {
+    if (menu.style.maxHeight === '0px' || menu.style.maxHeight === '') {
+        // Expand
         menu.style.maxHeight = menu.scrollHeight + 'px';
         arrow.innerHTML = '<i class="fas fa-chevron-up text-sm"></i>';
+        
+        // Store state in localStorage
+        localStorage.setItem('mantenimiento-expanded', 'true');
     } else {
+        // Collapse
         menu.style.maxHeight = '0px';
         arrow.innerHTML = '<i class="fas fa-chevron-down text-sm"></i>';
+        
+        // Store state in localStorage
+        localStorage.setItem('mantenimiento-expanded', 'false');
+    }
+}
+
+// Initialize collapsible state from localStorage on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Cumplimiento menu
+    const cumplimientoMenu = document.getElementById('cumplimiento-menu');
+    const cumplimientoArrow = document.getElementById('cumplimiento-arrow');
+    const isCumplimientoExpanded = localStorage.getItem('cumplimiento-expanded');
+    
+    // Default to expanded if no preference is stored
+    if (isCumplimientoExpanded === null || isCumplimientoExpanded === 'true') {
+        cumplimientoMenu.style.maxHeight = cumplimientoMenu.scrollHeight + 'px';
+        cumplimientoArrow.innerHTML = '<i class="fas fa-chevron-up text-sm"></i>';
+    } else {
+        cumplimientoMenu.style.maxHeight = '0px';
+        cumplimientoArrow.innerHTML = '<i class="fas fa-chevron-down text-sm"></i>';
+    }
+    
+    // Initialize Mantenimiento menu
+    const mantenimientoMenu = document.getElementById('mantenimiento-menu');
+    const mantenimientoArrow = document.getElementById('mantenimiento-arrow');
+    const isMantenimientoExpanded = localStorage.getItem('mantenimiento-expanded');
+    
+    // Default to collapsed for mantenimiento
+    if (isMantenimientoExpanded === 'true') {
+        mantenimientoMenu.style.maxHeight = mantenimientoMenu.scrollHeight + 'px';
+        mantenimientoArrow.innerHTML = '<i class="fas fa-chevron-up text-sm"></i>';
+    } else {
+        mantenimientoMenu.style.maxHeight = '0px';
+        mantenimientoArrow.innerHTML = '<i class="fas fa-chevron-down text-sm"></i>';
     }
 });
 </script>

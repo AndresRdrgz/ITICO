@@ -331,6 +331,11 @@ class Contraparte(models.Model):
     def comentarios_activos_count(self):
         """Retorna el número de comentarios activos"""
         return self.comentarios.filter(activo=True).count()
+    
+    @property
+    def calificaciones_activas_count(self):
+        """Retorna el número de calificaciones activas"""
+        return self.calificaciones.filter(activo=True).count()
 
 
 class Miembro(models.Model):
@@ -515,10 +520,7 @@ class Documento(models.Model):
         related_name='documentos',
         verbose_name="Contraparte"
     )
-    nombre = models.CharField(
-        max_length=255,
-        verbose_name="Nombre del documento"
-    )
+    # nombre field removed - documents are now identified by tipo
     descripcion = models.TextField(
         blank=True,
         null=True,
@@ -580,7 +582,7 @@ class Documento(models.Model):
         ordering = ['-fecha_subida']
     
     def __str__(self):
-        return f"{self.nombre} - {self.contraparte.nombre}"
+        return f"{self.tipo.nombre} - {self.contraparte.nombre}"
     
     @property
     def esta_vencido(self):
@@ -645,3 +647,151 @@ class Documento(models.Model):
             return 'fas fa-file-alt text-gray-500'
         else:
             return 'fas fa-file text-gray-500'
+
+
+class Calificador(models.Model):
+    """
+    Modelo para los calificadores (agencias de calificación)
+    """
+    nombre = models.CharField(
+        max_length=255,
+        verbose_name="Nombre del Calificador",
+        help_text="Nombre de la agencia o entidad calificadora"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='calificadores_creados',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de creación"
+    )
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Última actualización"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        verbose_name = "Calificador"
+        verbose_name_plural = "Calificadores"
+        ordering = ['nombre']
+    
+    def __str__(self):
+        return self.nombre
+
+
+class Outlook(models.Model):
+    """
+    Modelo para los tipos de outlook
+    """
+    outlook = models.CharField(
+        max_length=50,
+        verbose_name="Outlook",
+        help_text="Tipo de outlook (ej: Positivo, Estable, Negativo)"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='outlooks_creados',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de creación"
+    )
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Última actualización"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        verbose_name = "Outlook"
+        verbose_name_plural = "Outlooks"
+        ordering = ['outlook']
+    
+    def __str__(self):
+        return self.outlook
+
+
+class Calificacion(models.Model):
+    """
+    Modelo para calificaciones de contrapartes
+    """
+    contraparte = models.ForeignKey(
+        Contraparte,
+        on_delete=models.CASCADE,
+        related_name='calificaciones',
+        verbose_name="Contraparte"
+    )
+    calificador = models.ForeignKey(
+        Calificador,
+        on_delete=models.PROTECT,
+        related_name='calificaciones',
+        verbose_name="Calificador",
+        limit_choices_to={'activo': True}
+    )
+    outlook = models.ForeignKey(
+        Outlook,
+        on_delete=models.PROTECT,
+        related_name='calificaciones',
+        verbose_name="Outlook",
+        limit_choices_to={'activo': True}
+    )
+    calificacion = models.CharField(
+        max_length=10,
+        verbose_name="Calificación",
+        help_text="Calificación otorgada (ej: AAA, AA, A, BBB, etc.)"
+    )
+    fecha = models.DateTimeField(
+        verbose_name="Fecha",
+        help_text="Fecha de la calificación"
+    )
+    documento_soporte = models.FileField(
+        upload_to='calificaciones/',
+        blank=True,
+        null=True,
+        verbose_name="Documento de Soporte",
+        help_text="Documento que respalda la calificación"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='calificaciones_creadas',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de creación"
+    )
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Última actualización"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        verbose_name = "Calificación"
+        verbose_name_plural = "Calificaciones"
+        ordering = ['-fecha']
+    
+    def __str__(self):
+        return f"{self.calificador.nombre} - {self.contraparte.nombre} ({self.calificacion})"

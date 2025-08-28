@@ -3,7 +3,10 @@ Configuración del Django Admin para Contrapartes
 """
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
+from .models import (
+    TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, 
+    Miembro, Documento, Comentario, Calificacion, Calificador, Outlook
+)
 
 
 @admin.register(TipoContraparte)
@@ -335,9 +338,8 @@ class MiembroAdmin(admin.ModelAdmin):
 @admin.register(Documento)
 class DocumentoAdmin(admin.ModelAdmin):
     list_display = [
-        'nombre',
-        'contraparte', 
         'tipo',
+        'contraparte', 
         'fecha_emision',
         'fecha_expiracion',
         'estado_expiracion',
@@ -355,13 +357,13 @@ class DocumentoAdmin(admin.ModelAdmin):
         'fecha_expiracion',
         'subido_por'
     ]
-    search_fields = ['nombre', 'descripcion', 'contraparte__nombre']
+    search_fields = ['tipo__nombre', 'descripcion', 'contraparte__nombre']
     ordering = ['-fecha_subida']
     readonly_fields = ['fecha_subida', 'fecha_actualizacion', 'tamaño_legible']
     
     fieldsets = (
         ('Información del Documento', {
-            'fields': ('contraparte', 'nombre', 'tipo', 'descripcion')
+            'fields': ('contraparte', 'tipo', 'descripcion')
         }),
         ('Fechas', {
             'fields': ('fecha_emision', 'fecha_expiracion')
@@ -480,4 +482,61 @@ class ComentarioAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:  # If creating new comment
             obj.usuario = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(Calificador)
+class CalificadorAdmin(admin.ModelAdmin):
+    list_display = ['nombre', 'activo', 'creado_por', 'fecha_creacion']
+    list_filter = ['activo', 'fecha_creacion']
+    search_fields = ['nombre']
+    ordering = ['nombre']
+    readonly_fields = ['creado_por', 'fecha_creacion', 'fecha_actualizacion']
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set created_by for new objects
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(Outlook)
+class OutlookAdmin(admin.ModelAdmin):
+    list_display = ['outlook', 'activo', 'creado_por', 'fecha_creacion']
+    list_filter = ['activo', 'fecha_creacion']
+    search_fields = ['outlook']
+    ordering = ['outlook']
+    readonly_fields = ['creado_por', 'fecha_creacion', 'fecha_actualizacion']
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set created_by for new objects
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(Calificacion)
+class CalificacionAdmin(admin.ModelAdmin):
+    list_display = ['contraparte', 'calificador', 'calificacion', 'outlook', 'fecha', 'activo', 'creado_por']
+    list_filter = ['calificador', 'outlook', 'activo', 'fecha', 'fecha_creacion']
+    search_fields = ['contraparte__nombre', 'contraparte__full_company_name', 'calificador__nombre', 'calificacion']
+    ordering = ['-fecha']
+    readonly_fields = ['creado_por', 'fecha_creacion', 'fecha_actualizacion']
+    date_hierarchy = 'fecha'
+    
+    fieldsets = (
+        ('Información de Calificación', {
+            'fields': ('contraparte', 'calificador', 'outlook', 'calificacion', 'fecha')
+        }),
+        ('Documento', {
+            'fields': ('documento_soporte',),
+            'classes': ('collapse',)
+        }),
+        ('Auditoría', {
+            'fields': ('activo', 'creado_por', 'fecha_creacion', 'fecha_actualizacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set created_by for new objects
+            obj.creado_por = request.user
         super().save_model(request, obj, form, change)

@@ -13,8 +13,8 @@ from django.http import JsonResponse
 from django.views import View
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario
-from .forms import TipoContraparteForm, EstadoContraparteForm, ContraparteForm, MiembroForm, DocumentoForm, ComentarioForm
+from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario, Calificacion, Calificador, Outlook
+from .forms import TipoContraparteForm, EstadoContraparteForm, ContraparteForm, MiembroForm, DocumentoForm, ComentarioForm, CalificacionForm
 
 
 # ====== VISTAS PARA TIPO CONTRAPARTE ======
@@ -342,9 +342,14 @@ class DocumentoCreateAjaxView(LoginRequiredMixin, View):
         contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
         
         form = DocumentoForm()
+        
+        # Get tipos de documento with requiere_expiracion info for JavaScript
+        tipos_documento = TipoDocumento.objects.filter(activo=True).order_by('nombre')
+        
         form_html = render_to_string('contrapartes/documento_form_modal.html', {
             'form': form,
             'contraparte': contraparte,
+            'tipos_documento': tipos_documento,
         }, request=request)
         
         return JsonResponse({
@@ -377,9 +382,11 @@ class DocumentoCreateAjaxView(LoginRequiredMixin, View):
             })
         else:
             # Return form with errors
+            tipos_documento = TipoDocumento.objects.filter(activo=True).order_by('nombre')
             form_html = render_to_string('contrapartes/documento_form_modal.html', {
                 'form': form,
                 'contraparte': contraparte,
+                'tipos_documento': tipos_documento,
             }, request=request)
             
             return JsonResponse({
@@ -411,6 +418,79 @@ class DocumentoDeleteView(LoginRequiredMixin, View):
             'documentos_html': documentos_html,
             'documentos_count': contraparte.documentos.filter(activo=True).count()
         })
+
+
+class DocumentoUpdateAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para editar documentos"""
+    
+    def get(self, request, pk):
+        documento = get_object_or_404(Documento, pk=pk)
+        
+        # Check if user can edit this document
+        if documento.subido_por != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'success': False,
+                'error': 'No tiene permisos para editar este documento'
+            })
+        
+        form = DocumentoForm(instance=documento)
+        
+        # Get tipos de documento with requiere_expiracion info for JavaScript
+        tipos_documento = TipoDocumento.objects.filter(activo=True).order_by('nombre')
+        
+        form_html = render_to_string('contrapartes/documento_form_modal.html', {
+            'form': form,
+            'contraparte': documento.contraparte,
+            'tipos_documento': tipos_documento,
+            'documento': documento,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'form_html': form_html
+        })
+    
+    def post(self, request, pk):
+        documento = get_object_or_404(Documento, pk=pk)
+        
+        # Check if user can edit this document
+        if documento.subido_por != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'success': False,
+                'error': 'No tiene permisos para editar este documento'
+            })
+        
+        form = DocumentoForm(request.POST, request.FILES, instance=documento)
+        
+        if form.is_valid():
+            form.save()
+            
+            # Render updated documents list
+            documentos_html = render_to_string('contrapartes/documentos_list_partial.html', {
+                'object': documento.contraparte,
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Documento actualizado exitosamente',
+                'documentos_html': documentos_html,
+                'documentos_count': documento.contraparte.documentos.filter(activo=True).count()
+            })
+        else:
+            # Return form with errors
+            tipos_documento = TipoDocumento.objects.filter(activo=True).order_by('nombre')
+            form_html = render_to_string('contrapartes/documento_form_modal.html', {
+                'form': form,
+                'contraparte': documento.contraparte,
+                'tipos_documento': tipos_documento,
+                'documento': documento,
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'form_html': form_html,
+                'errors': form.errors
+            })
 
 
 class ContraparteBuscarView(LoginRequiredMixin, TemplateView):
@@ -595,29 +675,243 @@ class ContraparteFechaDDUpdateView(LoginRequiredMixin, View):
                 'success': False,
                 'message': f'Error al actualizar fecha: {str(e)}'
             }, status=500)
-        comentario = get_object_or_404(Comentario, pk=pk)
+
+
+# ====== VISTAS PARA CALIFICACIONES ======
+
+class CalificacionCreateAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para crear calificaciones desde modal"""
+    
+    def get(self, request, contraparte_pk):
+        """Devuelve el formulario en HTML para el modal"""
+        contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
         
-        # Check if user can delete this comment
-        if comentario.usuario != request.user and not request.user.is_staff:
+        form = CalificacionForm()
+        form_html = render_to_string('contrapartes/calificacion_form_modal.html', {
+            'form': form,
+            'contraparte': contraparte,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'form_html': form_html
+        })
+    
+    def post(self, request, contraparte_pk):
+        """Procesa el formulario enviado por AJAX"""
+        contraparte = get_object_or_404(Contraparte, pk=contraparte_pk)
+        
+        form = CalificacionForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            calificacion = form.save(commit=False)
+            calificacion.contraparte = contraparte
+            calificacion.creado_por = request.user
+            calificacion.save()
+            
+            # Render updated calificaciones list
+            calificaciones_html = render_to_string('contrapartes/calificaciones_list_partial.html', {
+                'object': contraparte,
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Calificación creada exitosamente',
+                'calificaciones_html': calificaciones_html,
+                'calificaciones_count': contraparte.calificaciones.filter(activo=True).count()
+            })
+        else:
+            # Return form with errors
+            form_html = render_to_string('contrapartes/calificacion_form_modal.html', {
+                'form': form,
+                'contraparte': contraparte,
+            }, request=request)
+            
             return JsonResponse({
                 'success': False,
-                'error': 'No tiene permisos para eliminar este comentario'
+                'form_html': form_html,
+                'errors': form.errors
+            })
+
+
+class CalificacionUpdateAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para editar calificaciones"""
+    
+    def get(self, request, pk):
+        calificacion = get_object_or_404(Calificacion, pk=pk)
+        
+        # Check if user can edit this certification
+        if calificacion.creado_por != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'success': False,
+                'error': 'No tiene permisos para editar esta calificación'
             })
         
-        contraparte = comentario.contraparte
+        form = CalificacionForm(instance=calificacion)
+        form_html = render_to_string('contrapartes/calificacion_form_modal.html', {
+            'form': form,
+            'contraparte': calificacion.contraparte,
+            'calificacion': calificacion,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'form_html': form_html
+        })
+    
+    def post(self, request, pk):
+        calificacion = get_object_or_404(Calificacion, pk=pk)
+        
+        # Check if user can edit this certification
+        if calificacion.creado_por != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'success': False,
+                'error': 'No tiene permisos para editar esta calificación'
+            })
+        
+        form = CalificacionForm(request.POST, request.FILES, instance=calificacion)
+        
+        if form.is_valid():
+            form.save()
+            
+            # Render updated calificaciones list
+            calificaciones_html = render_to_string('contrapartes/calificaciones_list_partial.html', {
+                'object': calificacion.contraparte,
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Calificación actualizada exitosamente',
+                'calificaciones_html': calificaciones_html
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+
+
+class CalificacionDeleteAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para eliminar calificaciones"""
+    
+    def post(self, request, pk):
+        calificacion = get_object_or_404(Calificacion, pk=pk)
+        
+        # Check if user can delete this certification
+        if calificacion.creado_por != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'success': False,
+                'error': 'No tiene permisos para eliminar esta calificación'
+            })
+        
+        contraparte = calificacion.contraparte
         
         # Soft delete - mark as inactive
-        comentario.activo = False
-        comentario.save()
+        calificacion.activo = False
+        calificacion.save()
         
-        # Render updated comments list
-        comentarios_html = render_to_string('contrapartes/comentarios_list_partial.html', {
+        # Render updated calificaciones list
+        calificaciones_html = render_to_string('contrapartes/calificaciones_list_partial.html', {
             'object': contraparte,
         }, request=request)
         
         return JsonResponse({
             'success': True,
-            'message': 'Comentario eliminado exitosamente',
-            'comentarios_html': comentarios_html,
-            'comentarios_count': contraparte.comentarios.filter(activo=True).count()
+            'message': 'Calificación eliminada exitosamente',
+            'calificaciones_html': calificaciones_html,
+            'calificaciones_count': contraparte.calificaciones.filter(activo=True).count()
         })
+
+
+# ====== VISTAS PARA CALIFICADORES ======
+
+class CalificadorListView(LoginRequiredMixin, ListView):
+    model = Calificador
+    template_name = 'contrapartes/calificador_lista.html'
+    context_object_name = 'calificadores'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = Calificador.objects.all()
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(nombre__icontains=search)
+            )
+        return queryset
+
+
+class CalificadorCreateView(LoginRequiredMixin, CreateView):
+    model = Calificador
+    template_name = 'contrapartes/calificador_crear.html'
+    fields = ['nombre', 'activo']
+    success_url = reverse_lazy('contrapartes:calificador_lista')
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        return super().form_valid(form)
+
+
+class CalificadorUpdateView(LoginRequiredMixin, UpdateView):
+    model = Calificador
+    template_name = 'contrapartes/calificador_editar.html'
+    fields = ['nombre', 'activo']
+    success_url = reverse_lazy('contrapartes:calificador_lista')
+
+
+class CalificadorDeleteView(LoginRequiredMixin, DeleteView):
+    model = Calificador
+    template_name = 'contrapartes/calificador_eliminar.html'
+    success_url = reverse_lazy('contrapartes:calificador_lista')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['calificaciones_count'] = self.object.calificaciones.count()
+        return context
+
+
+# ====== VISTAS PARA OUTLOOKS ======
+
+class OutlookListView(LoginRequiredMixin, ListView):
+    model = Outlook
+    template_name = 'contrapartes/outlook_lista.html'
+    context_object_name = 'outlooks'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = Outlook.objects.all()
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(outlook__icontains=search)
+            )
+        return queryset
+
+
+class OutlookCreateView(LoginRequiredMixin, CreateView):
+    model = Outlook
+    template_name = 'contrapartes/outlook_crear.html'
+    fields = ['outlook', 'activo']
+    success_url = reverse_lazy('contrapartes:outlook_lista')
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        return super().form_valid(form)
+
+
+class OutlookUpdateView(LoginRequiredMixin, UpdateView):
+    model = Outlook
+    template_name = 'contrapartes/outlook_editar.html'
+    fields = ['outlook', 'activo']
+    success_url = reverse_lazy('contrapartes:outlook_lista')
+
+
+class OutlookDeleteView(LoginRequiredMixin, DeleteView):
+    model = Outlook
+    template_name = 'contrapartes/outlook_eliminar.html'
+    success_url = reverse_lazy('contrapartes:outlook_lista')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['calificaciones_count'] = self.object.calificaciones.count()
+        return context
