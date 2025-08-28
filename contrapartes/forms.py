@@ -179,7 +179,7 @@ class MiembroForm(forms.ModelForm):
     
     class Meta:
         model = Miembro
-        fields = ['tipo_persona', 'nombre', 'numero_identificacion', 'nacionalidad', 'fecha_nacimiento', 'categoria']
+        fields = ['tipo_persona', 'nombre', 'numero_identificacion', 'nacionalidad', 'fecha_nacimiento', 'categoria', 'es_pep']
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={
                 'type': 'date',
@@ -202,6 +202,9 @@ class MiembroForm(forms.ModelForm):
             'nacionalidad': forms.TextInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 text-gray-900',
                 'placeholder': 'Ej: Peruana, Colombiana'
+            }),
+            'es_pep': forms.CheckboxInput(attrs={
+                'class': 'h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded'
             }),
         }
 

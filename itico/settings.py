@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'notificaciones',
     'dashboard',
     'api',
+    'usuarios',
     'django_celery_beat',  # For Celery periodic tasks
 ]
 

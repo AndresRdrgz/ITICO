@@ -33,6 +33,7 @@ urlpatterns = [
     path('contrapartes/', include('contrapartes.urls')),
     path('debida-diligencia/', include('debida_diligencia.urls')),
     path('notificaciones/', include('notificaciones.urls')),
+    path('usuarios/', include('usuarios.urls')),
     
     # API
     path('api/', include('api.urls')),

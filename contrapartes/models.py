@@ -380,6 +380,11 @@ class Miembro(models.Model):
         default='shareholder',
         verbose_name="Categoría"
     )
+    es_pep = models.BooleanField(
+        default=False,
+        verbose_name="PEP (Politically Exposed Person)",
+        help_text="Indica si esta persona es una Persona Políticamente Expuesta"
+    )
     
     # Campos de auditoría
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")

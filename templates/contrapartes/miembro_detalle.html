@@ -50,7 +50,15 @@
                         </div>
                         <div>
                             <h1 class="text-3xl font-bold mb-2">{{ object.nombre }}</h1>
-                            <p class="text-blue-100">{{ object.get_rol_display }}</p>
+                            <p class="text-blue-100">{{ object.get_categoria_display }}</p>
+                            {% if object.es_pep %}
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                                        PEP (Politically Exposed Person)
+                                    </span>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <p class="text-blue-100">
@@ -92,66 +100,51 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Rol</label>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Categoría</label>
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                            {{ object.get_rol_display }}
+                            {{ object.get_categoria_display }}
                         </span>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Documento de Identidad</label>
-                        <p class="text-gray-900">{{ object.documento_identidad }}</p>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Número de Identificación</label>
+                        <p class="text-gray-900">{{ object.numero_identificacion }}</p>
                     </div>
                     
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 mb-1">Nacionalidad</label>
                         <p class="text-gray-900">{{ object.nacionalidad }}</p>
                     </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Fecha de Nacimiento</label>
+                        <p class="text-gray-900">{{ object.fecha_nacimiento|date:"d/m/Y" }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Edad</label>
+                        <p class="text-gray-900">{{ object.edad }} años</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">PEP Status</label>
+                        {% if object.es_pep %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                PEP (Politically Exposed Person)
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                No es PEP
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Información de Contacto -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-address-book mr-3 text-green-600"></i>
-                    Información de Contacto
-                </h2>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {% if object.email %}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Email</label>
-                        <p class="text-gray-900">
-                            <a href="mailto:{{ object.email }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                                {{ object.email }}
-                            </a>
-                        </p>
-                    </div>
-                    {% endif %}
-                    
-                    {% if object.telefono %}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Teléfono</label>
-                        <p class="text-gray-900">
-                            <a href="tel:{{ object.telefono }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                                {{ object.telefono }}
-                            </a>
-                        </p>
-                    </div>
-                    {% endif %}
-                </div>
-                
-                {% if object.direccion %}
-                <div class="mt-6 pt-6 border-t border-gray-200">
-                    <label class="block text-sm font-semibold text-gray-600 mb-2">Dirección</label>
-                    <p class="text-gray-700 leading-relaxed">{{ object.direccion }}</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+
     </div>
 
     <!-- Sidebar -->

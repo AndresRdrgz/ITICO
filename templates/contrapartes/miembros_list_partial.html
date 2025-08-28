@@ -11,6 +11,14 @@
                             <h3 class="font-semibold text-gray-900">{{ miembro.nombre }}</h3>
                             <p class="text-sm text-gray-600">{{ miembro.get_categoria_display }}</p>
                             <p class="text-xs text-gray-500">{{ miembro.numero_identificacion }} • {{ miembro.nacionalidad }}</p>
+                            {% if miembro.es_pep %}
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        PEP
+                                    </span>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">

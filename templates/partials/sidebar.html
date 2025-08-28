@@ -40,7 +40,7 @@
                     </button>
                     
                     <!-- Collapsible Cumplimiento Menu -->
-                    <div id="cumplimiento-menu" class="mt-2 ml-4 space-y-1 transition-all duration-300 max-h-0 overflow-hidden">
+                    <div id="cumplimiento-menu" class="mt-2 ml-4 space-y-1 overflow-hidden" style="max-height: 0; transition: max-height 0.3s ease-in-out;">
                         <a href="{% url 'dashboard:index' %}" class="nav-link group flex items-center px-4 py-2 text-white rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-300">
                             <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white bg-opacity-5 group-hover:bg-opacity-10 transition-all duration-300 mr-3">
                                 <i class="fas fa-chart-line text-sm group-hover:scale-110 transition-transform duration-300"></i>
@@ -87,7 +87,7 @@
                     </button>
                     
                     <!-- Collapsible Mantenimiento Menu -->
-                    <div id="mantenimiento-menu" class="mt-2 ml-4 space-y-1 transition-all duration-300 max-h-0 overflow-hidden">
+                    <div id="mantenimiento-menu" class="mt-2 ml-4 space-y-1 overflow-hidden" style="max-height: 0; transition: max-height 0.3s ease-in-out;">
                         <a href="{% url 'contrapartes:tipo_lista' %}" class="nav-link group flex items-center px-4 py-2 text-white rounded-lg hover:bg-white hover:bg-opacity-5 transition-all duration-300">
                             <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white bg-opacity-5 group-hover:bg-opacity-10 transition-all duration-300 mr-3">
                                 <i class="fas fa-tags text-sm group-hover:scale-110 transition-transform duration-300"></i>
@@ -133,7 +133,7 @@
                         </div>
                         <span class="font-medium group-hover:translate-x-1 transition-transform duration-300">Notificaciones</span>
                         <div class="ml-auto flex items-center space-x-2">
-                            <span id="notification-count" class="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-semibold shadow-lg animate-bounce-gentle">0</span>
+                            <span id="notification-count" class="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-semibold shadow-lg transition-all duration-300">0</span>
                             <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 <i class="fas fa-arrow-right text-sm"></i>
                             </div>
@@ -199,6 +199,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const cumplimientoArrow = document.getElementById('cumplimiento-arrow');
     const isCumplimientoExpanded = localStorage.getItem('cumplimiento-expanded');
     
+    // Temporarily disable transitions to prevent animation on page load
+    cumplimientoMenu.style.transition = 'none';
+    
     // Default to expanded if no preference is stored
     if (isCumplimientoExpanded === null || isCumplimientoExpanded === 'true') {
         cumplimientoMenu.style.maxHeight = cumplimientoMenu.scrollHeight + 'px';
@@ -208,10 +211,18 @@ document.addEventListener('DOMContentLoaded', function() {
         cumplimientoArrow.innerHTML = '<i class="fas fa-chevron-down text-sm"></i>';
     }
     
+    // Re-enable transitions after a brief delay
+    setTimeout(() => {
+        cumplimientoMenu.style.transition = 'max-height 0.3s ease-in-out';
+    }, 10);
+    
     // Initialize Mantenimiento menu
     const mantenimientoMenu = document.getElementById('mantenimiento-menu');
     const mantenimientoArrow = document.getElementById('mantenimiento-arrow');
     const isMantenimientoExpanded = localStorage.getItem('mantenimiento-expanded');
+    
+    // Temporarily disable transitions to prevent animation on page load
+    mantenimientoMenu.style.transition = 'none';
     
     // Default to collapsed for mantenimiento
     if (isMantenimientoExpanded === 'true') {
@@ -220,6 +231,25 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         mantenimientoMenu.style.maxHeight = '0px';
         mantenimientoArrow.innerHTML = '<i class="fas fa-chevron-down text-sm"></i>';
+    }
+    
+    // Re-enable transitions after a brief delay
+    setTimeout(() => {
+        mantenimientoMenu.style.transition = 'max-height 0.3s ease-in-out';
+    }, 10);
+    
+    // Handle notification count animation
+    const notificationCount = document.getElementById('notification-count');
+    if (notificationCount) {
+        const count = parseInt(notificationCount.textContent) || 0;
+        
+        // Only add animation if there are notifications
+        if (count > 0) {
+            notificationCount.classList.add('animate-bounce-gentle');
+        } else {
+            // Hide the badge if no notifications
+            notificationCount.style.display = 'none';
+        }
     }
 });
 </script>

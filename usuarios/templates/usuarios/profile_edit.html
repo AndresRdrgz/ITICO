@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Perfil - ITICO{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-picture-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .profile-picture {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .profile-picture:hover {
+        border-color: #3b82f6;
+        transform: scale(1.05);
+    }
+    
+    .upload-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: #3b82f6;
+        color: white;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .upload-overlay:hover {
+        background: #2563eb;
+        transform: scale(1.1);
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .form-section h3 {
+        color: #1f2937;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-secondary:hover {
+        background: #4b5563;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    
+    .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .help-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+    
+    .file-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .success-message {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: 1px solid #a7f3d0;
+    }
+    
+    .error-message-box {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: 1px solid #fecaca;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex mb-8" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'home' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-home mr-2"></i>
+                Inicio
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-gray-500">Editar Perfil</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Editar Perfil</h1>
+        <p class="text-gray-600">Actualiza tu información personal y configuración de cuenta</p>
+    </div>
+
+    <!-- Mensajes de éxito/error -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="{% if message.tags == 'success' %}success-message{% else %}error-message-box{% endif %} mb-6">
+                <div class="flex items-center">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} mr-2"></i>
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" id="profile-form">
+        {% csrf_token %}
+        
+        <!-- Sección de Foto de Perfil -->
+        <div class="form-section">
+            <h3><i class="fas fa-camera mr-2"></i>Foto de Perfil</h3>
+            <div class="flex items-center space-x-6">
+                <div class="profile-picture-container">
+                    <img id="profile-preview" src="{{ profile.get_profile_picture_url }}" alt="Foto de perfil" class="profile-picture">
+                    <div class="upload-overlay" onclick="document.getElementById('profile-picture-input').click()">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <div class="form-group">
+                        <label class="form-label">Subir nueva foto</label>
+                        <input type="file" name="profile_picture" id="profile-picture-input" accept="image/*" class="file-input-wrapper">
+                        <div class="help-text">Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB</div>
+                    </div>
+                    {% if profile.profile_picture %}
+                        <button type="button" onclick="deleteProfilePicture()" class="btn-danger">
+                            <i class="fas fa-trash mr-2"></i>Eliminar foto
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Información Personal -->
+        <div class="form-section">
+            <h3><i class="fas fa-user mr-2"></i>Información Personal</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-group">
+                    <label for="{{ user_form.first_name.id_for_label }}" class="form-label">
+                        {{ user_form.first_name.label }}
+                    </label>
+                    {{ user_form.first_name }}
+                    {% if user_form.first_name.errors %}
+                        <div class="error-message">{{ user_form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ user_form.last_name.id_for_label }}" class="form-label">
+                        {{ user_form.last_name.label }}
+                    </label>
+                    {{ user_form.last_name }}
+                    {% if user_form.last_name.errors %}
+                        <div class="error-message">{{ user_form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group md:col-span-2">
+                    <label for="{{ user_form.email.id_for_label }}" class="form-label">
+                        {{ user_form.email.label }}
+                    </label>
+                    {{ user_form.email }}
+                    {% if user_form.email.errors %}
+                        <div class="error-message">{{ user_form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Información Laboral -->
+        <div class="form-section">
+            <h3><i class="fas fa-briefcase mr-2"></i>Información Laboral</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-group">
+                    <label for="{{ profile_form.department.id_for_label }}" class="form-label">
+                        {{ profile_form.department.label }}
+                    </label>
+                    {{ profile_form.department }}
+                    {% if profile_form.department.errors %}
+                        <div class="error-message">{{ profile_form.department.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ profile_form.position.id_for_label }}" class="form-label">
+                        {{ profile_form.position.label }}
+                    </label>
+                    {{ profile_form.position }}
+                    {% if profile_form.position.errors %}
+                        <div class="error-message">{{ profile_form.position.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group md:col-span-2">
+                    <label for="{{ profile_form.phone.id_for_label }}" class="form-label">
+                        {{ profile_form.phone.label }}
+                    </label>
+                    {{ profile_form.phone }}
+                    {% if profile_form.phone.errors %}
+                        <div class="error-message">{{ profile_form.phone.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Botones de Acción -->
+        <div class="flex justify-between items-center">
+            <div class="flex space-x-4">
+                <a href="{% url 'usuarios:change_password' %}" class="btn-secondary">
+                    <i class="fas fa-key mr-2"></i>Cambiar Contraseña
+                </a>
+                <a href="{% url 'usuarios:profile_view' %}" class="btn-secondary">
+                    <i class="fas fa-eye mr-2"></i>Ver Perfil
+                </a>
+            </div>
+            <div class="flex space-x-4">
+                <button type="button" onclick="window.history.back()" class="btn-secondary">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save mr-2"></i>Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Preview de imagen al seleccionar archivo
+document.getElementById('profile-picture-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('profile-preview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Eliminar foto de perfil
+function deleteProfilePicture() {
+    if (confirm('¿Estás seguro de que quieres eliminar tu foto de perfil?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "usuarios:delete_profile_picture" %}';
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrfmiddlewaretoken';
+        csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        form.appendChild(csrfToken);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Validación del formulario
+document.getElementById('profile-form').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('profile-picture-input');
+    const file = fileInput.files[0];
+    
+    if (file) {
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            e.preventDefault();
+            alert('El archivo es demasiado grande. El tamaño máximo es 5MB.');
+            return;
+        }
+        
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            e.preventDefault();
+            alert('Solo se permiten archivos de imagen (JPG, PNG, GIF).');
+            return;
+        }
+    }
+});
+</script>
+{% endblock %}

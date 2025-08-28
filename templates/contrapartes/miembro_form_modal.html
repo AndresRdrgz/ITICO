@@ -70,4 +70,20 @@
             <div class="text-red-500 text-sm mt-1">{{ form.fecha_nacimiento.errors.0 }}</div>
         {% endif %}
     </div>
+
+    <!-- PEP Field -->
+    <div class="flex items-center">
+        <div class="flex items-center h-5">
+            {{ form.es_pep }}
+        </div>
+        <div class="ml-3 text-sm">
+            <label for="{{ form.es_pep.id_for_label }}" class="font-medium text-gray-700">
+                PEP (Politically Exposed Person)
+            </label>
+            <p class="text-gray-500">Marque esta casilla si la persona es una Persona Políticamente Expuesta</p>
+        </div>
+    </div>
+    {% if form.es_pep.errors %}
+        <div class="text-red-500 text-sm mt-1">{{ form.es_pep.errors.0 }}</div>
+    {% endif %}
 </form>

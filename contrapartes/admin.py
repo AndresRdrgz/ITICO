@@ -297,6 +297,7 @@ class MiembroAdmin(admin.ModelAdmin):
         'numero_identificacion',
         'tipo_persona',
         'nacionalidad',
+        'pep_badge',
         'edad_calculada',
         'activo'
     ]
@@ -304,6 +305,7 @@ class MiembroAdmin(admin.ModelAdmin):
         'categoria',
         'tipo_persona',
         'nacionalidad',
+        'es_pep',
         'activo',
         'contraparte__tipo',
         'fecha_creacion'
@@ -321,7 +323,7 @@ class MiembroAdmin(admin.ModelAdmin):
             'fields': ('nombre', 'numero_identificacion', 'tipo_persona', 'fecha_nacimiento', 'nacionalidad')
         }),
         ('Organización', {
-            'fields': ('contraparte', 'categoria', 'activo')
+            'fields': ('contraparte', 'categoria', 'es_pep', 'activo')
         }),
         ('Auditoría', {
             'fields': ('fecha_creacion', 'fecha_actualizacion'),
@@ -333,6 +335,18 @@ class MiembroAdmin(admin.ModelAdmin):
         """Muestra la edad calculada"""
         return f"{obj.edad} años"
     edad_calculada.short_description = 'Edad'
+    
+    def pep_badge(self, obj):
+        """Muestra el estado PEP con colores"""
+        if obj.es_pep:
+            return format_html(
+                '<span style="color: red; font-weight: bold; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px;">⚠ PEP</span>'
+            )
+        else:
+            return format_html(
+                '<span style="color: green; font-weight: bold; background-color: #dcfce7; padding: 2px 6px; border-radius: 4px;">✓ No PEP</span>'
+            )
+    pep_badge.short_description = 'PEP Status'
 
 
 @admin.register(Documento)

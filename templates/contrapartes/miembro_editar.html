@@ -71,6 +71,32 @@
             {% csrf_token %}
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tipo de Persona -->
+                <div>
+                    <label for="{{ form.tipo_persona.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Tipo de Persona <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.tipo_persona }}
+                    {% if form.tipo_persona.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.tipo_persona.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Categoría -->
+                <div>
+                    <label for="{{ form.categoria.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Categoría <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.categoria }}
+                    {% if form.categoria.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.categoria.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+                
                 <!-- Nombre -->
                 <div class="md:col-span-2">
                     <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -84,15 +110,15 @@
                     {% endif %}
                 </div>
                 
-                <!-- Documento de Identidad -->
+                <!-- Número de Identificación -->
                 <div>
-                    <label for="{{ form.documento_identidad.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Documento de Identidad <span class="text-red-500">*</span>
+                    <label for="{{ form.numero_identificacion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Número de Identificación <span class="text-red-500">*</span>
                     </label>
-                    {{ form.documento_identidad }}
-                    {% if form.documento_identidad.errors %}
+                    {{ form.numero_identificacion }}
+                    {% if form.numero_identificacion.errors %}
                         <div class="mt-1 text-sm text-red-600">
-                            {{ form.documento_identidad.errors }}
+                            {{ form.numero_identificacion.errors }}
                         </div>
                     {% endif %}
                 </div>
@@ -110,57 +136,38 @@
                     {% endif %}
                 </div>
                 
-                <!-- Rol -->
+                <!-- Fecha de Nacimiento -->
                 <div>
-                    <label for="{{ form.rol.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Rol <span class="text-red-500">*</span>
+                    <label for="{{ form.fecha_nacimiento.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Fecha de Nacimiento <span class="text-red-500">*</span>
                     </label>
-                    {{ form.rol }}
-                    {% if form.rol.errors %}
+                    {{ form.fecha_nacimiento }}
+                    {% if form.fecha_nacimiento.errors %}
                         <div class="mt-1 text-sm text-red-600">
-                            {{ form.rol.errors }}
+                            {{ form.fecha_nacimiento.errors }}
                         </div>
                     {% endif %}
                 </div>
-                
-                <!-- Email -->
-                <div>
-                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Email
-                    </label>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                        <div class="mt-1 text-sm text-red-600">
-                            {{ form.email.errors }}
-                        </div>
-                    {% endif %}
+            </div>
+            
+            <!-- PEP Field -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex items-center h-5">
+                        {{ form.es_pep }}
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="{{ form.es_pep.id_for_label }}" class="font-medium text-gray-700">
+                            PEP (Politically Exposed Person)
+                        </label>
+                        <p class="text-gray-500">Marque esta casilla si la persona es una Persona Políticamente Expuesta</p>
+                    </div>
                 </div>
-                
-                <!-- Teléfono -->
-                <div>
-                    <label for="{{ form.telefono.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Teléfono
-                    </label>
-                    {{ form.telefono }}
-                    {% if form.telefono.errors %}
-                        <div class="mt-1 text-sm text-red-600">
-                            {{ form.telefono.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Dirección -->
-                <div class="md:col-span-2">
-                    <label for="{{ form.direccion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Dirección
-                    </label>
-                    {{ form.direccion }}
-                    {% if form.direccion.errors %}
-                        <div class="mt-1 text-sm text-red-600">
-                            {{ form.direccion.errors }}
-                        </div>
-                    {% endif %}
-                </div>
+                {% if form.es_pep.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {{ form.es_pep.errors }}
+                    </div>
+                {% endif %}
             </div>
             
             <!-- Form Actions -->
