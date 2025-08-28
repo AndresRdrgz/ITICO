@@ -385,6 +385,13 @@ class Miembro(models.Model):
         verbose_name="PEP (Politically Exposed Person)",
         help_text="Indica si esta persona es una Persona Políticamente Expuesta"
     )
+    posicion_pep = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Posición como PEP",
+        help_text="Cargo o posición política que ocupa o ha ocupado la persona"
+    )
     
     # Campos de auditoría
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")

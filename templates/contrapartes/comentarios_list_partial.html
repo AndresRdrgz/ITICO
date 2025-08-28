@@ -5,8 +5,14 @@
             <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-gray-300 transition-colors duration-200" data-comentario-id="{{ comentario.id }}">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                            {{ comentario.usuario.first_name|first|default:comentario.usuario.username|first|upper }}
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                            {% if comentario.usuario.profile.profile_picture %}
+                                <img src="{{ comentario.usuario.profile.profile_picture.url }}" 
+                                     alt="{{ comentario.usuario.get_full_name|default:comentario.usuario.username }}" 
+                                     class="w-full h-full object-cover">
+                            {% else %}
+                                {{ comentario.usuario.first_name|first|default:comentario.usuario.username|first|upper }}
+                            {% endif %}
                         </div>
                         <div>
                             <h4 class="font-semibold text-gray-900 text-sm">

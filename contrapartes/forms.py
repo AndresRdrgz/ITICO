@@ -179,7 +179,7 @@ class MiembroForm(forms.ModelForm):
     
     class Meta:
         model = Miembro
-        fields = ['tipo_persona', 'nombre', 'numero_identificacion', 'nacionalidad', 'fecha_nacimiento', 'categoria', 'es_pep']
+        fields = ['tipo_persona', 'nombre', 'numero_identificacion', 'nacionalidad', 'fecha_nacimiento', 'categoria', 'es_pep', 'posicion_pep']
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={
                 'type': 'date',
@@ -206,7 +206,21 @@ class MiembroForm(forms.ModelForm):
             'es_pep': forms.CheckboxInput(attrs={
                 'class': 'h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded'
             }),
+            'posicion_pep': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200 text-gray-900',
+                'placeholder': 'Ej: Senador, Ministro, Alcalde, etc.'
+            }),
         }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        es_pep = cleaned_data.get('es_pep')
+        posicion_pep = cleaned_data.get('posicion_pep')
+        
+        if es_pep and not posicion_pep:
+            self.add_error('posicion_pep', 'La posición como PEP es requerida cuando se marca como PEP.')
+        
+        return cleaned_data
 
 
 class DocumentoForm(forms.ModelForm):

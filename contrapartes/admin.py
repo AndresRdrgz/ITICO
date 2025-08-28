@@ -298,6 +298,7 @@ class MiembroAdmin(admin.ModelAdmin):
         'tipo_persona',
         'nacionalidad',
         'pep_badge',
+        'pep_posicion_display',
         'edad_calculada',
         'activo'
     ]
@@ -323,7 +324,7 @@ class MiembroAdmin(admin.ModelAdmin):
             'fields': ('nombre', 'numero_identificacion', 'tipo_persona', 'fecha_nacimiento', 'nacionalidad')
         }),
         ('Organización', {
-            'fields': ('contraparte', 'categoria', 'es_pep', 'activo')
+            'fields': ('contraparte', 'categoria', 'es_pep', 'posicion_pep', 'activo')
         }),
         ('Auditoría', {
             'fields': ('fecha_creacion', 'fecha_actualizacion'),
@@ -347,6 +348,20 @@ class MiembroAdmin(admin.ModelAdmin):
                 '<span style="color: green; font-weight: bold; background-color: #dcfce7; padding: 2px 6px; border-radius: 4px;">✓ No PEP</span>'
             )
     pep_badge.short_description = 'PEP Status'
+    
+    def pep_posicion_display(self, obj):
+        """Muestra la posición PEP si existe"""
+        if obj.es_pep and obj.posicion_pep:
+            return format_html(
+                '<span style="color: #dc2626; font-weight: bold;">{}</span>',
+                obj.posicion_pep
+            )
+        elif obj.es_pep:
+            return format_html(
+                '<span style="color: #dc2626; font-style: italic;">Sin especificar</span>'
+            )
+        return '-'
+    pep_posicion_display.short_description = 'Posición PEP'
 
 
 @admin.register(Documento)

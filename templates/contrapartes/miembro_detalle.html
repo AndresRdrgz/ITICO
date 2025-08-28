@@ -140,6 +140,13 @@
                             </span>
                         {% endif %}
                     </div>
+                    
+                    {% if object.es_pep and object.posicion_pep %}
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Posición como PEP</label>
+                            <p class="text-gray-900 font-medium">{{ object.posicion_pep }}</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -168,6 +168,20 @@
                         {{ form.es_pep.errors }}
                     </div>
                 {% endif %}
+                
+                <!-- PEP Position Field (Conditional) -->
+                <div id="pep-position-container" class="mt-4 {% if not form.es_pep.value %}hidden{% endif %}">
+                    <label for="{{ form.posicion_pep.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Posición como PEP <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.posicion_pep }}
+                    {% if form.posicion_pep.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.posicion_pep.errors }}
+                        </div>
+                    {% endif %}
+                    <p class="text-sm text-gray-500 mt-1">Especifique el cargo o posición política que ocupa o ha ocupado</p>
+                </div>
             </div>
             
             <!-- Form Actions -->
@@ -199,4 +213,50 @@ select {
     @apply bg-gray-50 focus:bg-white;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pepCheckbox = document.getElementById('{{ form.es_pep.id_for_label }}');
+    const pepPositionContainer = document.getElementById('pep-position-container');
+    const pepPositionInput = document.getElementById('{{ form.posicion_pep.id_for_label }}');
+    
+    function togglePepPosition() {
+        if (pepCheckbox.checked) {
+            pepPositionContainer.classList.remove('hidden');
+            pepPositionInput.required = true;
+            pepPositionInput.setAttribute('aria-required', 'true');
+        } else {
+            pepPositionContainer.classList.add('hidden');
+            pepPositionInput.required = false;
+            pepPositionInput.removeAttribute('aria-required');
+            pepPositionInput.value = '';
+        }
+    }
+    
+    // Initial state
+    togglePepPosition();
+    
+    // Listen for changes
+    pepCheckbox.addEventListener('change', togglePepPosition);
+    
+    // Form validation before submit
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (pepCheckbox.checked && !pepPositionInput.value.trim()) {
+                e.preventDefault();
+                pepPositionInput.focus();
+                // Show error message
+                const errorDiv = pepPositionContainer.querySelector('.text-red-600');
+                if (!errorDiv) {
+                    const errorElement = document.createElement('div');
+                    errorElement.className = 'mt-1 text-sm text-red-600';
+                    errorElement.textContent = 'La posición como PEP es requerida cuando se marca como PEP.';
+                    pepPositionContainer.appendChild(errorElement);
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

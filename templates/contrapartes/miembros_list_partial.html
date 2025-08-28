@@ -17,6 +17,11 @@
                                         <i class="fas fa-exclamation-triangle mr-1"></i>
                                         PEP
                                     </span>
+                                    {% if miembro.posicion_pep %}
+                                        <div class="mt-1">
+                                            <span class="text-xs text-gray-600 font-medium">{{ miembro.posicion_pep }}</span>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             {% endif %}
                         </div>
