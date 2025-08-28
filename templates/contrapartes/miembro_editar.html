@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pepPositionInput = document.getElementById('{{ form.posicion_pep.id_for_label }}');
     
     function togglePepPosition() {
-        if (pepCheckbox.checked) {
+        if (pepCheckbox && pepCheckbox.checked) {
             pepPositionContainer.classList.remove('hidden');
             pepPositionInput.required = true;
             pepPositionInput.setAttribute('aria-required', 'true');
@@ -229,21 +229,25 @@ document.addEventListener('DOMContentLoaded', function() {
             pepPositionContainer.classList.add('hidden');
             pepPositionInput.required = false;
             pepPositionInput.removeAttribute('aria-required');
-            pepPositionInput.value = '';
+            if (pepPositionInput) {
+                pepPositionInput.value = '';
+            }
         }
     }
     
-    // Initial state
-    togglePepPosition();
-    
-    // Listen for changes
-    pepCheckbox.addEventListener('change', togglePepPosition);
+    // Initial state - ensure it matches the checkbox state
+    if (pepCheckbox) {
+        togglePepPosition();
+        
+        // Listen for changes
+        pepCheckbox.addEventListener('change', togglePepPosition);
+    }
     
     // Form validation before submit
     const form = document.querySelector('form');
     if (form) {
         form.addEventListener('submit', function(e) {
-            if (pepCheckbox.checked && !pepPositionInput.value.trim()) {
+            if (pepCheckbox && pepCheckbox.checked && pepPositionInput && !pepPositionInput.value.trim()) {
                 e.preventDefault();
                 pepPositionInput.focus();
                 // Show error message

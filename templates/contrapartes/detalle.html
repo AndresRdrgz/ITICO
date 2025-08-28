@@ -828,8 +828,8 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             const addMemberBtn = document.getElementById('add-member-header-btn');
             if (addMemberBtn) {
-                loadForm();
                 showModal();
+                loadForm();
             }
         }, 100);
     };
@@ -954,6 +954,54 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = 'auto';
     }
     
+    // Initialize PEP checkbox functionality
+    function initializePepCheckbox() {
+        console.log('Initializing PEP checkbox functionality...');
+        
+        const pepCheckbox = document.querySelector('#miembro-modal input[name="es_pep"]');
+        const pepPositionContainer = document.getElementById('pep-position-container');
+        const pepPositionInput = document.querySelector('#miembro-modal input[name="posicion_pep"]');
+        
+        console.log('PEP elements found:', {
+            pepCheckbox: !!pepCheckbox,
+            pepPositionContainer: !!pepPositionContainer,
+            pepPositionInput: !!pepPositionInput
+        });
+        
+        if (!pepCheckbox || !pepPositionContainer) {
+            console.log('PEP elements not found, exiting early');
+            return; // Elements not found, exit early
+        }
+        
+        function togglePepPosition() {
+            console.log('Toggling PEP position, checkbox checked:', pepCheckbox.checked);
+            
+            if (pepCheckbox.checked) {
+                pepPositionContainer.classList.remove('hidden');
+                if (pepPositionInput) {
+                    pepPositionInput.required = true;
+                    pepPositionInput.setAttribute('aria-required', 'true');
+                }
+                console.log('PEP position container shown');
+            } else {
+                pepPositionContainer.classList.add('hidden');
+                if (pepPositionInput) {
+                    pepPositionInput.required = false;
+                    pepPositionInput.removeAttribute('aria-required');
+                    pepPositionInput.value = '';
+                }
+                console.log('PEP position container hidden');
+            }
+        }
+        
+        // Initial state - ensure it matches the checkbox state
+        togglePepPosition();
+        
+        // Listen for changes
+        pepCheckbox.addEventListener('change', togglePepPosition);
+        console.log('PEP checkbox event listener attached');
+    }
+    
     // Load form via AJAX
     function loadForm() {
         modalFormContainer.innerHTML = `
@@ -973,6 +1021,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 modalFormContainer.innerHTML = data.form_html;
+                
+                // Initialize PEP checkbox functionality after form is loaded
+                initializePepCheckbox();
             } else {
                 modalFormContainer.innerHTML = '<div class="text-red-600 text-center py-4">Error al cargar el formulario</div>';
             }
@@ -1171,6 +1222,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('miembro-form');
         if (!form) return;
         
+        // Validate PEP fields before submission
+        const pepCheckbox = form.querySelector('input[name="es_pep"]');
+        const pepPositionInput = form.querySelector('input[name="posicion_pep"]');
+        
+        if (pepCheckbox && pepCheckbox.checked && pepPositionInput && !pepPositionInput.value.trim()) {
+            showNotification('La posición como PEP es requerida cuando se marca como PEP', 'error');
+            pepPositionInput.focus();
+            return;
+        }
+        
         const formData = new FormData(form);
         
         // Add CSRF token
@@ -1213,6 +1274,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Show form with errors
                 modalFormContainer.innerHTML = data.form_html;
+                
+                // Reinitialize PEP checkbox functionality after form is reloaded with errors
+                initializePepCheckbox();
             }
         })
         .catch(error => {

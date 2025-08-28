@@ -26,7 +26,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 #database production settings db name "itico", username "itico", password "postgres"
 DEBUG = True
 if DEBUG:
-    DATABASES = {
+     DATABASES = {
         'default': dj_database_url.config(
             default='postgresql://postgres:FP.h05t1l3@localhost:5432/itico',
             conn_max_age=600,
