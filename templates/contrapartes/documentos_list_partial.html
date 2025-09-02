@@ -1,47 +1,163 @@
 {% if object.documentos.all %}
-    <div class="divide-y divide-gray-200">
-        {% for documento in object.documentos.all %}
-            {% if documento.activo %}
-                <div class="p-6 hover:bg-gray-50 transition-colors duration-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mr-4">
-                                <i class="{{ documento.icono_tipo }} text-xl"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-semibold text-gray-900">{{ documento.tipo.nombre }}</h3>
-                                <p class="text-sm text-gray-600">{{ documento.get_tipo_display }}</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>{{ documento.tamaño_legible }}</span>
-                                    <span class="mx-2">•</span>
-                                    <span>{{ documento.fecha_subida|date:"d/m/Y H:i" }}</span>
-                                    <span class="mx-2">•</span>
-                                    <span>{{ documento.subido_por.get_full_name|default:documento.subido_por.username }}</span>
+    {% regroup object.documentos.all|dictsort:"categoria" by categoria as documentos_por_categoria %}
+    
+    <div class="space-y-6">
+        {% for categoria in documentos_por_categoria %}
+            {% with categoria.grouper as categoria_codigo %}
+                {% if categoria.list|length > 0 %}
+                    <div class="document-category bg-gray-50 rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+                        <!-- Category Header -->
+                        <div class="document-category-header px-6 py-4 bg-white border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors duration-200" 
+                             onclick="toggleCategory('categoria-{{ forloop.counter }}')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center mr-3">
+                                        <i class="fas fa-folder text-white text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900">
+                                            {% if categoria_codigo == 'compliance' %}
+                                                <i class="fas fa-shield-alt mr-2 category-compliance"></i>Compliance
+                                            {% elif categoria_codigo == 'general_financial' %}
+                                                <i class="fas fa-chart-line mr-2 category-general_financial"></i>General and Financial Information
+                                            {% elif categoria_codigo == 'opportunities' %}
+                                                <i class="fas fa-lightbulb mr-2 category-opportunities"></i>Opportunities
+                                            {% elif categoria_codigo == 'info_requested' %}
+                                                <i class="fas fa-question-circle mr-2 category-info_requested"></i>Information Requested from ITICO
+                                            {% else %}
+                                                <i class="fas fa-folder mr-2 text-gray-600"></i>{{ categoria_codigo|title }}
+                                            {% endif %}
+                                        </h3>
+                                        <p class="text-sm text-gray-600">
+                                            {{ categoria.list|length }} documento{{ categoria.list|length|pluralize:"s" }}
+                                        </p>
+                                    </div>
                                 </div>
-                                {% if documento.descripcion %}
-                                    <p class="text-sm text-gray-600 mt-2">{{ documento.descripcion|truncatechars:100 }}</p>
-                                {% endif %}
+                                <div class="flex items-center space-x-3">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+                                        {% if categoria_codigo == 'compliance' %}bg-blue-100 text-blue-800
+                                        {% elif categoria_codigo == 'general_financial' %}bg-green-100 text-green-800
+                                        {% elif categoria_codigo == 'opportunities' %}bg-purple-100 text-purple-800
+                                        {% elif categoria_codigo == 'info_requested' %}bg-orange-100 text-orange-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ categoria_codigo|title }}
+                                    </span>
+                                    <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200" id="chevron-{{ forloop.counter }}"></i>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <a href="{{ documento.archivo.url }}" target="_blank" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" title="Descargar">
-                                <i class="fas fa-download text-sm"></i>
-                            </a>
-                            <a href="{{ documento.archivo.url }}" target="_blank" class="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors duration-200" title="Ver">
-                                <i class="fas fa-eye text-sm"></i>
-                            </a>
-                            <button onclick="editarDocumento({{ documento.pk }})" class="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors duration-200" title="Editar">
-                                <i class="fas fa-edit text-sm"></i>
-                            </button>
-                            <button onclick="eliminarDocumento({{ documento.pk }})" class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200" title="Eliminar">
-                                <i class="fas fa-trash text-sm"></i>
-                            </button>
+                        
+                        <!-- Documents List -->
+                        <div class="document-category-content divide-y divide-gray-200" id="categoria-{{ forloop.counter }}">
+                            {% for documento in categoria.list %}
+                                {% if documento.activo %}
+                                    <div class="document-item p-6 hover:bg-gray-50 transition-colors duration-200 bg-white">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mr-4">
+                                                    <i class="{{ documento.icono_tipo }} text-xl"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-semibold text-gray-900">{{ documento.tipo.nombre }}</h4>
+                                                    <div class="flex items-center space-x-2 mt-1">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                                            {% if categoria_codigo == 'compliance' %}bg-blue-100 text-blue-800
+                                                            {% elif categoria_codigo == 'general_financial' %}bg-green-100 text-green-800
+                                                            {% elif categoria_codigo == 'opportunities' %}bg-purple-100 text-purple-800
+                                                            {% elif categoria_codigo == 'info_requested' %}bg-orange-100 text-orange-800
+                                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                                            {{ documento.get_categoria_display }}
+                                                        </span>
+                                                        {% if documento.fecha_expiracion %}
+                                                            {% if documento.esta_vencido %}
+                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium document-status-vencido">
+                                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                                    Vencido
+                                                                </span>
+                                                            {% elif documento.expira_pronto %}
+                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium document-status-expira-pronto">
+                                                                    <i class="fas fa-clock mr-1"></i>
+                                                                    Expira pronto
+                                                                </span>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex items-center text-xs text-gray-500 mt-1">
+                                                        <span><i class="fas fa-file mr-1"></i>{{ documento.tamaño_legible }}</span>
+                                                        <span class="mx-2">•</span>
+                                                        <span><i class="fas fa-calendar mr-1"></i>{{ documento.fecha_subida|date:"d/m/Y H:i" }}</span>
+                                                        <span class="mx-2">•</span>
+                                                        <span><i class="fas fa-user mr-1"></i>{{ documento.subido_por.get_full_name|default:documento.subido_por.username }}</span>
+                                                    </div>
+                                                    {% if documento.descripcion %}
+                                                        <p class="text-sm text-gray-600 mt-2">{{ documento.descripcion|truncatechars:100 }}</p>
+                                                    {% endif %}
+                                                    {% if documento.fecha_emision or documento.fecha_expiracion %}
+                                                        <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                                                            {% if documento.fecha_emision %}
+                                                                <span>
+                                                                    <i class="fas fa-calendar-plus mr-1"></i>
+                                                                    Emisión: {{ documento.fecha_emision|date:"d/m/Y" }}
+                                                                </span>
+                                                            {% endif %}
+                                                            {% if documento.fecha_expiracion %}
+                                                                <span>
+                                                                    <i class="fas fa-calendar-minus mr-1"></i>
+                                                                    Expira: {{ documento.fecha_expiracion|date:"d/m/Y" }}
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <a href="{{ documento.archivo.url }}" target="_blank" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" title="Descargar">
+                                                    <i class="fas fa-download text-sm"></i>
+                                                </a>
+                                                <a href="{{ documento.archivo.url }}" target="_blank" class="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors duration-200" title="Ver">
+                                                    <i class="fas fa-eye text-sm"></i>
+                                                </a>
+                                                <button onclick="editarDocumento({{ documento.pk }})" class="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors duration-200" title="Editar">
+                                                    <i class="fas fa-edit text-sm"></i>
+                                                </button>
+                                                <button onclick="eliminarDocumento({{ documento.pk }})" class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200" title="Eliminar">
+                                                    <i class="fas fa-trash text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                     </div>
-                </div>
-            {% endif %}
+                {% endif %}
+            {% endwith %}
         {% endfor %}
     </div>
+    
+    <!-- JavaScript for collapsible categories -->
+    <script>
+        function toggleCategory(categoryId) {
+            const categoryContent = document.getElementById(categoryId);
+            const chevron = document.querySelector(`#${categoryId}`).previousElementSibling.querySelector('.fas.fa-chevron-down');
+            
+            if (categoryContent.style.display === 'none') {
+                categoryContent.style.display = 'block';
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                categoryContent.style.display = 'none';
+                chevron.style.transform = 'rotate(-90deg)';
+            }
+        }
+        
+        // Initialize all categories as expanded
+        document.addEventListener('DOMContentLoaded', function() {
+            const categories = document.querySelectorAll('[id^="categoria-"]');
+            categories.forEach(category => {
+                category.style.display = 'block';
+            });
+        });
+    </script>
 {% else %}
     <div class="text-center py-12">
         <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">

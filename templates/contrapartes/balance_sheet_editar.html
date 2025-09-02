@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Balance Sheet {{ object.año }} - {{ contraparte.nombre|default:contraparte.full_company_name }} - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li><a href="{% url 'dashboard:index' %}" class="text-blue-600 hover:text-blue-800">Dashboard</a></li>
+        <li class="text-gray-500">/</li>
+        <li><a href="{% url 'contrapartes:lista' %}" class="text-blue-600 hover:text-blue-800">Contrapartes</a></li>
+        <li class="text-gray-500">/</li>
+        <li><a href="{% url 'contrapartes:detalle' contraparte.pk %}" class="text-blue-600 hover:text-blue-800">{{ contraparte.nombre|default:contraparte.full_company_name|truncatechars:30 }}</a></li>
+        <li class="text-gray-500">/</li>
+        <li><a href="{% url 'contrapartes:balance_sheet_lista' contraparte.pk %}" class="text-blue-600 hover:text-blue-800">Balance Sheets</a></li>
+        <li class="text-gray-500">/</li>
+        <li class="text-gray-900 font-medium">Editar {{ object.año }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-yellow-800 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-yellow-600 to-yellow-800 opacity-90"></div>
+        <div class="relative z-10">
+            <h1 class="text-3xl font-bold mb-2">Balance Sheet {{ object.año }}</h1>
+            <p class="text-yellow-100 text-lg">{{ contraparte.nombre|default:contraparte.full_company_name }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Form -->
+<div class="max-w-7xl mx-auto">
+    <form method="post" id="balance-sheet-form">
+        {% csrf_token %}
+        
+        <!-- Información Básica -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+            <div class="p-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Información del Balance Sheet</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Año -->
+                    <div>
+                        <label for="{{ form.año.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Año *
+                        </label>
+                        {{ form.año }}
+                        {% if form.año.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.año.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Solo USD -->
+                    <div class="flex items-center space-x-3 pt-6">
+                        {{ form.solo_usd }}
+                        <label for="{{ form.solo_usd.id_for_label }}" class="text-sm font-medium text-gray-700">
+                            Solo USD (sin moneda local)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Configuración de Moneda -->
+                <div id="moneda-section" class="mt-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Configuración de Moneda</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Moneda Local -->
+                        <div>
+                            <label for="{{ form.moneda_local.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Moneda Local
+                            </label>
+                            {{ form.moneda_local }}
+                            {% if form.moneda_local.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {% for error in form.moneda_local.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Tipo de Cambio -->
+                        <div>
+                            <label for="{{ form.tipo_cambio.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tipo de Cambio
+                            </label>
+                            {{ form.tipo_cambio }}
+                            {% if form.tipo_cambio.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {% for error in form.tipo_cambio.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items del Balance Sheet -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Items del Balance</h2>
+                </div>
+
+                <!-- Formset Management -->
+                {{ formset.management_form }}
+                
+                <!-- Items por Categoría -->
+                <div class="space-y-8">
+                    <!-- Assets -->
+                    <div class="border border-gray-200 rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                                <i class="fas fa-coins text-green-600 mr-2"></i>
+                                Assets
+                            </h3>
+                            <button type="button" class="add-category-btn inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors duration-200" data-categoria="assets">
+                                <i class="fas fa-plus mr-1"></i>
+                                Agregar Asset
+                            </button>
+                        </div>
+                        <div id="assets-items" class="space-y-4">
+                            <!-- Assets items will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Liabilities -->
+                    <div class="border border-gray-200 rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                                <i class="fas fa-credit-card text-red-600 mr-2"></i>
+                                Liabilities
+                            </h3>
+                            <button type="button" class="add-category-btn inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors duration-200" data-categoria="liabilities">
+                                <i class="fas fa-plus mr-1"></i>
+                                Agregar Liability
+                            </button>
+                        </div>
+                        <div id="liabilities-items" class="space-y-4">
+                            <!-- Liabilities items will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Equity -->
+                    <div class="border border-gray-200 rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                                <i class="fas fa-chart-pie text-blue-600 mr-2"></i>
+                                Equity
+                            </h3>
+                            <button type="button" class="add-category-btn inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200" data-categoria="equity">
+                                <i class="fas fa-plus mr-1"></i>
+                                Agregar Equity
+                            </button>
+                        </div>
+                        <div id="equity-items" class="space-y-4">
+                            <!-- Equity items will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing formset items (hidden, will be moved by JavaScript) -->
+                <div id="existing-items" class="hidden">
+                    {% for item_form in formset %}
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border border-gray-200 rounded-lg item-form" data-categoria="{{ item_form.instance.categoria|default:'assets' }}">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+                                {{ item_form.descripcion }}
+                                {% if item_form.descripcion.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {% for error in item_form.descripcion.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Monto USD *</label>
+                                {{ item_form.monto_usd }}
+                                {% if item_form.monto_usd.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {% for error in item_form.monto_usd.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div {% if object.solo_usd %}style="display: none;"{% endif %}>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Monto Local</label>
+                                {{ item_form.monto_local }}
+                                {% if item_form.monto_local.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {% for error in item_form.monto_local.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" class="delete-item-btn w-full px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Hidden fields -->
+                            {{ item_form.categoria }}
+                            {{ item_form.orden }}
+                            {{ item_form.id }}
+                            {{ item_form.DELETE }}
+                            {% if item_form.nota %}
+                                {{ item_form.nota }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Summary -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <div class="text-sm font-medium text-green-800">Total Assets</div>
+                            <div id="total-assets" class="text-2xl font-bold text-green-900">$0.00</div>
+                        </div>
+                        <div class="bg-red-50 rounded-lg p-4">
+                            <div class="text-sm font-medium text-red-800">Total Liabilities</div>
+                            <div id="total-liabilities" class="text-2xl font-bold text-red-900">$0.00</div>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <div class="text-sm font-medium text-blue-800">Total Equity</div>
+                            <div id="total-equity" class="text-2xl font-bold text-blue-900">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Errors -->
+        {% if form.non_field_errors or formset.non_form_errors %}
+            <div class="mb-8 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            Por favor corrija los siguientes errores:
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                {% for error in formset.non_form_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-8">
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'contrapartes:balance_sheet_detalle' object.pk %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Ver Balance Sheet
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex items-center px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200">
+                        <i class="fas fa-save mr-2"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Hidden formset template -->
+<div id="formset-template" class="hidden">
+    <!-- This will be populated by JavaScript -->
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('balance-sheet-form');
+    const soloUsdCheckbox = document.getElementById('id_solo_usd');
+    const monedaSection = document.getElementById('moneda-section');
+    const monedaLocalSelect = document.getElementById('id_moneda_local');
+    const tipoCambioSelect = document.getElementById('id_tipo_cambio');
+    const addCategoryBtns = document.querySelectorAll('.add-category-btn');
+    
+    // Check if required elements exist
+    if (!form || !soloUsdCheckbox || !monedaSection || !monedaLocalSelect || !tipoCambioSelect) {
+        console.error('Required form elements not found');
+        return;
+    }
+    
+    const totalFormsElement = document.getElementById('id_form-TOTAL_FORMS');
+    const maxFormsElement = document.getElementById('id_form-MAX_NUM_FORMS');
+    
+    if (!totalFormsElement || !maxFormsElement) {
+        console.error('Formset management form elements not found');
+        return;
+    }
+    
+    let formIndex = parseInt(totalFormsElement.value) || 0;
+    const maxForms = parseInt(maxFormsElement.value) || 1000;
+    
+    function toggleMonedaSection() {
+        if (soloUsdCheckbox.checked) {
+            monedaSection.style.display = 'none';
+            monedaLocalSelect.value = '';
+            tipoCambioSelect.innerHTML = '';
+        } else {
+            monedaSection.style.display = 'block';
+        }
+    }
+    
+    function loadTiposCambio() {
+        const monedaId = monedaLocalSelect.value;
+        
+        if (!monedaId) {
+            tipoCambioSelect.innerHTML = '<option value="">---------</option>';
+            return;
+        }
+        
+        const ajaxUrl = "{% url 'contrapartes:tipos_cambio_ajax' %}";
+        const urlWithParams = `${ajaxUrl}?moneda_id=${encodeURIComponent(monedaId)}`;
+        
+        fetch(urlWithParams)
+            .then(response => response.json())
+            .then(data => {
+                tipoCambioSelect.innerHTML = '<option value="">---------</option>';
+                data.tipos_cambio.forEach(tc => {
+                    const option = document.createElement('option');
+                    option.value = tc.id;
+                    option.textContent = tc.display;
+                    tipoCambioSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading tipos de cambio:', error);
+            });
+    }
+    
+    function createItemForm(categoria) {
+        if (formIndex >= maxForms) {
+            alert('No se pueden agregar más items');
+            return;
+        }
+        
+        const newForm = document.createElement('div');
+        newForm.className = 'grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border border-gray-200 rounded-lg item-form';
+        newForm.dataset.categoria = categoria;
+        
+        const soloUsd = soloUsdCheckbox.checked;
+        
+        newForm.innerHTML = `
+            <div class="md:col-span-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+                <input type="text" name="form-${formIndex}-descripcion" id="id_form-${formIndex}-descripcion"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Descripción del item">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Monto USD *</label>
+                <input type="number" step="0.01" name="form-${formIndex}-monto_usd" id="id_form-${formIndex}-monto_usd"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="0.00">
+            </div>
+            <div ${soloUsd ? 'style="display: none;"' : ''}>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Monto Local</label>
+                <input type="number" step="0.01" name="form-${formIndex}-monto_local" id="id_form-${formIndex}-monto_local"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="0.00" ${soloUsd ? 'disabled' : ''}>
+            </div>
+            <div class="flex items-end">
+                <button type="button" class="delete-item-btn w-full px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <input type="hidden" name="form-${formIndex}-categoria" value="${categoria}">
+            <input type="hidden" name="form-${formIndex}-orden" value="0">
+            <input type="hidden" name="form-${formIndex}-id" value="">
+        `;
+        
+        // Add to appropriate category section
+        const targetSection = document.getElementById(`${categoria}-items`);
+        targetSection.appendChild(newForm);
+        
+        // Add delete functionality
+        const deleteBtn = newForm.querySelector('.delete-item-btn');
+        deleteBtn.addEventListener('click', function() {
+            newForm.remove();
+            updateFormCount();
+            calculateTotals();
+        });
+        
+        // Add change listeners for calculations
+        const montoUsdInput = newForm.querySelector(`#id_form-${formIndex}-monto_usd`);
+        montoUsdInput.addEventListener('input', calculateTotals);
+        
+        formIndex++;
+        updateFormCount();
+    }
+    
+    function updateFormCount() {
+        const totalForms = document.querySelectorAll('.item-form').length;
+        const totalFormsElement = document.getElementById('id_form-TOTAL_FORMS');
+        if (totalFormsElement) {
+            totalFormsElement.value = totalForms;
+        }
+    }
+    
+    function calculateTotals() {
+        let totalAssets = 0;
+        let totalLiabilities = 0;
+        let totalEquity = 0;
+        
+        document.querySelectorAll('.item-form').forEach(form => {
+            const categoria = form.dataset.categoria;
+            const montoInput = form.querySelector('[name$="-monto_usd"]');
+            const monto = parseFloat(montoInput.value) || 0;
+            
+            switch(categoria) {
+                case 'assets':
+                    totalAssets += monto;
+                    break;
+                case 'liabilities':
+                    totalLiabilities += monto;
+                    break;
+                case 'equity':
+                    totalEquity += monto;
+                    break;
+            }
+        });
+        
+        const totalAssetsElement = document.getElementById('total-assets');
+        const totalLiabilitiesElement = document.getElementById('total-liabilities');
+        const totalEquityElement = document.getElementById('total-equity');
+        
+        if (totalAssetsElement) totalAssetsElement.textContent = `$${totalAssets.toFixed(2)}`;
+        if (totalLiabilitiesElement) totalLiabilitiesElement.textContent = `$${totalLiabilities.toFixed(2)}`;
+        if (totalEquityElement) totalEquityElement.textContent = `$${totalEquity.toFixed(2)}`;
+    }
+    
+    // Initialize existing forms
+    document.querySelectorAll('.item-form').forEach(form => {
+        const deleteBtn = form.querySelector('.delete-item-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function() {
+                form.remove();
+                updateFormCount();
+                calculateTotals();
+            });
+        }
+        
+        const montoUsdInput = form.querySelector('[name$="-monto_usd"]');
+        if (montoUsdInput) {
+            montoUsdInput.addEventListener('input', calculateTotals);
+        }
+    });
+    
+    // Event listeners
+    if (soloUsdCheckbox) {
+        soloUsdCheckbox.addEventListener('change', function() {
+            toggleMonedaSection();
+            
+            // Toggle local currency fields in items
+            document.querySelectorAll('[name$="-monto_local"]').forEach(input => {
+                const container = input.closest('div');
+                if (soloUsdCheckbox.checked) {
+                    container.style.display = 'none';
+                    input.disabled = true;
+                    input.value = '';
+                } else {
+                    container.style.display = 'block';
+                    input.disabled = false;
+                }
+            });
+        });
+    }
+    
+    if (monedaLocalSelect) {
+        monedaLocalSelect.addEventListener('change', loadTiposCambio);
+    }
+    
+    // Add event listeners for category-specific add buttons
+    addCategoryBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const categoria = this.dataset.categoria;
+            createItemForm(categoria);
+        });
+    });
+    
+    // Initial setup
+    toggleMonedaSection();
+    calculateTotals();
+    
+    // Process existing formset items if any
+    document.querySelectorAll('#existing-items .item-form').forEach(formDiv => {
+        const categoria = formDiv.dataset.categoria || 'assets';
+        
+        // Add necessary CSS classes to form inputs
+        formDiv.querySelectorAll('input, select, textarea').forEach(input => {
+            if (!input.classList.contains('w-full')) {
+                input.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-lg', 'focus:ring-2', 'focus:ring-blue-500', 'focus:border-blue-500', 'transition-colors', 'duration-200');
+            }
+        });
+        
+        // Remove from hidden container and move to correct category section
+        const targetSection = document.getElementById(`${categoria}-items`);
+        if (targetSection) {
+            formDiv.classList.remove('hidden');
+            targetSection.appendChild(formDiv);
+        }
+        
+        // Add event listeners for existing items
+        const deleteBtn = formDiv.querySelector('.delete-item-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function() {
+                // For existing items, mark for deletion instead of removing
+                const deleteField = formDiv.querySelector('[name$="-DELETE"]');
+                if (deleteField) {
+                    deleteField.checked = true;
+                    formDiv.style.display = 'none';
+                } else {
+                    formDiv.remove();
+                }
+                calculateTotals();
+            });
+        }
+        
+        const montoUsdInput = formDiv.querySelector('[name$="-monto_usd"]');
+        if (montoUsdInput) {
+            montoUsdInput.addEventListener('input', calculateTotals);
+        }
+    });
+    
+    // Clear the existing items container
+    const existingItemsContainer = document.getElementById('existing-items');
+    if (existingItemsContainer) {
+        existingItemsContainer.innerHTML = '';
+    }
+});
+</script>
+{% endblock %}

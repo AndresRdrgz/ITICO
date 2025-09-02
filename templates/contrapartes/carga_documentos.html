@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+
+{% block title %}Carga de Documentos - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li class="flex items-center">
+            <a href="{% url 'dashboard:index' %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                <i class="fas fa-home"></i>
+            </a>
+        </li>
+        <li class="flex items-center">
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white mr-2">
+                <i class="fas fa-upload text-sm"></i>
+            </div>
+            <span class="font-semibold text-gray-800">Carga de Documentos</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white bg-opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
+        
+        <div class="relative z-10">
+            <h1 class="text-3xl lg:text-4xl font-bold mb-3 flex items-center text-white">
+                <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-4 backdrop-blur-sm">
+                    <i class="fas fa-upload text-xl text-white"></i>
+                </div>
+                Carga de Documentos
+            </h1>
+            <p class="text-lg text-purple-100 leading-relaxed">
+                Sube documentos para las contrapartes del sistema
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Total Contrapartes</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.total_contrapartes }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-building text-blue-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Total Documentos</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.total_documentos }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-file-alt text-green-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Tipos de Documento</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.tipos_documento }}</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-tags text-purple-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Upload Form -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-cloud-upload-alt text-purple-600 mr-3"></i>
+                    Subir Nuevo Documento
+                </h2>
+                <p class="text-gray-600 mt-1">Complete el formulario para subir un documento</p>
+            </div>
+            
+            <div class="p-6">
+                <form method="post" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Contraparte Selection -->
+                    <div>
+                        <label for="{{ form.contraparte.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-building text-blue-600 mr-2"></i>
+                            Contraparte *
+                        </label>
+                        {{ form.contraparte }}
+                        {% if form.contraparte.help_text %}
+                            <p class="mt-2 text-sm text-gray-500">{{ form.contraparte.help_text }}</p>
+                        {% endif %}
+                        {% if form.contraparte.errors %}
+                            <div class="mt-2 text-sm text-red-600">
+                                {{ form.contraparte.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Document Type -->
+                    <div>
+                        <label for="{{ form.tipo.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-tag text-purple-600 mr-2"></i>
+                            Tipo de Documento *
+                        </label>
+                        {{ form.tipo }}
+                        {% if form.tipo.errors %}
+                            <div class="mt-2 text-sm text-red-600">
+                                {{ form.tipo.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Document Category -->
+                    <div>
+                        <label for="{{ form.categoria.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-folder text-indigo-600 mr-2"></i>
+                            Categoría *
+                        </label>
+                        {{ form.categoria }}
+                        {% if form.categoria.errors %}
+                            <div class="mt-2 text-sm text-red-600">
+                                {{ form.categoria.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- File Upload -->
+                    <div>
+                        <label for="{{ form.archivo.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-file text-green-600 mr-2"></i>
+                            Archivo *
+                        </label>
+                        {{ form.archivo }}
+                        <p class="mt-2 text-sm text-gray-500">
+                            Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX, TXT, JPG, JPEG, PNG
+                        </p>
+                        {% if form.archivo.errors %}
+                            <div class="mt-2 text-sm text-red-600">
+                                {{ form.archivo.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <div>
+                        <label for="{{ form.descripcion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-comment text-yellow-600 mr-2"></i>
+                            Descripción
+                        </label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.errors %}
+                            <div class="mt-2 text-sm text-red-600">
+                                {{ form.descripcion.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Date Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.fecha_emision.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar text-blue-600 mr-2"></i>
+                                Fecha de Emisión
+                            </label>
+                            {{ form.fecha_emision }}
+                            {% if form.fecha_emision.errors %}
+                                <div class="mt-2 text-sm text-red-600">
+                                    {{ form.fecha_emision.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.fecha_expiracion.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar-times text-red-600 mr-2"></i>
+                                Fecha de Expiración
+                            </label>
+                            {{ form.fecha_expiracion }}
+                            {% if form.fecha_expiracion.errors %}
+                                <div class="mt-2 text-sm text-red-600">
+                                    {{ form.fecha_expiracion.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                        <a href="{% url 'contrapartes:lista' %}" 
+                           class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Cancelar
+                        </a>
+                        
+                        <button type="submit" 
+                                class="inline-flex items-center px-8 py-3 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                            <i class="fas fa-upload mr-2"></i>
+                            Subir Documento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Uploads Sidebar -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-history text-indigo-600 mr-3"></i>
+                    Subidas Recientes
+                </h3>
+            </div>
+            
+            <div class="p-6">
+                {% if recent_uploads %}
+                    <div class="space-y-4">
+                        {% for documento in recent_uploads %}
+                            <div class="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-file-alt text-blue-600 text-sm"></i>
+                                    </div>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                        {{ documento.tipo.nombre }}
+                                    </p>
+                                    <p class="text-sm text-gray-600 truncate">
+                                        {{ documento.contraparte.display_name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ documento.fecha_subida|date:"d/m/Y H:i" }}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-inbox text-gray-400 text-2xl"></i>
+                        </div>
+                        <p class="text-gray-500">No hay documentos recientes</p>
+                    </div>
+                {% endif %}
+                
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <a href="{% url 'contrapartes:lista' %}" 
+                       class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
+                        <i class="fas fa-list mr-2"></i>
+                        Ver Todas las Contrapartes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle document type change to show/hide date fields based on requirements
+    const tipoSelect = document.getElementById('documento-tipo-select');
+    const fechaEmisionDiv = document.querySelector('input[name="fecha_emision"]').closest('div');
+    const fechaExpiracionDiv = document.querySelector('input[name="fecha_expiracion"]').closest('div');
+    
+    function toggleDateFields() {
+        // This would need to be populated with tipo requirements via AJAX or JSON data
+        // For now, we'll show the fields always but you can enhance this
+    }
+    
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', toggleDateFields);
+        toggleDateFields(); // Initial call
+    }
+    
+    // File upload feedback
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            if (fileName) {
+                // You can add file name display logic here
+                console.log('File selected:', fileName);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

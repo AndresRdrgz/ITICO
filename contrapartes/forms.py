@@ -2,7 +2,12 @@
 Formularios para la aplicación de contrapartes
 """
 from django import forms
-from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario, Calificacion, Calificador, Outlook
+from .models import (
+    TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, 
+    Documento, Comentario, Calificacion, Calificador, Outlook, BalanceSheet, 
+    BalanceSheetItem, Moneda, TipoCambio
+)
+from decimal import Decimal
 
 
 class TipoContraparteForm(forms.ModelForm):
@@ -228,7 +233,7 @@ class DocumentoForm(forms.ModelForm):
     
     class Meta:
         model = Documento
-        fields = ['descripcion', 'tipo', 'archivo', 'fecha_emision', 'fecha_expiracion']
+        fields = ['descripcion', 'tipo', 'categoria', 'archivo', 'fecha_emision', 'fecha_expiracion']
         widgets = {
             'descripcion': forms.Textarea(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
@@ -238,6 +243,9 @@ class DocumentoForm(forms.ModelForm):
             'tipo': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
                 'id': 'documento-tipo-select'
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900'
             }),
             'archivo': forms.FileInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900'
@@ -257,12 +265,97 @@ class DocumentoForm(forms.ModelForm):
         # Make date fields not required by default
         self.fields['fecha_emision'].required = False
         self.fields['fecha_expiracion'].required = False
+        # Make categoria field required
+        self.fields['categoria'].required = True
     
     def clean(self):
         cleaned_data = super().clean()
         tipo = cleaned_data.get('tipo')
         fecha_emision = cleaned_data.get('fecha_emision')
         fecha_expiracion = cleaned_data.get('fecha_expiracion')
+        
+        if tipo and tipo.requiere_expiracion:
+            # If tipo requires dates, make them required
+            if not fecha_emision:
+                self.add_error('fecha_emision', 'La fecha de emisión es requerida para este tipo de documento.')
+            
+            if not fecha_expiracion:
+                self.add_error('fecha_expiracion', 'La fecha de expiración es requerida para este tipo de documento.')
+            
+            # Validate that fecha_emision is before fecha_expiracion
+            if fecha_emision and fecha_expiracion and fecha_emision >= fecha_expiracion:
+                self.add_error('fecha_expiracion', 'La fecha de expiración debe ser posterior a la fecha de emisión.')
+        
+        return cleaned_data
+
+
+class CargaDocumentoForm(forms.ModelForm):
+    """Formulario para cargar documentos con selección de contraparte"""
+    
+    contraparte = forms.ModelChoiceField(
+        queryset=Contraparte.objects.all(),
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+            'id': 'contraparte-select'
+        }),
+        empty_label="Seleccione una contraparte...",
+        help_text="Seleccione la contraparte a la que pertenece el documento"
+    )
+    
+    class Meta:
+        model = Documento
+        fields = ['contraparte', 'descripcion', 'tipo', 'categoria', 'archivo', 'fecha_emision', 'fecha_expiracion']
+        widgets = {
+            'descripcion': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'rows': 3,
+                'placeholder': 'Descripción del documento (opcional)'
+            }),
+            'tipo': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'id': 'documento-tipo-select'
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
+            }),
+            'archivo': forms.FileInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100',
+                'accept': '.pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png'
+            }),
+            'fecha_emision': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'type': 'date'
+            }),
+            'fecha_expiracion': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'type': 'date'
+            })
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make date fields not required by default
+        self.fields['fecha_emision'].required = False
+        self.fields['fecha_expiracion'].required = False
+        # Make categoria field required
+        self.fields['categoria'].required = True
+        
+        # Order contrapartes by name
+        self.fields['contraparte'].queryset = Contraparte.objects.all().order_by('full_company_name', 'nombre')
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo = cleaned_data.get('tipo')
+        fecha_emision = cleaned_data.get('fecha_emision')
+        fecha_expiracion = cleaned_data.get('fecha_expiracion')
+        archivo = cleaned_data.get('archivo')
+        
+        # Validate file size
+        if archivo:
+            # Maximum file size: 50MB
+            max_size = 50 * 1024 * 1024  # 50MB in bytes
+            if archivo.size > max_size:
+                self.add_error('archivo', f'El archivo es demasiado grande. El tamaño máximo permitido es {max_size // (1024*1024)}MB.')
         
         if tipo and tipo.requiere_expiracion:
             # If tipo requires dates, make them required
@@ -364,7 +457,182 @@ class CalificacionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Personalizar labels
         self.fields['calificador'].label = 'Calificador *'
-        self.fields['outlook'].label = 'Outlook *'
-        self.fields['calificacion'].label = 'Calificación *'
-        self.fields['fecha'].label = 'Fecha *'
-        self.fields['documento_soporte'].label = 'Documento de Soporte'
+
+
+class MonedaForm(forms.ModelForm):
+    """Formulario para crear/editar monedas"""
+    
+    class Meta:
+        model = Moneda
+        fields = ['codigo', 'nombre', 'simbolo', 'activo']
+        widgets = {
+            'codigo': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Ej: USD, EUR, COP',
+                'maxlength': '3'
+            }),
+            'nombre': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Ej: Dólar estadounidense'
+            }),
+            'simbolo': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'placeholder': 'Ej: $, €, ¥'
+            }),
+            'activo': forms.CheckboxInput(attrs={
+                'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+            })
+        }
+
+
+class TipoCambioForm(forms.ModelForm):
+    """Formulario para crear/editar tipos de cambio"""
+    
+    class Meta:
+        model = TipoCambio
+        fields = ['moneda', 'tasa_usd', 'fecha']
+        widgets = {
+            'moneda': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
+            }),
+            'tasa_usd': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'step': '0.000001',
+                'placeholder': 'Ej: 0.00025 (cuántos USD equivale 1 unidad de la moneda)'
+            }),
+            'fecha': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'type': 'date'
+            })
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['moneda'].queryset = Moneda.objects.filter(activo=True)
+
+
+class BalanceSheetForm(forms.ModelForm):
+    """Formulario para crear/editar balance sheets"""
+    
+    class Meta:
+        model = BalanceSheet
+        fields = ['año', 'solo_usd', 'moneda_local', 'tipo_cambio']
+        widgets = {
+            'año': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'min': '1900',
+                'max': '2100',
+                'placeholder': 'Ej: 2024'
+            }),
+            'solo_usd': forms.CheckboxInput(attrs={
+                'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded',
+                'id': 'id_solo_usd'
+            }),
+            'moneda_local': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'id': 'id_moneda_local'
+            }),
+            'tipo_cambio': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                'id': 'id_tipo_cambio'
+            })
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['moneda_local'].queryset = Moneda.objects.filter(activo=True)
+        self.fields['tipo_cambio'].queryset = TipoCambio.objects.none()
+        
+        # If we have a moneda_local selected, filter tipo_cambio by that currency
+        if 'moneda_local' in self.data:
+            try:
+                moneda_id = int(self.data.get('moneda_local'))
+                self.fields['tipo_cambio'].queryset = TipoCambio.objects.filter(moneda_id=moneda_id).order_by('-fecha')
+            except (ValueError, TypeError):
+                pass
+        elif self.instance.pk and self.instance.moneda_local:
+            self.fields['tipo_cambio'].queryset = TipoCambio.objects.filter(moneda=self.instance.moneda_local).order_by('-fecha')
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        solo_usd = cleaned_data.get('solo_usd')
+        moneda_local = cleaned_data.get('moneda_local')
+        tipo_cambio = cleaned_data.get('tipo_cambio')
+        
+        if not solo_usd:
+            if not moneda_local:
+                raise forms.ValidationError("Si no es solo USD, debe seleccionar una moneda local.")
+            if not tipo_cambio:
+                raise forms.ValidationError("Si no es solo USD, debe seleccionar un tipo de cambio.")
+        
+        return cleaned_data
+
+
+class BalanceSheetItemForm(forms.ModelForm):
+    """Formulario para crear/editar items de balance sheet"""
+    
+    class Meta:
+        model = BalanceSheetItem
+        fields = ['descripcion', 'nota', 'categoria', 'monto_usd', 'monto_local', 'orden']
+        widgets = {
+            'descripcion': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                'placeholder': 'Descripción del item'
+            }),
+            'nota': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                'rows': 2,
+                'placeholder': 'Notas adicionales (opcional)'
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200'
+            }),
+            'monto_usd': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                'step': '0.01',
+                'placeholder': '0.00'
+            }),
+            'monto_local': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                'step': '0.01',
+                'placeholder': '0.00 (opcional)'
+            }),
+            'orden': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200',
+                'placeholder': '0'
+            })
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # If balance sheet is only USD, disable local currency field
+        # Check if instance has a balance_sheet (for existing items) or if parent form has solo_usd (for new items)
+        try:
+            if self.instance and hasattr(self.instance, 'balance_sheet') and self.instance.balance_sheet and self.instance.balance_sheet.solo_usd:
+                self.fields['monto_local'].widget.attrs['disabled'] = True
+                self.fields['monto_local'].required = False
+        except:
+            # For new forms, we can't check the parent balance sheet here
+            # This will be handled by JavaScript based on the solo_usd checkbox state
+            pass
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        monto_usd = cleaned_data.get('monto_usd')
+        
+        if monto_usd is None or monto_usd < 0:
+            raise forms.ValidationError("El monto en USD debe ser mayor o igual a 0.")
+        
+        return cleaned_data
+
+
+# Formset for Balance Sheet Items
+BalanceSheetItemFormSet = forms.inlineformset_factory(
+    BalanceSheet,
+    BalanceSheetItem,
+    form=BalanceSheetItemForm,
+    extra=1,
+    can_delete=True,
+    fields=['descripcion', 'nota', 'categoria', 'monto_usd', 'monto_local', 'orden']
+)

@@ -4,6 +4,10 @@ Vistas del dashboard - implementación básica temporal
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Count, Q
+from contrapartes.models import Contraparte
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -12,12 +16,34 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Datos de ejemplo para el dashboard - estos vendrían de la base de datos
+        # Obtener datos reales de la base de datos
+        today = timezone.now().date()
+        next_30_days = today + timedelta(days=30)
+        
+        # Total de contrapartes activas
+        total_contrapartes = Contraparte.objects.count()
+        
+        # DD pendientes (contrapartes sin fecha de próxima DD o con fecha pasada)
+        dd_pendientes = Contraparte.objects.filter(
+            Q(fecha_proxima_dd__isnull=True) | Q(fecha_proxima_dd__lt=today)
+        ).count()
+        
+        # DD completadas (contrapartes con fecha de próxima DD en el futuro)
+        dd_completadas = Contraparte.objects.filter(
+            fecha_proxima_dd__gte=today
+        ).count()
+        
+        # DD próximas a vencer (en los próximos 30 días)
+        dd_proximas = Contraparte.objects.filter(
+            fecha_proxima_dd__gte=today,
+            fecha_proxima_dd__lte=next_30_days
+        ).count()
+        
         context.update({
-            'total_contrapartes': 45,
-            'dd_pendientes': 12,
-            'dd_completadas': 28,
-            'dd_proximas': 5,
+            'total_contrapartes': total_contrapartes,
+            'dd_pendientes': dd_pendientes,
+            'dd_completadas': dd_completadas,
+            'dd_proximas': dd_proximas,
         })
         
         return context

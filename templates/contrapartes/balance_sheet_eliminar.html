@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Balance Sheet {{ object.año }} - {{ object.contraparte.nombre|default:object.contraparte.full_company_name }} - ITICO{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm">
+        <li><a href="{% url 'dashboard:index' %}" class="text-blue-600 hover:text-blue-800">Dashboard</a></li>
+        <li class="text-gray-500">/</li>
+        <li><a href="{% url 'contrapartes:lista' %}" class="text-blue-600 hover:text-blue-800">Contrapartes</a></li>
+        <li class="text-gray-500">/</li>
+        <li><a href="{% url 'contrapartes:detalle' object.contraparte.pk %}" class="text-blue-600 hover:text-blue-800">{{ object.contraparte.nombre|default:object.contraparte.full_company_name|truncatechars:30 }}</a></li>
+        <li class="text-gray-500">/</li>
+        <li><a href="{% url 'contrapartes:balance_sheet_lista' object.contraparte.pk %}" class="text-blue-600 hover:text-blue-800">Balance Sheets</a></li>
+        <li class="text-gray-500">/</li>
+        <li class="text-gray-900 font-medium">Eliminar {{ object.año }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+    <div class="bg-red-800 rounded-2xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-red-600 to-red-800 opacity-90"></div>
+        <div class="relative z-10">
+            <h1 class="text-3xl font-bold mb-2">Eliminar Balance Sheet</h1>
+            <p class="text-red-100 text-lg">{{ object.contraparte.nombre|default:object.contraparte.full_company_name }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Form -->
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-8">
+            <div class="flex items-center mb-6">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        Confirmar eliminación
+                    </h3>
+                    <p class="text-gray-500">
+                        Esta acción no se puede deshacer.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <h4 class="text-md font-medium text-gray-900 mb-4">Balance Sheet a eliminar:</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="font-medium text-gray-600">Contraparte:</span>
+                        <p class="text-gray-900">{{ object.contraparte.nombre|default:object.contraparte.full_company_name }}</p>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-600">Año:</span>
+                        <p class="text-gray-900">{{ object.año }}</p>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-600">Moneda:</span>
+                        <p class="text-gray-900">
+                            {% if object.solo_usd %}
+                                Solo USD
+                            {% else %}
+                                {{ object.moneda_local.nombre }} ({{ object.moneda_local.codigo }})
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-600">Total Assets:</span>
+                        <p class="text-gray-900">${{ object.total_assets_usd|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-600">Total Liabilities:</span>
+                        <p class="text-gray-900">${{ object.total_liabilities_usd|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-600">Total Equity:</span>
+                        <p class="text-gray-900">${{ object.total_equity_usd|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-600">Número de items:</span>
+                        <p class="text-gray-900">{{ object.items.filter:activo=True.count }}</p>
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-600">Creado por:</span>
+                        <p class="text-gray-900">{{ object.creado_por.get_full_name|default:object.creado_por.username }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">
+                            Advertencia
+                        </h3>
+                        <div class="mt-2 text-sm text-yellow-700">
+                            <p>Al eliminar este Balance Sheet:</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>Se eliminará el Balance Sheet del año {{ object.año }}</li>
+                                <li>Se eliminarán todos los {{ object.items.filter:activo=True.count }} items asociados</li>
+                                <li>Esta acción no se puede deshacer</li>
+                                <li>Los datos se marcarán como inactivos pero se conservarán en la base de datos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'contrapartes:balance_sheet_detalle' object.pk %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                        <i class="fas fa-trash mr-2"></i>
+                        Confirmar Eliminación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

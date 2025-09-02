@@ -1,0 +1,10 @@
+This is a test document for testing the document upload functionality in ITICO.
+
+The document upload feature allows users to:
+1. Select a contraparte from the dropdown
+2. Choose a document type
+3. Upload a file
+4. Add optional description and dates
+5. Save the document to the system
+
+This test verifies that the upload process works correctly without causing broken pipe errors.

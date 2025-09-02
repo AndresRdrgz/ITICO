@@ -5,7 +5,8 @@ from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
     TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, 
-    Miembro, Documento, Comentario, Calificacion, Calificador, Outlook
+    Miembro, Documento, Comentario, Calificacion, Calificador, Outlook,
+    BalanceSheet, BalanceSheetItem, Moneda, TipoCambio
 )
 
 
@@ -368,6 +369,7 @@ class MiembroAdmin(admin.ModelAdmin):
 class DocumentoAdmin(admin.ModelAdmin):
     list_display = [
         'tipo',
+        'categoria_badge',
         'contraparte', 
         'fecha_emision',
         'fecha_expiracion',
@@ -380,6 +382,7 @@ class DocumentoAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         'tipo',
+        'categoria',
         'activo',
         'fecha_subida',
         'fecha_emision',
@@ -392,7 +395,7 @@ class DocumentoAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Información del Documento', {
-            'fields': ('contraparte', 'tipo', 'descripcion')
+            'fields': ('contraparte', 'tipo', 'categoria', 'descripcion')
         }),
         ('Fechas', {
             'fields': ('fecha_emision', 'fecha_expiracion')
@@ -408,6 +411,22 @@ class DocumentoAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def categoria_badge(self, obj):
+        """Muestra la categoría con colores"""
+        colors = {
+            'compliance': '#dc2626',  # red
+            'general_financial': '#2563eb',  # blue
+            'opportunities': '#16a34a',  # green
+            'info_requested': '#ca8a04',  # yellow
+        }
+        color = colors.get(obj.categoria, '#6b7280')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">{}</span>',
+            color,
+            obj.get_categoria_display()
+        )
+    categoria_badge.short_description = 'Categoría'
     
     def estado_expiracion(self, obj):
         """Muestra el estado de expiración del documento"""
@@ -564,6 +583,257 @@ class CalificacionAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set created_by for new objects
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+# ====== ADMIN PARA MONEDAS ======
+
+@admin.register(Moneda)
+class MonedaAdmin(admin.ModelAdmin):
+    list_display = [
+        'codigo',
+        'nombre',
+        'simbolo',
+        'activo_badge',
+        'creado_por',
+        'fecha_creacion'
+    ]
+    list_filter = [
+        'activo',
+        'fecha_creacion'
+    ]
+    search_fields = ['codigo', 'nombre']
+    ordering = ['codigo']
+    readonly_fields = ['fecha_creacion', 'fecha_actualizacion']
+    
+    fieldsets = (
+        ('Información de Moneda', {
+            'fields': ('codigo', 'nombre', 'simbolo', 'activo')
+        }),
+        ('Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_actualizacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def activo_badge(self, obj):
+        """Muestra el estado activo con colores"""
+        if obj.activo:
+            return format_html(
+                '<span style="color: green; font-weight: bold;">✓ Activo</span>'
+            )
+        else:
+            return format_html(
+                '<span style="color: red; font-weight: bold;">✗ Inactivo</span>'
+            )
+    activo_badge.short_description = 'Estado'
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set created_by for new objects
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+# ====== ADMIN PARA TIPOS DE CAMBIO ======
+
+@admin.register(TipoCambio)
+class TipoCambioAdmin(admin.ModelAdmin):
+    list_display = [
+        'moneda',
+        'tasa_usd',
+        'fecha',
+        'creado_por',
+        'fecha_creacion'
+    ]
+    list_filter = [
+        'moneda',
+        'fecha',
+        'fecha_creacion'
+    ]
+    search_fields = ['moneda__codigo', 'moneda__nombre']
+    ordering = ['-fecha', 'moneda__codigo']
+    readonly_fields = ['fecha_creacion']
+    date_hierarchy = 'fecha'
+    
+    fieldsets = (
+        ('Tipo de Cambio', {
+            'fields': ('moneda', 'tasa_usd', 'fecha')
+        }),
+        ('Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set created_by for new objects
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+# ====== ADMIN PARA BALANCE SHEET ITEMS ======
+
+class BalanceSheetItemInline(admin.TabularInline):
+    model = BalanceSheetItem
+    extra = 1
+    fields = ['descripcion', 'categoria', 'monto_usd', 'monto_local', 'orden', 'activo']
+    readonly_fields = ['creado_por', 'fecha_creacion', 'fecha_actualizacion']
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set created_by for new objects
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+# ====== ADMIN PARA BALANCE SHEETS ======
+
+@admin.register(BalanceSheet)
+class BalanceSheetAdmin(admin.ModelAdmin):
+    list_display = [
+        'contraparte_name',
+        'año',
+        'moneda_display',
+        'total_assets_usd',
+        'total_liabilities_usd',
+        'total_equity_usd',
+        'activo_badge',
+        'creado_por',
+        'fecha_creacion'
+    ]
+    list_filter = [
+        'año',
+        'solo_usd',
+        'activo',
+        'fecha_creacion',
+        'moneda_local'
+    ]
+    search_fields = [
+        'contraparte__nombre',
+        'contraparte__full_company_name',
+        'año'
+    ]
+    ordering = ['-año', 'contraparte__nombre']
+    readonly_fields = ['fecha_creacion', 'fecha_actualizacion']
+    inlines = [BalanceSheetItemInline]
+    
+    fieldsets = (
+        ('Balance Sheet', {
+            'fields': ('contraparte', 'año', 'solo_usd')
+        }),
+        ('Configuración de Moneda', {
+            'fields': ('moneda_local', 'tipo_cambio'),
+            'classes': ('collapse',)
+        }),
+        ('Estado', {
+            'fields': ('activo',)
+        }),
+        ('Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_actualizacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def contraparte_name(self, obj):
+        """Muestra el nombre de la contraparte"""
+        return obj.contraparte.nombre or obj.contraparte.full_company_name or "Sin nombre"
+    contraparte_name.short_description = 'Contraparte'
+    
+    def moneda_display(self, obj):
+        """Muestra la configuración de moneda"""
+        if obj.solo_usd:
+            return format_html(
+                '<span style="color: green; font-weight: bold;">Solo USD</span>'
+            )
+        elif obj.moneda_local:
+            return f"{obj.moneda_local.codigo}"
+        else:
+            return "No configurado"
+    moneda_display.short_description = 'Moneda'
+    
+    def activo_badge(self, obj):
+        """Muestra el estado activo con colores"""
+        if obj.activo:
+            return format_html(
+                '<span style="color: green; font-weight: bold;">✓ Activo</span>'
+            )
+        else:
+            return format_html(
+                '<span style="color: red; font-weight: bold;">✗ Inactivo</span>'
+            )
+    activo_badge.short_description = 'Estado'
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set created_by for new objects
+            obj.creado_por = request.user
+        super().save_model(request, obj, form, change)
+
+
+# ====== ADMIN PARA BALANCE SHEET ITEMS ======
+
+@admin.register(BalanceSheetItem)
+class BalanceSheetItemAdmin(admin.ModelAdmin):
+    list_display = [
+        'descripcion',
+        'balance_sheet_display',
+        'categoria',
+        'monto_usd',
+        'monto_local',
+        'orden',
+        'activo_badge',
+        'creado_por'
+    ]
+    list_filter = [
+        'categoria',
+        'activo',
+        'balance_sheet__año',
+        'balance_sheet__contraparte'
+    ]
+    search_fields = [
+        'descripcion',
+        'nota',
+        'balance_sheet__contraparte__nombre',
+        'balance_sheet__contraparte__full_company_name'
+    ]
+    ordering = ['balance_sheet', 'categoria', 'orden', 'descripcion']
+    readonly_fields = ['fecha_creacion', 'fecha_actualizacion']
+    
+    fieldsets = (
+        ('Item de Balance', {
+            'fields': ('balance_sheet', 'descripcion', 'nota', 'categoria', 'orden')
+        }),
+        ('Montos', {
+            'fields': ('monto_usd', 'monto_local')
+        }),
+        ('Estado', {
+            'fields': ('activo',)
+        }),
+        ('Auditoría', {
+            'fields': ('creado_por', 'fecha_creacion', 'fecha_actualizacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def balance_sheet_display(self, obj):
+        """Muestra información del balance sheet"""
+        contraparte_name = obj.balance_sheet.contraparte.nombre or obj.balance_sheet.contraparte.full_company_name or "Sin nombre"
+        return f"{contraparte_name} - {obj.balance_sheet.año}"
+    balance_sheet_display.short_description = 'Balance Sheet'
+    
+    def activo_badge(self, obj):
+        """Muestra el estado activo con colores"""
+        if obj.activo:
+            return format_html(
+                '<span style="color: green; font-weight: bold;">✓ Activo</span>'
+            )
+        else:
+            return format_html(
+                '<span style="color: red; font-weight: bold;">✗ Inactivo</span>'
+            )
+    activo_badge.short_description = 'Estado'
     
     def save_model(self, request, obj, form, change):
         if not change:  # Only set created_by for new objects

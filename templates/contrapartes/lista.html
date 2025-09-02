@@ -185,7 +185,7 @@
                             </td>
                             <td class="py-4 px-6">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                    {{ contraparte.get_tipo_display }}
+                                    {{ contraparte.tipo.nombre }}
                                 </span>
                             </td>
                             <td class="py-4 px-6">
@@ -264,7 +264,7 @@
                             </div>
                             <div>
                                 <h3 class="font-semibold text-gray-900">{{ contraparte.nombre|default:contraparte.full_company_name|default:"Sin nombre" }}</h3>
-                                <p class="text-sm text-gray-600">{{ contraparte.get_tipo_display }}</p>
+                                <p class="text-sm text-gray-600">{{ contraparte.tipo.nombre }}</p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-2">

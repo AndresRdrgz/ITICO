@@ -74,4 +74,29 @@ urlpatterns = [
     
     # Exportar datos
     path('exportar/', views.ExportarContrapartesView.as_view(), name='exportar'),
+    
+    # Carga de documentos
+    path('carga-documentos/', views.CargaDocumentosView.as_view(), name='carga_documentos'),
+    
+    # Balance Sheets
+    path('<int:contraparte_pk>/balance-sheets/', views.BalanceSheetListView.as_view(), name='balance_sheet_lista'),
+    path('<int:contraparte_pk>/balance-sheets/crear/', views.BalanceSheetCreateView.as_view(), name='balance_sheet_crear'),
+    path('balance-sheets/<int:pk>/', views.BalanceSheetDetailView.as_view(), name='balance_sheet_detalle'),
+    path('balance-sheets/<int:pk>/editar/', views.BalanceSheetUpdateView.as_view(), name='balance_sheet_editar'),
+    path('balance-sheets/<int:pk>/eliminar/', views.BalanceSheetDeleteView.as_view(), name='balance_sheet_eliminar'),
+    
+    # AJAX endpoints para Balance Sheets
+    path('ajax/tipos-cambio/', views.TipoCambioAjaxView.as_view(), name='tipos_cambio_ajax'),
+    
+    # Gestión de monedas
+    path('monedas/', views.MonedaListView.as_view(), name='moneda_lista'),
+    path('monedas/crear/', views.MonedaCreateView.as_view(), name='moneda_crear'),
+    path('monedas/<int:pk>/editar/', views.MonedaUpdateView.as_view(), name='moneda_editar'),
+    path('monedas/<int:pk>/eliminar/', views.MonedaDeleteView.as_view(), name='moneda_eliminar'),
+    
+    # Gestión de tipos de cambio
+    path('tipos-cambio/', views.TipoCambioListView.as_view(), name='tipo_cambio_lista'),
+    path('tipos-cambio/crear/', views.TipoCambioCreateView.as_view(), name='tipo_cambio_crear'),
+    path('tipos-cambio/<int:pk>/editar/', views.TipoCambioUpdateView.as_view(), name='tipo_cambio_editar'),
+    path('tipos-cambio/<int:pk>/eliminar/', views.TipoCambioDeleteView.as_view(), name='tipo_cambio_eliminar'),
 ]

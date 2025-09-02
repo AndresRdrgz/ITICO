@@ -24,13 +24,13 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #database production settings db name "itico", username "itico", password "postgres"
-DEBUG = True
+DEBUG = False
 if DEBUG:
      DATABASES = {
-        'default': dj_database_url.config(
-            default='postgresql://postgres:FP.h05t1l3@localhost:5432/itico',
-            conn_max_age=600,
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
 else:
     DATABASES = {
@@ -226,16 +226,23 @@ ALLOWED_MEDIA_EXTENSIONS = [
 if not DEBUG:
     # In production, consider additional security for media files
     # Maximum file size for uploads (50MB)
+    
     FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
     DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
     
     # File upload permissions
     FILE_UPLOAD_PERMISSIONS = 0o644
     FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+    
+    print(f"File upload permissions set to: {FILE_UPLOAD_PERMISSIONS}")
 else:
+    
     # Development settings - more permissive
     FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB for development
     DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB for development
+    FILE_UPLOAD_PERMISSIONS = 0o644
+    FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+    print(f"Media files max size: {MEDIA_FILES_MAX_SIZE // (1024*1024)}MB")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

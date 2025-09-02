@@ -9,14 +9,19 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 import os
 from django.core.validators import FileExtensionValidator
+from decimal import Decimal
 
 
 def documento_upload_path(instance, filename):
     """Define the upload path for documents"""
     # Clean filename
     name, ext = os.path.splitext(filename)
+    
+    # Ensure contraparte has an ID (save it if necessary)
+    contraparte_id = instance.contraparte.id if instance.contraparte.id else 'temp'
+    
     # Create path: media/contrapartes/{contraparte_id}/documentos/{filename}
-    return f'contrapartes/{instance.contraparte.id}/documentos/{name}{ext}'
+    return f'contrapartes/{contraparte_id}/documentos/{name}{ext}'
 
 
 class TipoContraparte(models.Model):
@@ -336,6 +341,21 @@ class Contraparte(models.Model):
     def calificaciones_activas_count(self):
         """Retorna el número de calificaciones activas"""
         return self.calificaciones.filter(activo=True).count()
+    
+    def get_documentos_por_categoria(self):
+        """Retorna los documentos agrupados por categoría"""
+        from django.db.models import Q
+        documentos_activos = self.documentos.filter(activo=True).order_by('categoria', '-fecha_subida')
+        
+        # Group by category
+        categorias = {}
+        for documento in documentos_activos:
+            categoria = documento.get_categoria_display()
+            if categoria not in categorias:
+                categorias[categoria] = []
+            categorias[categoria].append(documento)
+        
+        return categorias
 
 
 class Miembro(models.Model):
@@ -526,6 +546,13 @@ class Documento(models.Model):
     """
     Modelo para documentos asociados a contrapartes
     """
+    CATEGORIAS = [
+        ('compliance', 'Compliance'),
+        ('general_financial', 'General and Financial Information'),
+        ('opportunities', 'Opportunities'),
+        ('info_requested', 'Information Requested from ITICO'),
+    ]
+
     contraparte = models.ForeignKey(
         Contraparte,
         on_delete=models.CASCADE,
@@ -546,6 +573,15 @@ class Documento(models.Model):
         limit_choices_to={'activo': True},
         help_text="Tipo de documento"
     )
+
+    categoria = models.CharField(
+        max_length=20,
+        choices=CATEGORIAS,
+        default='compliance',
+        verbose_name="Categoría",
+        help_text="Categoría del documento"
+    )
+
     archivo = models.FileField(
         upload_to=documento_upload_path,
         validators=[FileExtensionValidator(
@@ -623,7 +659,7 @@ class Documento(models.Model):
         ordering = ['-fecha_subida']
     
     def __str__(self):
-        return f"{self.nombre} - {self.contraparte.nombre}"
+        return f"{self.tipo.nombre} - {self.contraparte.nombre}"
     
     @property
     def extension(self):
@@ -807,3 +843,239 @@ class Calificacion(models.Model):
     
     def __str__(self):
         return f"{self.calificador.nombre} - {self.contraparte.nombre} ({self.calificacion})"
+
+
+class Moneda(models.Model):
+    """
+    Modelo para las monedas disponibles en el sistema
+    """
+    codigo = models.CharField(
+        max_length=3,
+        unique=True,
+        verbose_name="Código",
+        help_text="Código de la moneda (ISO 4217) - ej: USD, EUR, COP"
+    )
+    nombre = models.CharField(
+        max_length=100,
+        verbose_name="Nombre",
+        help_text="Nombre de la moneda"
+    )
+    simbolo = models.CharField(
+        max_length=10,
+        verbose_name="Símbolo",
+        help_text="Símbolo de la moneda - ej: $, €, ¥"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='monedas_creadas',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
+    
+    class Meta:
+        verbose_name = "Moneda"
+        verbose_name_plural = "Monedas"
+        ordering = ['codigo']
+    
+    def __str__(self):
+        return f"{self.codigo} - {self.nombre}"
+
+
+class TipoCambio(models.Model):
+    """
+    Modelo para almacenar el historial de tipos de cambio
+    """
+    moneda = models.ForeignKey(
+        Moneda,
+        on_delete=models.CASCADE,
+        related_name='tipos_cambio',
+        verbose_name="Moneda"
+    )
+    tasa_usd = models.DecimalField(
+        max_digits=15,
+        decimal_places=6,
+        verbose_name="Tasa a USD",
+        help_text="Cuántos USD equivale 1 unidad de esta moneda"
+    )
+    fecha = models.DateField(
+        verbose_name="Fecha",
+        help_text="Fecha del tipo de cambio"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='tipos_cambio_creados',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    
+    class Meta:
+        verbose_name = "Tipo de Cambio"
+        verbose_name_plural = "Tipos de Cambio"
+        ordering = ['-fecha']
+        unique_together = ['moneda', 'fecha']
+    
+    def __str__(self):
+        return f"{self.moneda.codigo} - {self.tasa_usd} USD ({self.fecha})"
+
+
+class BalanceSheet(models.Model):
+    """
+    Modelo para Balance Sheet de una contraparte
+    """
+    contraparte = models.ForeignKey(
+        Contraparte,
+        on_delete=models.CASCADE,
+        related_name='balance_sheets',
+        verbose_name="Contraparte"
+    )
+    año = models.PositiveIntegerField(
+        verbose_name="Año",
+        help_text="Año del balance sheet"
+    )
+    moneda_local = models.ForeignKey(
+        Moneda,
+        on_delete=models.PROTECT,
+        related_name='balance_sheets_moneda_local',
+        verbose_name="Moneda Local",
+        null=True,
+        blank=True,
+        help_text="Moneda local del balance sheet (opcional si es en USD)"
+    )
+    tipo_cambio = models.ForeignKey(
+        TipoCambio,
+        on_delete=models.PROTECT,
+        related_name='balance_sheets',
+        verbose_name="Tipo de Cambio",
+        null=True,
+        blank=True,
+        help_text="Tipo de cambio utilizado para convertir a USD"
+    )
+    solo_usd = models.BooleanField(
+        default=True,
+        verbose_name="Solo USD",
+        help_text="Indica si el balance sheet está únicamente en USD"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='balance_sheets_creados',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+    
+    class Meta:
+        verbose_name = "Balance Sheet"
+        verbose_name_plural = "Balance Sheets"
+        ordering = ['-año']
+        unique_together = ['contraparte', 'año']
+    
+    def __str__(self):
+        return f"Balance Sheet {self.año} - {self.contraparte.nombre or self.contraparte.full_company_name}"
+    
+    @property
+    def total_assets_usd(self):
+        """Calcula el total de activos en USD"""
+        return self.items.filter(categoria='assets', activo=True).aggregate(
+            total=models.Sum('monto_usd')
+        )['total'] or Decimal('0.00')
+    
+    @property
+    def total_liabilities_usd(self):
+        """Calcula el total de pasivos en USD"""
+        return self.items.filter(categoria='liabilities', activo=True).aggregate(
+            total=models.Sum('monto_usd')
+        )['total'] or Decimal('0.00')
+    
+    @property
+    def total_equity_usd(self):
+        """Calcula el total de patrimonio en USD"""
+        return self.items.filter(categoria='equity', activo=True).aggregate(
+            total=models.Sum('monto_usd')
+        )['total'] or Decimal('0.00')
+
+
+class BalanceSheetItem(models.Model):
+    """
+    Modelo para los items de un balance sheet
+    """
+    CATEGORIAS = [
+        ('assets', 'Assets'),
+        ('liabilities', 'Liabilities'),
+        ('equity', 'Equity'),
+    ]
+    
+    balance_sheet = models.ForeignKey(
+        BalanceSheet,
+        on_delete=models.CASCADE,
+        related_name='items',
+        verbose_name="Balance Sheet"
+    )
+    descripcion = models.CharField(
+        max_length=255,
+        verbose_name="Descripción",
+        help_text="Descripción del item del balance"
+    )
+    nota = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Nota",
+        help_text="Notas adicionales sobre el item"
+    )
+    categoria = models.CharField(
+        max_length=20,
+        choices=CATEGORIAS,
+        verbose_name="Categoría"
+    )
+    monto_usd = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        verbose_name="Monto USD",
+        help_text="Monto en dólares estadounidenses"
+    )
+    monto_local = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Monto Moneda Local",
+        help_text="Monto en moneda local (opcional)"
+    )
+    orden = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Orden",
+        help_text="Orden de visualización del item"
+    )
+    
+    # Campos de auditoría
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='balance_sheet_items_creados',
+        verbose_name="Creado por"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+    
+    class Meta:
+        verbose_name = "Item de Balance Sheet"
+        verbose_name_plural = "Items de Balance Sheet"
+        ordering = ['categoria', 'orden', 'descripcion']
+    
+    def __str__(self):
+        return f"{self.descripcion} - {self.get_categoria_display()}"

@@ -5,16 +5,26 @@ from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.db.models import Q, Count
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from datetime import timedelta
 from django.http import JsonResponse
 from django.views import View
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
-from .models import TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, Documento, Comentario, Calificacion, Calificador, Outlook
-from .forms import TipoContraparteForm, EstadoContraparteForm, ContraparteForm, MiembroForm, DocumentoForm, ComentarioForm, CalificacionForm
+from .models import (
+    TipoContraparte, EstadoContraparte, TipoDocumento, Contraparte, Miembro, 
+    Documento, Comentario, Calificacion, Calificador, Outlook, BalanceSheet, 
+    BalanceSheetItem, Moneda, TipoCambio
+)
+from .forms import (
+    TipoContraparteForm, EstadoContraparteForm, ContraparteForm, MiembroForm, 
+    DocumentoForm, ComentarioForm, CalificacionForm, CargaDocumentoForm, 
+    BalanceSheetForm, BalanceSheetItemForm, BalanceSheetItemFormSet, MonedaForm, 
+    TipoCambioForm
+)
 
 
 # ====== VISTAS PARA TIPO CONTRAPARTE ======
@@ -915,3 +925,326 @@ class OutlookDeleteView(LoginRequiredMixin, DeleteView):
         context = super().get_context_data(**kwargs)
         context['calificaciones_count'] = self.object.calificaciones.count()
         return context
+
+
+# ====== VISTA PARA CARGA DE DOCUMENTOS ======
+
+class CargaDocumentosView(LoginRequiredMixin, CreateView):
+    """Vista para cargar documentos con selección de contraparte"""
+    model = Documento
+    form_class = CargaDocumentoForm
+    template_name = 'contrapartes/carga_documentos.html'
+    
+    def get_success_url(self):
+        # Redirect back to the upload page to allow more uploads
+        return reverse_lazy('contrapartes:carga_documentos')
+    
+    def form_valid(self, form):
+        try:
+            form.instance.subido_por = self.request.user
+            response = super().form_valid(form)
+            
+            # Add success message
+            messages.success(
+                self.request, 
+                f'Documento "{self.object.tipo.nombre}" subido exitosamente para {self.object.contraparte.display_name}'
+            )
+            
+            return response
+        except Exception as e:
+            # Handle any errors during file upload
+            messages.error(
+                self.request,
+                f'Error al subir el documento: {str(e)}'
+            )
+            return self.form_invalid(form)
+    
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            'Hubo un error al procesar el formulario. Por favor, revise los datos e intente nuevamente.'
+        )
+        return super().form_invalid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Add statistics for the dashboard-like view
+        context['stats'] = {
+            'total_contrapartes': Contraparte.objects.count(),
+            'total_documentos': Documento.objects.filter(activo=True).count(),
+            'tipos_documento': TipoDocumento.objects.filter(activo=True).count(),
+        }
+        
+        # Get recent uploads for display
+        context['recent_uploads'] = Documento.objects.filter(
+            activo=True
+        ).select_related(
+            'contraparte', 'tipo', 'subido_por'
+        ).order_by('-fecha_subida')[:10]
+        
+        return context
+
+
+# ====== VISTAS PARA BALANCE SHEETS ======
+
+class BalanceSheetListView(LoginRequiredMixin, ListView):
+    """Vista para listar los balance sheets de una contraparte"""
+    model = BalanceSheet
+    template_name = 'contrapartes/balance_sheet_lista.html'
+    context_object_name = 'balance_sheets'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        self.contraparte = get_object_or_404(Contraparte, pk=self.kwargs['contraparte_pk'])
+        return BalanceSheet.objects.filter(
+            contraparte=self.contraparte,
+            activo=True
+        ).order_by('-año')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contraparte'] = self.contraparte
+        return context
+
+
+class BalanceSheetDetailView(LoginRequiredMixin, DetailView):
+    """Vista para ver el detalle de un balance sheet"""
+    model = BalanceSheet
+    template_name = 'contrapartes/balance_sheet_detalle.html'
+    context_object_name = 'balance_sheet'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Group items by category
+        items_by_category = {}
+        for item in self.object.items.filter(activo=True).order_by('categoria', 'orden', 'descripcion'):
+            category = item.get_categoria_display()
+            if category not in items_by_category:
+                items_by_category[category] = []
+            items_by_category[category].append(item)
+        
+        context['items_by_category'] = items_by_category
+        context['contraparte'] = self.object.contraparte
+        
+        return context
+
+
+class BalanceSheetCreateView(LoginRequiredMixin, CreateView):
+    """Vista para crear un nuevo balance sheet"""
+    model = BalanceSheet
+    form_class = BalanceSheetForm
+    template_name = 'contrapartes/balance_sheet_crear.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        self.contraparte = get_object_or_404(Contraparte, pk=kwargs['contraparte_pk'])
+        return super().dispatch(request, *args, **kwargs)
+    
+    def form_valid(self, form):
+        form.instance.contraparte = self.contraparte
+        form.instance.creado_por = self.request.user
+        messages.success(
+            self.request,
+            f'Balance Sheet {form.instance.año} creado exitosamente para {self.contraparte.nombre or self.contraparte.full_company_name}'
+        )
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse('contrapartes:balance_sheet_editar', kwargs={'pk': self.object.pk})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contraparte'] = self.contraparte
+        return context
+
+
+class BalanceSheetUpdateView(LoginRequiredMixin, UpdateView):
+    """Vista para editar un balance sheet con sus items"""
+    model = BalanceSheet
+    form_class = BalanceSheetForm
+    template_name = 'contrapartes/balance_sheet_editar.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contraparte'] = self.object.contraparte
+        
+        if self.request.POST:
+            context['formset'] = BalanceSheetItemFormSet(
+                self.request.POST, 
+                instance=self.object,
+                prefix='form'
+            )
+        else:
+            context['formset'] = BalanceSheetItemFormSet(
+                instance=self.object,
+                prefix='form'
+            )
+        
+        return context
+    
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        
+        if formset.is_valid():
+            response = super().form_valid(form)
+            formset.instance = self.object
+            formset.save()
+            messages.success(
+                self.request,
+                f'Balance Sheet {self.object.año} actualizado exitosamente'
+            )
+            return response
+        else:
+            return self.form_invalid(form)
+    
+    def get_success_url(self):
+        return reverse('contrapartes:balance_sheet_detalle', kwargs={'pk': self.object.pk})
+
+
+class BalanceSheetDeleteView(LoginRequiredMixin, DeleteView):
+    """Vista para eliminar un balance sheet"""
+    model = BalanceSheet
+    template_name = 'contrapartes/balance_sheet_eliminar.html'
+    
+    def get_success_url(self):
+        return reverse('contrapartes:balance_sheet_lista', kwargs={'contraparte_pk': self.object.contraparte.pk})
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.activo = False
+        self.object.save()
+        messages.success(
+            request,
+            f'Balance Sheet {self.object.año} eliminado exitosamente'
+        )
+        return redirect(self.get_success_url())
+
+
+# ====== VISTAS AJAX PARA BALANCE SHEETS ======
+
+class TipoCambioAjaxView(LoginRequiredMixin, View):
+    """Vista AJAX para obtener tipos de cambio por moneda"""
+    
+    def get(self, request):
+        moneda_id = request.GET.get('moneda_id')
+        tipos_cambio = TipoCambio.objects.filter(moneda_id=moneda_id).order_by('-fecha')[:20]
+        
+        data = [{
+            'id': tc.id,
+            'tasa_usd': str(tc.tasa_usd),
+            'fecha': tc.fecha.strftime('%Y-%m-%d'),
+            'display': f"{tc.fecha.strftime('%Y-%m-%d')} - {tc.tasa_usd} USD"
+        } for tc in tipos_cambio]
+        
+        return JsonResponse({'tipos_cambio': data})
+
+
+# ====== VISTAS PARA MONEDAS ======
+
+class MonedaListView(LoginRequiredMixin, ListView):
+    """Vista para listar monedas"""
+    model = Moneda
+    template_name = 'contrapartes/moneda_lista.html'
+    context_object_name = 'monedas'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = Moneda.objects.all()
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(codigo__icontains=search) | 
+                Q(nombre__icontains=search)
+            )
+        return queryset
+
+
+class MonedaCreateView(LoginRequiredMixin, CreateView):
+    """Vista para crear una nueva moneda"""
+    model = Moneda
+    form_class = MonedaForm
+    template_name = 'contrapartes/moneda_crear.html'
+    success_url = reverse_lazy('contrapartes:moneda_lista')
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        messages.success(self.request, 'Moneda creada exitosamente')
+        return super().form_valid(form)
+
+
+class MonedaUpdateView(LoginRequiredMixin, UpdateView):
+    """Vista para editar una moneda"""
+    model = Moneda
+    form_class = MonedaForm
+    template_name = 'contrapartes/moneda_editar.html'
+    success_url = reverse_lazy('contrapartes:moneda_lista')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Moneda actualizada exitosamente')
+        return super().form_valid(form)
+
+
+class MonedaDeleteView(LoginRequiredMixin, DeleteView):
+    """Vista para eliminar una moneda"""
+    model = Moneda
+    template_name = 'contrapartes/moneda_eliminar.html'
+    success_url = reverse_lazy('contrapartes:moneda_lista')
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Moneda eliminada exitosamente')
+        return super().delete(request, *args, **kwargs)
+
+
+# ====== VISTAS PARA TIPOS DE CAMBIO ======
+
+class TipoCambioListView(LoginRequiredMixin, ListView):
+    """Vista para listar tipos de cambio"""
+    model = TipoCambio
+    template_name = 'contrapartes/tipo_cambio_lista.html'
+    context_object_name = 'tipos_cambio'
+    paginate_by = 50
+    
+    def get_queryset(self):
+        queryset = TipoCambio.objects.select_related('moneda').all()
+        moneda = self.request.GET.get('moneda')
+        if moneda:
+            queryset = queryset.filter(moneda__codigo__icontains=moneda)
+        return queryset.order_by('-fecha', 'moneda__codigo')
+
+
+class TipoCambioCreateView(LoginRequiredMixin, CreateView):
+    """Vista para crear un nuevo tipo de cambio"""
+    model = TipoCambio
+    form_class = TipoCambioForm
+    template_name = 'contrapartes/tipo_cambio_crear.html'
+    success_url = reverse_lazy('contrapartes:tipo_cambio_lista')
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        messages.success(self.request, 'Tipo de cambio creado exitosamente')
+        return super().form_valid(form)
+
+
+class TipoCambioUpdateView(LoginRequiredMixin, UpdateView):
+    """Vista para editar un tipo de cambio"""
+    model = TipoCambio
+    form_class = TipoCambioForm
+    template_name = 'contrapartes/tipo_cambio_editar.html'
+    success_url = reverse_lazy('contrapartes:tipo_cambio_lista')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Tipo de cambio actualizado exitosamente')
+        return super().form_valid(form)
+
+
+class TipoCambioDeleteView(LoginRequiredMixin, DeleteView):
+    """Vista para eliminar un tipo de cambio"""
+    model = TipoCambio
+    template_name = 'contrapartes/tipo_cambio_eliminar.html'
+    success_url = reverse_lazy('contrapartes:tipo_cambio_lista')
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Tipo de cambio eliminado exitosamente')
+        return super().delete(request, *args, **kwargs)
