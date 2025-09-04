@@ -431,7 +431,7 @@ class CalificacionForm(forms.ModelForm):
     class Meta:
         model = Calificacion
         fields = [
-            'calificador', 'outlook', 'calificacion', 'fecha', 'documento_soporte'
+            'calificador', 'outlook', 'calificacion', 'tipo', 'fecha', 'documento_soporte'
         ]
         widgets = {
             'calificador': forms.Select(attrs={
@@ -444,9 +444,12 @@ class CalificacionForm(forms.ModelForm):
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
                 'placeholder': 'Ej: AAA, AA, A, BBB, BB, B, CCC, CC, C, D, NR'
             }),
-            'fecha': forms.DateTimeInput(attrs={
+            'tipo': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900'
+            }),
+            'fecha': forms.DateInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900',
-                'type': 'datetime-local'
+                'type': 'date'
             }),
             'documento_soporte': forms.FileInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-gray-900'

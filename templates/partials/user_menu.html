@@ -1,6 +1,6 @@
 <!-- User Section -->
 {% if user.is_authenticated %}
-    <div class="p-4 border-t border-white border-opacity-10 bg-black bg-opacity-20">
+    <div class="p-4 border-t border-white border-opacity-10 bg-black bg-opacity-20 flex-shrink-0">
         <div class="relative">
             <button id="user-menu-button" class="group flex items-center w-full text-white hover:bg-white hover:bg-opacity-10 p-3 rounded-xl transition-all duration-300">
                 <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 mr-3 group-hover:scale-110 transition-transform duration-300 overflow-hidden">
@@ -43,7 +43,7 @@
         </div>
     </div>
 {% else %}
-    <div class="p-4 border-t border-white border-opacity-10 bg-black bg-opacity-20">
+    <div class="p-4 border-t border-white border-opacity-10 bg-black bg-opacity-20 flex-shrink-0">
         <a href="{% url 'login' %}" class="flex items-center w-full text-white hover:bg-white hover:bg-opacity-10 p-3 rounded-xl transition-all duration-300 group">
             <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 mr-3 group-hover:scale-110 transition-transform duration-300">
                 <i class="fas fa-sign-in-alt text-sm"></i>

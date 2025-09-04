@@ -56,6 +56,82 @@
     </script>
     
     {% block extra_css %}{% endblock %}
+    
+    <style>
+        /* Fix sidebar scrolling issue */
+        @media (min-width: 1024px) {
+            #sidebar {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                overflow: hidden;
+                transform: translateX(0) !important;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .main-content {
+                margin-left: 18rem; /* 72 * 0.25rem = 18rem */
+            }
+        }
+        
+        /* Mobile sidebar behavior */
+        @media (max-width: 1023px) {
+            #sidebar {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 50;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            #sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Ensure sidebar doesn't scroll with main content */
+        .sidebar-fixed {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 50;
+        }
+        
+        /* Custom scrollbar for sidebar navigation */
+        .sidebar-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+        
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+        
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen flex flex-col lg:flex-row">
@@ -66,7 +142,7 @@
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden backdrop-blur-sm"></div>
         
         <!-- Main content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden main-content">
             <!-- Include Mobile Header -->
             {% include 'partials/mobile_header.html' %}
             

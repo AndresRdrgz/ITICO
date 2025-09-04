@@ -6,7 +6,7 @@
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     
     function toggleSidebar() {
-        sidebar.classList.toggle('-translate-x-full');
+        sidebar.classList.toggle('show');
         sidebarOverlay.classList.toggle('hidden');
         document.body.classList.toggle('overflow-hidden');
     }
@@ -21,7 +21,7 @@
     
     // Close sidebar on escape key
     document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && !sidebar.classList.contains('-translate-x-full')) {
+        if (event.key === 'Escape' && sidebar.classList.contains('show')) {
             toggleSidebar();
         }
     });

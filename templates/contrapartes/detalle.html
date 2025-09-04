@@ -513,6 +513,9 @@
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                 {{ calificacion.calificacion }}
                                             </span>
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if calificacion.tipo == 'nacional' %}bg-blue-100 text-blue-800{% else %}bg-purple-100 text-purple-800{% endif %}">
+                                                <i class="fas fa-globe text-xs mr-1"></i>{{ calificacion.get_tipo_display }}
+                                            </span>
                                         </div>
                                         <div class="flex items-center space-x-2 mt-1">
                                             <span class="text-xs text-gray-600">

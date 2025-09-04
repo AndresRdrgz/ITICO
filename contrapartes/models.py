@@ -779,6 +779,12 @@ class Calificacion(models.Model):
     """
     Modelo para calificaciones de contrapartes
     """
+    TIPOS_CALIFICACION = [
+        ('nacional', 'Nacional'),
+        ('internacional', 'Internacional'),
+        ('no aplica', 'No aplica'),
+    ]
+    
     contraparte = models.ForeignKey(
         Contraparte,
         on_delete=models.CASCADE,
@@ -804,7 +810,14 @@ class Calificacion(models.Model):
         verbose_name="Calificación",
         help_text="Calificación otorgada (ej: AAA, AA, A, BBB, etc.)"
     )
-    fecha = models.DateTimeField(
+    tipo = models.CharField(
+        max_length=15,
+        choices=TIPOS_CALIFICACION,
+        default='no aplica',
+        verbose_name="Tipo de Calificación",
+        help_text="Indica si la calificación es nacional o internacional"
+    )
+    fecha = models.DateField(
         verbose_name="Fecha",
         help_text="Fecha de la calificación"
     )
