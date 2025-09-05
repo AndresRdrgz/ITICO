@@ -1,6 +1,19 @@
 """
 Modelos para el sistema de notificaciones
-Portal Interno de Contrapartes – App Pacífico
+Portal Interno de Contrapartes – App Pacífico (Cotizador Web)
+
+ESTRUCTURA DE MODELOS:
+1. Notificacion: Notificaciones del sistema con diferentes tipos y prioridades
+2. ConfiguracionNotificacion: Configuraciones personalizadas por usuario
+3. HistorialNotificacion: Auditoría de notificaciones enviadas
+
+FUNCIONALIDADES PRINCIPALES:
+- Sistema de notificaciones multi-canal (sistema, email, SMS, webhook)
+- Configuración personalizada por usuario
+- Diferentes tipos de notificaciones (DD, coincidencias, recordatorios)
+- Sistema de prioridades (baja, normal, alta, urgente)
+- Historial completo para auditoría
+- Enlaces a objetos relacionados (contrapartes, miembros, DD)
 """
 
 from django.db import models
@@ -8,9 +21,34 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+# =============================================================================
+# MODELO PRINCIPAL DE NOTIFICACIONES
+# =============================================================================
+
 class Notificacion(models.Model):
     """
-    Modelo para las notificaciones del sistema
+    Modelo principal para las notificaciones del sistema.
+    
+    Gestiona todas las notificaciones enviadas a los usuarios, incluyendo
+    diferentes tipos (debida diligencia, coincidencias, recordatorios) y
+    prioridades. Permite enlaces a objetos relacionados y URLs de acción.
+    
+    Tipos de notificaciones:
+    - dd_completada: Debida Diligencia completada
+    - dd_fallida: Debida Diligencia fallida
+    - coincidencia_encontrada: Coincidencia encontrada en búsquedas
+    - dd_proxima: Debida Diligencia próxima a vencer
+    - dd_vencida: Debida Diligencia vencida
+    - revision_requerida: Revisión requerida
+    - aprobacion_pendiente: Aprobación pendiente
+    - sistema: Notificación del sistema
+    - recordatorio: Recordatorio general
+    
+    Prioridades:
+    - baja: Prioridad baja
+    - normal: Prioridad normal
+    - alta: Prioridad alta
+    - urgente: Prioridad urgente
     """
     TIPOS = [
         ('dd_completada', 'Debida Diligencia Completada'),
@@ -96,7 +134,12 @@ class Notificacion(models.Model):
         return f"{self.titulo} - {self.usuario.get_full_name() or self.usuario.username}"
     
     def marcar_como_leida(self):
-        """Marca la notificación como leída"""
+        """
+        Marca la notificación como leída y actualiza la fecha de lectura.
+        
+        Actualiza los campos 'leida' y 'fecha_lectura' solo si la notificación
+        no estaba previamente marcada como leída.
+        """
         if not self.leida:
             self.leida = True
             self.fecha_lectura = timezone.now()
@@ -104,7 +147,12 @@ class Notificacion(models.Model):
     
     @property
     def hace_cuanto(self):
-        """Retorna una cadena amigable indicando hace cuánto se creó"""
+        """
+        Retorna una cadena amigable indicando hace cuánto se creó la notificación.
+        
+        Returns:
+            str: Descripción amigable del tiempo transcurrido (ej: "hace 2 horas")
+        """
         now = timezone.now()
         diff = now - self.fecha_creacion
         
@@ -120,9 +168,22 @@ class Notificacion(models.Model):
             return "hace un momento"
 
 
+# =============================================================================
+# CONFIGURACIÓN DE NOTIFICACIONES
+# =============================================================================
+
 class ConfiguracionNotificacion(models.Model):
     """
-    Configuración de notificaciones por usuario
+    Configuración personalizada de notificaciones por usuario.
+    
+    Permite a cada usuario configurar qué tipos de notificaciones desea recibir
+    y por qué canales (email, sistema). Incluye configuraciones para diferentes
+    tipos de eventos y recordatorios.
+    
+    Configuraciones disponibles:
+    - Email: Configuraciones para notificaciones por correo electrónico
+    - Sistema: Configuraciones para notificaciones en el sistema
+    - Recordatorios: Configuración de días de aviso para DD
     """
     usuario = models.OneToOneField(
         User,
@@ -180,9 +241,29 @@ class ConfiguracionNotificacion(models.Model):
         return f"Config. Notif. - {self.usuario.get_full_name() or self.usuario.username}"
 
 
+# =============================================================================
+# HISTORIAL DE NOTIFICACIONES
+# =============================================================================
+
 class HistorialNotificacion(models.Model):
     """
-    Historial de notificaciones enviadas para auditoría
+    Historial de notificaciones enviadas para auditoría y seguimiento.
+    
+    Registra cada intento de envío de notificación a través de diferentes
+    canales, incluyendo el estado del envío, fechas y mensajes de error.
+    Proporciona trazabilidad completa del sistema de notificaciones.
+    
+    Canales disponibles:
+    - sistema: Notificación en el sistema
+    - email: Correo electrónico
+    - sms: Mensaje de texto
+    - webhook: Llamada a webhook externo
+    
+    Estados:
+    - pendiente: Envió pendiente
+    - enviada: Enviada exitosamente
+    - fallida: Falló el envío
+    - entregada: Confirmada la entrega
     """
     CANALES = [
         ('sistema', 'Sistema'),

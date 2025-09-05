@@ -1,6 +1,21 @@
 """
 Modelos para la gestión de contrapartes
-Portal Interno de Contrapartes – App Pacífico
+Portal Interno de Contrapartes – App Pacífico (Cotizador Web)
+
+ESTRUCTURA DE MODELOS:
+1. Modelos de configuración: TipoContraparte, EstadoContraparte, TipoDocumento
+2. Modelo principal: Contraparte (información completa de la empresa)
+3. Modelos relacionados: Miembro, Documento, Comentario
+4. Modelos de calificación: Calificador, Outlook, Calificacion
+5. Modelos financieros: Moneda, TipoCambio, BalanceSheet, BalanceSheetItem
+
+FUNCIONALIDADES PRINCIPALES:
+- Gestión completa de contrapartes con información empresarial
+- Sistema de documentos con categorización y expiración
+- Calificaciones y outlooks de agencias especializadas
+- Balance sheets con soporte multi-moneda
+- Sistema de comentarios y auditoría completa
+- Detección de PEP (Personas Políticamente Expuestas)
 """
 
 from django.db import models
@@ -12,21 +27,48 @@ from django.core.validators import FileExtensionValidator
 from decimal import Decimal
 
 
+# =============================================================================
+# FUNCIONES DE UTILIDAD
+# =============================================================================
+
 def documento_upload_path(instance, filename):
-    """Define the upload path for documents"""
-    # Clean filename
+    """
+    Define la ruta de subida para documentos de contrapartes.
+    
+    Estructura: media/contrapartes/{contraparte_id}/documentos/{filename}
+    
+    Args:
+        instance: Instancia del modelo Documento
+        filename: Nombre original del archivo
+    
+    Returns:
+        str: Ruta completa donde se almacenará el archivo
+    """
+    # Limpiar nombre del archivo
     name, ext = os.path.splitext(filename)
     
-    # Ensure contraparte has an ID (save it if necessary)
+    # Asegurar que la contraparte tenga un ID (guardar si es necesario)
     contraparte_id = instance.contraparte.id if instance.contraparte.id else 'temp'
     
-    # Create path: media/contrapartes/{contraparte_id}/documentos/{filename}
+    # Crear ruta: media/contrapartes/{contraparte_id}/documentos/{filename}
     return f'contrapartes/{contraparte_id}/documentos/{name}{ext}'
 
 
+# =============================================================================
+# MODELOS DE CONFIGURACIÓN
+# =============================================================================
+
 class TipoContraparte(models.Model):
     """
-    Modelo para los tipos de contraparte
+    Modelo para definir los tipos de contraparte disponibles en el sistema.
+    
+    Permite categorizar las contrapartes según su naturaleza (empresa, ONG, 
+    institución financiera, etc.) para facilitar la gestión y filtrado.
+    
+    Campos principales:
+    - codigo: Identificador único del tipo
+    - nombre: Nombre descriptivo del tipo
+    - activo: Control de disponibilidad
     """
     codigo = models.CharField(
         max_length=20, 
@@ -72,7 +114,16 @@ class TipoContraparte(models.Model):
 
 class EstadoContraparte(models.Model):
     """
-    Modelo para los estados de contraparte
+    Modelo para definir los estados de una contraparte en el sistema.
+    
+    Permite controlar el flujo de trabajo y el estado actual de cada contraparte
+    (activa, pendiente, suspendida, etc.) con indicadores visuales.
+    
+    Campos principales:
+    - codigo: Identificador único del estado
+    - nombre: Nombre descriptivo del estado
+    - color: Color hexadecimal para indicadores visuales
+    - activo: Control de disponibilidad
     """
     codigo = models.CharField(
         max_length=20, 
@@ -122,12 +173,32 @@ class EstadoContraparte(models.Model):
         return self.nombre
 
 
+# =============================================================================
+# MODELO PRINCIPAL
+# =============================================================================
+
 class Contraparte(models.Model):
     """
-    Modelo principal para las contrapartes
+    Modelo principal para la gestión de contrapartes.
+    
+    Almacena toda la información empresarial y legal de una contraparte,
+    incluyendo datos corporativos, direcciones, información de contacto,
+    y detalles de incorporación. Soporta tanto campos nuevos como legacy
+    para compatibilidad con datos existentes.
+    
+    Secciones principales:
+    - Información general: nombre completo, nombre comercial, sitio web
+    - Información regulatoria: autoridad supervisora, licencias, cotización
+    - Direcciones: dirección registrada y comercial
+    - Contacto: teléfono y email
+    - Información empresarial: naturaleza del negocio, domicilio, incorporación
+    - Campos legacy: para compatibilidad con datos existentes
+    - Auditoría: seguimiento de creación y modificaciones
     """
     
-    # General Information Fields
+    # =============================================================================
+    # INFORMACIÓN GENERAL
+    # =============================================================================
     full_company_name = models.CharField(
         max_length=255, 
         verbose_name="Full Company Name",
@@ -187,7 +258,9 @@ class Contraparte(models.Model):
         help_text="Details of the company's external auditing firm"
     )
     
-    # Address Information
+    # =============================================================================
+    # INFORMACIÓN DE DIRECCIONES
+    # =============================================================================
     registered_address = models.TextField(
         verbose_name="Registered Address",
         help_text="Official registered address of the company",
@@ -201,7 +274,9 @@ class Contraparte(models.Model):
         help_text="Primary business operating address"
     )
     
-    # Contact Information
+    # =============================================================================
+    # INFORMACIÓN DE CONTACTO
+    # =============================================================================
     contact_telephone = models.CharField(
         max_length=50,
         blank=True,
@@ -216,7 +291,9 @@ class Contraparte(models.Model):
         help_text="Primary contact email address"
     )
     
-    # Business Information
+    # =============================================================================
+    # INFORMACIÓN EMPRESARIAL
+    # =============================================================================
     company_nature_business = models.TextField(
         verbose_name="Company Nature and Type of Business",
         help_text="Description of the company's business activities and nature",
@@ -250,7 +327,9 @@ class Contraparte(models.Model):
         help_text="Current number of employees"
     )
     
-    # Legacy fields for backward compatibility
+    # =============================================================================
+    # CAMPOS LEGACY (COMPATIBILIDAD)
+    # =============================================================================
     nombre = models.CharField(
         max_length=255, 
         verbose_name="Nombre",
@@ -290,7 +369,9 @@ class Contraparte(models.Model):
         help_text="Fecha de la próxima renovación de debida diligencia"
     )
     
-    # Campos de auditoría
+    # =============================================================================
+    # CAMPOS DE AUDITORÍA
+    # =============================================================================
     creado_por = models.ForeignKey(
         User, 
         on_delete=models.PROTECT,
@@ -300,7 +381,9 @@ class Contraparte(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
     
-    # Información adicional
+    # =============================================================================
+    # INFORMACIÓN ADICIONAL
+    # =============================================================================
     descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
     notas = models.TextField(blank=True, null=True, verbose_name="Notas adicionales")
     
@@ -358,9 +441,24 @@ class Contraparte(models.Model):
         return categorias
 
 
+# =============================================================================
+# MODELOS RELACIONADOS
+# =============================================================================
+
 class Miembro(models.Model):
     """
-    Modelo para los miembros asociados a una contraparte
+    Modelo para gestionar los miembros asociados a una contraparte.
+    
+    Almacena información de personas naturales y jurídicas relacionadas con
+    la contraparte, incluyendo accionistas, ejecutivos, beneficiarios finales
+    y miembros de la junta directiva. Incluye detección de PEP (Personas
+    Políticamente Expuestas) para cumplimiento regulatorio.
+    
+    Categorías disponibles:
+    - Shareholder: Accionistas
+    - Executive: Ejecutivos
+    - Ultimate Beneficial Owner: Beneficiarios finales
+    - Board of Director: Miembros de junta directiva
     """
     TIPOS_PERSONA = [
         ('natural', 'Persona Natural'),
@@ -438,7 +536,16 @@ class Miembro(models.Model):
 
 class TipoDocumento(models.Model):
     """
-    Modelo para los tipos de documento
+    Modelo para definir los tipos de documentos disponibles en el sistema.
+    
+    Permite categorizar los documentos según su naturaleza (debida diligencia,
+    contratos, certificados, etc.) y controlar si requieren fecha de expiración.
+    
+    Campos principales:
+    - codigo: Identificador único del tipo
+    - nombre: Nombre descriptivo del tipo
+    - requiere_expiracion: Control si el documento tiene fecha de vencimiento
+    - activo: Control de disponibilidad
     """
     codigo = models.CharField(
         max_length=20, 
@@ -489,7 +596,17 @@ class TipoDocumento(models.Model):
 
 class Comentario(models.Model):
     """
-    Modelo para comentarios en contrapartes
+    Modelo para gestionar comentarios asociados a contrapartes.
+    
+    Permite a los usuarios agregar comentarios, notas y observaciones sobre
+    una contraparte específica. Incluye control de edición y auditoría completa
+    para seguimiento de cambios.
+    
+    Características:
+    - Vinculación a contraparte y usuario
+    - Control de edición (marca si fue editado)
+    - Soft delete (campo activo)
+    - Auditoría de fechas
     """
     contraparte = models.ForeignKey(
         Contraparte,
@@ -544,7 +661,23 @@ class Comentario(models.Model):
 
 class Documento(models.Model):
     """
-    Modelo para documentos asociados a contrapartes
+    Modelo para gestionar documentos asociados a contrapartes.
+    
+    Almacena archivos de documentos con categorización, fechas de emisión y
+    expiración, y validación de extensiones. Incluye propiedades para detectar
+    documentos vencidos o próximos a vencer.
+    
+    Categorías disponibles:
+    - Compliance: Documentos de cumplimiento
+    - General and Financial Information: Información general y financiera
+    - Opportunities: Oportunidades
+    - Information Requested from ITICO: Información solicitada por ITICO
+    
+    Características:
+    - Validación de extensiones de archivo
+    - Control de fechas de expiración
+    - Categorización automática
+    - Propiedades para detectar vencimientos
     """
     CATEGORIAS = [
         ('compliance', 'Compliance'),
@@ -697,9 +830,21 @@ class Documento(models.Model):
             return 'fas fa-file text-gray-500'
 
 
+# =============================================================================
+# MODELOS DE CALIFICACIÓN
+# =============================================================================
+
 class Calificador(models.Model):
     """
-    Modelo para los calificadores (agencias de calificación)
+    Modelo para gestionar las agencias de calificación.
+    
+    Almacena información de las entidades que realizan calificaciones de riesgo
+    y crediticias de las contrapartes (ej: Standard & Poor's, Moody's, Fitch).
+    
+    Campos principales:
+    - nombre: Nombre de la agencia calificadora
+    - activo: Control de disponibilidad
+    - Auditoría completa de creación y modificaciones
     """
     nombre = models.CharField(
         max_length=255,
@@ -738,7 +883,16 @@ class Calificador(models.Model):
 
 class Outlook(models.Model):
     """
-    Modelo para los tipos de outlook
+    Modelo para gestionar los tipos de outlook de calificaciones.
+    
+    Define las perspectivas o tendencias de las calificaciones (ej: Positivo,
+    Estable, Negativo, En observación). Se utiliza junto con las calificaciones
+    para proporcionar una visión completa del riesgo crediticio.
+    
+    Campos principales:
+    - outlook: Tipo de perspectiva (ej: Positivo, Estable, Negativo)
+    - activo: Control de disponibilidad
+    - Auditoría completa de creación y modificaciones
     """
     outlook = models.CharField(
         max_length=50,
@@ -777,7 +931,22 @@ class Outlook(models.Model):
 
 class Calificacion(models.Model):
     """
-    Modelo para calificaciones de contrapartes
+    Modelo para gestionar las calificaciones de contrapartes.
+    
+    Almacena las calificaciones crediticias y de riesgo otorgadas por agencias
+    especializadas a las contrapartes. Incluye información sobre el calificador,
+    outlook, tipo de calificación y documento de soporte.
+    
+    Tipos de calificación:
+    - Nacional: Calificación en el mercado local
+    - Internacional: Calificación en mercados internacionales
+    - No aplica: Sin calificación disponible
+    
+    Características:
+    - Vinculación a contraparte, calificador y outlook
+    - Fecha de la calificación
+    - Documento de soporte opcional
+    - Control de activación
     """
     TIPOS_CALIFICACION = [
         ('nacional', 'Nacional'),
@@ -858,9 +1027,23 @@ class Calificacion(models.Model):
         return f"{self.calificador.nombre} - {self.contraparte.nombre} ({self.calificacion})"
 
 
+# =============================================================================
+# MODELOS FINANCIEROS
+# =============================================================================
+
 class Moneda(models.Model):
     """
-    Modelo para las monedas disponibles en el sistema
+    Modelo para gestionar las monedas disponibles en el sistema.
+    
+    Almacena información de las monedas utilizadas en el sistema, incluyendo
+    códigos ISO 4217, nombres y símbolos. Se utiliza para conversiones de
+    moneda y balance sheets multi-moneda.
+    
+    Campos principales:
+    - codigo: Código ISO 4217 (ej: USD, EUR, COP)
+    - nombre: Nombre completo de la moneda
+    - simbolo: Símbolo de la moneda (ej: $, €, ¥)
+    - activo: Control de disponibilidad
     """
     codigo = models.CharField(
         max_length=3,
@@ -904,7 +1087,18 @@ class Moneda(models.Model):
 
 class TipoCambio(models.Model):
     """
-    Modelo para almacenar el historial de tipos de cambio
+    Modelo para almacenar el historial de tipos de cambio.
+    
+    Mantiene un registro histórico de las tasas de cambio entre diferentes
+    monedas y el USD. Se utiliza para conversiones de moneda en balance sheets
+    y reportes financieros.
+    
+    Características:
+    - Vinculación a moneda específica
+    - Tasa de cambio a USD
+    - Fecha del tipo de cambio
+    - Restricción única por moneda y fecha
+    - Auditoría de creación
     """
     moneda = models.ForeignKey(
         Moneda,
@@ -944,7 +1138,17 @@ class TipoCambio(models.Model):
 
 class BalanceSheet(models.Model):
     """
-    Modelo para Balance Sheet de una contraparte
+    Modelo para gestionar los balance sheets de contrapartes.
+    
+    Almacena la información financiera de una contraparte para un año específico,
+    incluyendo soporte para múltiples monedas y conversiones automáticas a USD.
+    
+    Características:
+    - Un balance sheet por contraparte y año
+    - Soporte para moneda local y USD
+    - Vinculación a tipo de cambio para conversiones
+    - Propiedades para calcular totales automáticamente
+    - Control de activación
     """
     contraparte = models.ForeignKey(
         Contraparte,
@@ -1024,7 +1228,22 @@ class BalanceSheet(models.Model):
 
 class BalanceSheetItem(models.Model):
     """
-    Modelo para los items de un balance sheet
+    Modelo para gestionar los items individuales de un balance sheet.
+    
+    Almacena cada línea del balance sheet con su descripción, categoría,
+    montos en moneda local y USD, y orden de visualización.
+    
+    Categorías disponibles:
+    - Assets: Activos
+    - Liabilities: Pasivos
+    - Equity: Patrimonio
+    
+    Características:
+    - Vinculación a balance sheet específico
+    - Montos en moneda local y USD
+    - Orden de visualización personalizable
+    - Notas adicionales por item
+    - Control de activación
     """
     CATEGORIAS = [
         ('assets', 'Assets'),

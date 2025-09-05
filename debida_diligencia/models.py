@@ -1,6 +1,19 @@
 """
 Modelos para el proceso de debida diligencia
-Portal Interno de Contrapartes – App Pacífico
+Portal Interno de Contrapartes – App Pacífico (Cotizador Web)
+
+ESTRUCTURA DE MODELOS:
+1. DebidaDiligencia: Proceso principal de debida diligencia
+2. Busqueda: Búsquedas individuales realizadas por RPA
+3. AnalisisIA: Análisis detallados generados por IA
+
+FUNCIONALIDADES PRINCIPALES:
+- Proceso automatizado de debida diligencia con RPA (Makito)
+- Búsquedas en múltiples fuentes (OFAC, ONU, UE, INTERPOL, PEP, medios)
+- Análisis de IA para procesamiento de resultados
+- Sistema de aprobación y niveles de riesgo
+- Integración con servicios externos (RPA, IA)
+- Auditoría completa del proceso
 """
 
 from django.db import models
@@ -9,9 +22,30 @@ from django.utils import timezone
 from contrapartes.models import Miembro
 
 
+# =============================================================================
+# MODELO PRINCIPAL DE DEBIDA DILIGENCIA
+# =============================================================================
+
 class DebidaDiligencia(models.Model):
     """
-    Modelo principal para el proceso de debida diligencia
+    Modelo principal para el proceso de debida diligencia.
+    
+    Gestiona el proceso completo de debida diligencia para un miembro específico,
+    incluyendo el estado del proceso, resultados de IA, niveles de riesgo y
+    aprobaciones. Se integra con servicios externos de RPA (Makito) e IA.
+    
+    Estados del proceso:
+    - pendiente: Proceso iniciado, esperando procesamiento
+    - en_proceso: Proceso en ejecución por RPA
+    - completada: Proceso completado exitosamente
+    - fallida: Proceso falló por algún error
+    - cancelada: Proceso cancelado manualmente
+    
+    Niveles de riesgo:
+    - bajo: Riesgo bajo detectado
+    - medio: Riesgo medio detectado
+    - alto: Riesgo alto detectado
+    - critico: Riesgo crítico detectado
     """
     ESTADOS = [
         ('pendiente', 'Pendiente'),
@@ -108,6 +142,9 @@ class DebidaDiligencia(models.Model):
         return f"DD {self.id} - {self.miembro.nombre} ({self.get_estado_display()})"
     
     def save(self, *args, **kwargs):
+        """
+        Actualiza automáticamente la fecha de resultado cuando el estado cambia a 'completada'.
+        """
         # Actualizar fecha de resultado cuando cambia el estado
         if self.estado == 'completada' and not self.fecha_resultado:
             self.fecha_resultado = timezone.now()
@@ -115,7 +152,12 @@ class DebidaDiligencia(models.Model):
     
     @property
     def duracion_proceso(self):
-        """Retorna la duración del proceso en días"""
+        """
+        Retorna la duración del proceso en días.
+        
+        Returns:
+            int or None: Número de días que duró el proceso o None si no está completado
+        """
         if self.fecha_resultado:
             delta = self.fecha_resultado - self.fecha_solicitud
             return delta.days
@@ -123,13 +165,43 @@ class DebidaDiligencia(models.Model):
     
     @property
     def tiene_coincidencias(self):
-        """Retorna True si hay búsquedas con coincidencias positivas"""
+        """
+        Retorna True si hay búsquedas con coincidencias positivas.
+        
+        Returns:
+            bool: True si se encontraron coincidencias en alguna búsqueda
+        """
         return self.busquedas.filter(estado='coincidencia_positiva').exists()
 
 
+# =============================================================================
+# MODELO DE BÚSQUEDAS
+# =============================================================================
+
 class Busqueda(models.Model):
     """
-    Modelo para las búsquedas individuales realizadas por el RPA
+    Modelo para las búsquedas individuales realizadas por el RPA.
+    
+    Almacena cada búsqueda específica realizada por el sistema RPA (Makito)
+    en diferentes fuentes de información. Cada debida diligencia puede tener
+    múltiples búsquedas en diferentes fuentes.
+    
+    Fuentes de búsqueda:
+    - ofac: Office of Foreign Assets Control (EE.UU.)
+    - onu: Lista de Sanciones de la ONU
+    - ue: Lista de Sanciones de la UE
+    - interpol: Base de datos de INTERPOL
+    - pep: Personas Expuestas Políticamente
+    - medios: Búsqueda en medios de comunicación
+    - google: Búsqueda en Google
+    - otra: Otras fuentes personalizadas
+    
+    Estados de búsqueda:
+    - exitosa: Búsqueda completada sin errores
+    - con_error: Búsqueda completada con errores
+    - coincidencia_positiva: Se encontraron coincidencias
+    - sin_coincidencias: No se encontraron coincidencias
+    - timeout: Búsqueda agotó el tiempo límite
     """
     FUENTES = [
         ('ofac', 'OFAC (Office of Foreign Assets Control)'),
@@ -201,13 +273,38 @@ class Busqueda(models.Model):
     
     @property
     def es_positiva(self):
-        """Retorna True si la búsqueda encontró coincidencias"""
+        """
+        Retorna True si la búsqueda encontró coincidencias.
+        
+        Returns:
+            bool: True si el estado es 'coincidencia_positiva' o si se encontraron coincidencias
+        """
         return self.estado == 'coincidencia_positiva' or self.coincidencias_encontradas > 0
 
 
+# =============================================================================
+# MODELO DE ANÁLISIS DE IA
+# =============================================================================
+
 class AnalisisIA(models.Model):
     """
-    Modelo para almacenar análisis detallados de IA
+    Modelo para almacenar análisis detallados generados por IA.
+    
+    Almacena los resultados de análisis de IA sobre los datos de debida diligencia,
+    incluyendo resúmenes, clasificaciones de riesgo, palabras clave detectadas
+    y niveles de confianza. Utiliza campos JSON para almacenar datos estructurados.
+    
+    Tipos de análisis:
+    - texto: Análisis de texto libre
+    - documento: Análisis de documentos específicos
+    - resumen: Resumen automatizado de información
+    - clasificacion: Clasificación automática de riesgo
+    
+    Características:
+    - Almacenamiento JSON para resultados estructurados
+    - Nivel de confianza del análisis (0.0 - 1.0)
+    - Palabras clave detectadas automáticamente
+    - Vinculación a debida diligencia específica
     """
     TIPOS_ANALISIS = [
         ('texto', 'Análisis de Texto'),
