@@ -35,7 +35,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 
 # Modo debug - SOLO habilitar en desarrollo
 # En producción debe estar en False
-DEBUG = True
+DEBUG = False
 # =============================================================================
 # CONFIGURACIÓN DE BASE DE DATOS
 # =============================================================================
